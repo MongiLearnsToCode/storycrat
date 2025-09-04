@@ -7,6 +7,7 @@ import { useQuery } from "convex/react"
 import { api } from "../../../convex/_generated/api"
 import { useConvexStoryStore } from "@/lib/convex-store"
 import { useRouter } from "next/navigation"
+import { Story } from "@/lib/convex-store"
 import { ArrowLeft, Plus } from "lucide-react"
 
 export default function ProjectsPage() {
@@ -14,7 +15,7 @@ export default function ProjectsPage() {
   const stories = useQuery(api.stories.getStories)
   const setCurrentStory = useConvexStoryStore(state => state.setCurrentStory)
 
-  const handleContinueStory = (story: any) => {
+  const handleContinueStory = (story: Story) => {
     setCurrentStory(story)
     router.push('/story')
   }

@@ -67,7 +67,7 @@ export default function FrameworkPage() {
           <Card className="border-2 border-primary shadow-lg hover:shadow-xl transition-shadow">
             <CardHeader className="pb-4 lg:pb-6">
               <CardTitle className="flex items-center gap-2 text-lg lg:text-xl">
-                Hero's Journey
+                Hero&apos;s Journey
                 <span className="text-xs bg-primary text-primary-foreground px-2 py-1 rounded">Available</span>
               </CardTitle>
               <CardDescription className="text-sm lg:text-base">
@@ -85,7 +85,7 @@ export default function FrameworkPage() {
                 onClick={handleStartStory}
                 disabled={!storyTitle.trim()}
               >
-                Select Hero's Journey
+                Select Hero&apos;s Journey
               </Button>
             </CardContent>
           </Card>

@@ -38,20 +38,20 @@ export default function StoryPage() {
   useEffect(() => {
     if (!currentStory) {
       router.push('/framework')
+      return
     }
-  }, [currentStory, router])
+    
+    const currentBeat = currentStory.beats[currentBeatIndex]
+    if (currentBeat) {
+      setBeatContent(currentBeat.content || '')
+    }
+  }, [currentStory, currentBeatIndex, router])
 
   if (!currentStory) return null
 
   const currentBeat = currentStory.beats[currentBeatIndex]
   const completedBeats = currentStory.beats.filter(beat => beat.completed).length
   const progress = (completedBeats / currentStory.beats.length) * 100
-
-  useEffect(() => {
-    if (currentBeat) {
-      setBeatContent(currentBeat.content || '')
-    }
-  }, [currentBeat])
 
   const handleUpdateBeatContent = (content: string) => {
     setBeatContent(content)
@@ -99,7 +99,7 @@ export default function StoryPage() {
               Home
             </Button>
             <h1 className="text-lg lg:text-xl xl:text-2xl font-bold truncate">{currentStory.title}</h1>
-            <Badge variant="secondary" className="hidden sm:inline-flex">Hero's Journey</Badge>
+            <Badge variant="secondary" className="hidden sm:inline-flex">Hero&apos;s Journey</Badge>
           </div>
           <div className="flex items-center gap-2 lg:gap-4 w-full sm:w-auto">
             <DropdownMenu>
@@ -289,7 +289,7 @@ export default function StoryPage() {
                 ))}
                 {currentStory.characters.length === 0 && (
                   <p className="text-sm text-muted-foreground text-center py-4">
-                    No characters yet. Add some to keep track of your story's cast.
+                    No characters yet. Add some to keep track of your story&apos;s cast.
                   </p>
                 )}
               </div>

@@ -42,7 +42,7 @@ export default function LandingPage() {
         </div>
         
         <div className="pt-8 text-sm text-muted-foreground">
-          <p>• Guided by the Hero's Journey framework</p>
+          <p>• Guided by the Hero&apos;s Journey framework</p>
           <p>• AI-powered suggestions for each story beat</p>
           <p>• Auto-save your progress</p>
         </div>

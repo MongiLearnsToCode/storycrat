@@ -1,0 +1,10 @@
+name = "storycrat"
+compatibility_date = "2025-09-04"
+
+[build]
+command = "npm run build"
+cwd = "."
+
+[build.upload]
+format = "directory"
+dir = ".next"
