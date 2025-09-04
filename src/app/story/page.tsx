@@ -77,18 +77,17 @@ function StoryPageContent() {
 
   useEffect(() => {
     if (currentStory) {
-      setCurrentStory(currentStory)
       const currentBeat = currentStory.beats[currentBeatIndex]
-      if (currentBeat) {
+      if (currentBeat && currentBeat.content !== beatContent) {
         setBeatContent(currentBeat.content || '')
       }
     }
-  }, [currentStory, currentBeatIndex, setCurrentStory])
+  }, [currentStory, currentBeatIndex])
 
   useEffect(() => {
-    if (debouncedBeatContent !== undefined && currentStory) {
+    if (debouncedBeatContent !== undefined && currentStory && debouncedBeatContent !== '') {
       const currentBeat = currentStory.beats[currentBeatIndex]
-      if (currentBeat) {
+      if (currentBeat && currentBeat.content !== debouncedBeatContent) {
         setIsSaving(true)
         updateBeatContent({ 
           storyId: currentStory._id, 
