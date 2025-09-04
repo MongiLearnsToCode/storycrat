@@ -72,12 +72,13 @@ function StoryPageContent() {
     if (currentBeat) {
       setBeatContent(currentBeat.content || '')
     }
-  }, [currentStory, currentBeatIndex, router])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentBeatIndex, router])
 
   useEffect(() => {
-    if (debouncedBeatContent !== undefined && currentStory && debouncedBeatContent !== '') {
+    if (debouncedBeatContent !== undefined && currentStory) {
       const currentBeat = currentStory.beats[currentBeatIndex]
-      if (currentBeat) {
+      if (currentBeat && debouncedBeatContent !== currentBeat.content) {
         setIsSaving(true)
         updateBeatContent({ 
           storyId: currentStory._id, 
