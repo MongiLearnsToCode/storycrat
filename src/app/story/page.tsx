@@ -85,25 +85,6 @@ function StoryPageContent() {
     }
   }, [currentStory, currentBeatIndex, setCurrentStory])
 
-  if (!storyFromStore) return null
-  if (!currentStory) return (
-    <div className="min-h-screen bg-background flex items-center justify-center">
-      <div className="text-center">
-        <h1 className="text-xl font-bold">Loading story...</h1>
-      </div>
-    </div>
-  )
-
-  const saveBeatContent = (content: string) => {
-    if (currentStory && currentBeat) {
-      updateBeatContent({ 
-        storyId: currentStory._id, 
-        beatId: currentBeat.id, 
-        content 
-      })
-    }
-  }
-
   useEffect(() => {
     if (debouncedBeatContent !== undefined && currentStory) {
       const currentBeat = currentStory.beats[currentBeatIndex]
@@ -117,6 +98,27 @@ function StoryPageContent() {
       }
     }
   }, [debouncedBeatContent, currentStory, currentBeatIndex, updateBeatContent])
+
+  if (!storyFromStore) return null
+  if (!currentStory) return (
+    <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="text-center">
+        <h1 className="text-xl font-bold">Loading story...</h1>
+      </div>
+    </div>
+  )
+
+  const currentBeat = currentStory.beats[currentBeatIndex]
+
+  const saveBeatContent = (content: string) => {
+    if (currentStory && currentBeat) {
+      updateBeatContent({ 
+        storyId: currentStory._id, 
+        beatId: currentBeat.id, 
+        content 
+      })
+    }
+  }
 
   if (!storyFromStore) return null
   if (!currentStory) return (
