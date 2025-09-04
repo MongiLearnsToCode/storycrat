@@ -90,6 +90,9 @@ function StoryPageContent() {
     setCurrentBeat(newBeatIndex)
   }
 
+  const completedBeats = currentStory.beats.filter(beat => beat.completed).length
+  const progress = (completedBeats / currentStory.beats.length) * 100
+
   const handleUpdateBeatContent = (content: string) => {
     updateLocalBeatContent(content)
   }
