@@ -50,11 +50,12 @@ function StoryPageContent() {
     currentStory, 
     currentBeatIndex, 
     setCurrentBeat,
-    updateBeatContent: updateLocalBeatContent
+    updateBeatContent: updateLocalBeatContent,
+    addCharacter: addLocalCharacter
   } = useConvexStoryStore()
   
   const updateBeatContentMutation = useMutation(api.stories.updateBeatContent)
-  const addCharacter = useMutation(api.stories.addCharacter)
+  const addCharacterMutation = useMutation(api.stories.addCharacter)
   
   const [newCharacter, setNewCharacter] = useState({ name: '', role: '', description: '' })
   const [isCharacterDialogOpen, setIsCharacterDialogOpen] = useState(false)
@@ -106,12 +107,19 @@ function StoryPageContent() {
   }
 
   const handleAddCharacter = () => {
-    if (newCharacter.name.trim()) {
-      addCharacter({
-        storyId: currentStory._id,
+    if (newCharacter.name.trim() && currentStory) {
+      const character = {
+        id: crypto.randomUUID(),
         name: newCharacter.name,
         role: newCharacter.role,
-        description: newCharacter.description
+        description: newCharacter.description,
+      }
+      addLocalCharacter(character)
+      addCharacterMutation({
+        storyId: currentStory._id,
+        name: character.name,
+        role: character.role,
+        description: character.description,
       })
       setNewCharacter({ name: '', role: '', description: '' })
       setIsCharacterDialogOpen(false)

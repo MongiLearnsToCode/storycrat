@@ -32,6 +32,7 @@ interface ConvexStoryStore {
   setCurrentStory: (story: Story) => void
   setCurrentBeat: (index: number) => void
   updateBeatContent: (content: string) => void
+  addCharacter: (character: Character) => void
   clearCurrentStory: () => void
 }
 
@@ -60,6 +61,19 @@ export const useConvexStoryStore = create<ConvexStoryStore>((set, get) => ({
         currentStory: {
           ...currentStory,
           beats: newBeats,
+          lastEdited: Date.now(),
+        },
+      })
+    }
+  },
+
+  addCharacter: (character: Character) => {
+    const { currentStory } = get()
+    if (currentStory) {
+      set({
+        currentStory: {
+          ...currentStory,
+          characters: [...currentStory.characters, character],
           lastEdited: Date.now(),
         },
       })
