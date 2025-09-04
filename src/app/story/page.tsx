@@ -51,25 +51,55 @@ function StoryPageContent() {
     currentBeatIndex, 
     setCurrentBeat,
     updateBeatContent: updateLocalBeatContent,
-    addCharacter: addLocalCharacter
+    addCharacter: addLocalCharacter,
+    setCurrentStory
   } = useConvexStoryStore()
   
   const updateBeatContentMutation = useMutation(api.stories.updateBeatContent)
   const addCharacterMutation = useMutation(api.stories.addCharacter)
+  const createStoryMutation = useMutation(api.stories.createStory)
   
   const [newCharacter, setNewCharacter] = useState({ name: '', role: '', description: '' })
   const [isCharacterDialogOpen, setIsCharacterDialogOpen] = useState(false)
   const [currentSuggestion, setCurrentSuggestion] = useState<string | null>(null)
   const [isSaving, setIsSaving] = useState(false)
   const [isSaved, setIsSaved] = useState(false)
+  const [isCreatingStory, setIsCreatingStory] = useState(false)
 
   const debouncedStory = useDebounce(currentStory, 500)
 
   useEffect(() => {
-    if (!currentStory) {
+    const urlParams = new URLSearchParams(window.location.search)
+    const title = urlParams.get('title')
+    
+    if (title && !currentStory) {
+      setIsCreatingStory(true)
+      createStoryMutation({ title }).then(storyId => {
+        const newStory = {
+          _id: storyId,
+          title,
+          framework: "hero-journey",
+          beats: [
+            { id: 'ordinary-world', title: 'Ordinary World', description: 'Show the hero in their normal life before transformation begins.', content: '', completed: false },
+            { id: 'call-to-adventure', title: 'Call to Adventure', description: 'The hero is presented with a problem or challenge.', content: '', completed: false },
+            { id: 'refusal-of-call', title: 'Refusal of the Call', description: 'The hero hesitates or refuses the adventure.', content: '', completed: false },
+            { id: 'meeting-mentor', title: 'Meeting the Mentor', description: 'The hero encounters a wise figure who gives advice.', content: '', completed: false },
+            { id: 'crossing-threshold', title: 'Crossing the Threshold', description: 'The hero commits to the adventure and enters a new world.', content: '', completed: false },
+            { id: 'tests-allies-enemies', title: 'Tests, Allies & Enemies', description: 'The hero faces challenges and makes allies and enemies.', content: '', completed: false },
+            { id: 'ordeal', title: 'The Ordeal', description: 'The hero faces their greatest fear or most difficult challenge.', content: '', completed: false },
+            { id: 'reward', title: 'The Reward', description: 'The hero survives and gains something from the experience.', content: '', completed: false },
+            { id: 'return-with-elixir', title: 'Return with the Elixir', description: 'The hero returns home transformed.', content: '', completed: false }
+          ],
+          characters: [],
+          lastEdited: Date.now()
+        }
+        setCurrentStory(newStory)
+        router.replace('/story')
+      }).finally(() => setIsCreatingStory(false))
+    } else if (!currentStory && !title) {
       router.push('/framework')
     }
-  }, [currentStory, router])
+  }, [currentStory, createStoryMutation, setCurrentStory, router])
 
   useEffect(() => {
     if (debouncedStory) {
@@ -87,7 +117,16 @@ function StoryPageContent() {
     }
   }, [debouncedStory, currentBeatIndex, updateBeatContentMutation])
 
-  if (!currentStory) return null
+  if (isCreatingStory || !currentStory) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Creating your story...</p>
+        </div>
+      </div>
+    )
+  }
 
   const currentBeat = currentStory.beats[currentBeatIndex]
 

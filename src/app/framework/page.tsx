@@ -49,28 +49,7 @@ function FrameworkPageContent({ storyTitle, setStoryTitle, router }: {
   const handleStartStory = () => {
     if (!storyTitle.trim()) return
 
-    createStory({ title: storyTitle }).then(storyId => {
-      const newStory = {
-        _id: storyId,
-        title: storyTitle,
-        framework: "hero-journey",
-        beats: [
-          { id: 'ordinary-world', title: 'Ordinary World', description: 'Show the hero in their normal life before transformation begins.', content: '', completed: false },
-          { id: 'call-to-adventure', title: 'Call to Adventure', description: 'The hero is presented with a problem or challenge.', content: '', completed: false },
-          { id: 'refusal-of-call', title: 'Refusal of the Call', description: 'The hero hesitates or refuses the adventure.', content: '', completed: false },
-          { id: 'meeting-mentor', title: 'Meeting the Mentor', description: 'The hero encounters a wise figure who gives advice.', content: '', completed: false },
-          { id: 'crossing-threshold', title: 'Crossing the Threshold', description: 'The hero commits to the adventure and enters a new world.', content: '', completed: false },
-          { id: 'tests-allies-enemies', title: 'Tests, Allies & Enemies', description: 'The hero faces challenges and makes allies and enemies.', content: '', completed: false },
-          { id: 'ordeal', title: 'The Ordeal', description: 'The hero faces their greatest fear or most difficult challenge.', content: '', completed: false },
-          { id: 'reward', title: 'The Reward', description: 'The hero survives and gains something from the experience.', content: '', completed: false },
-          { id: 'return-with-elixir', title: 'Return with the Elixir', description: 'The hero returns home transformed.', content: '', completed: false }
-        ],
-        characters: [],
-        lastEdited: Date.now()
-      }
-      setCurrentStory(newStory)
-      router.push('/story')
-    })
+    router.push(`/story?title=${encodeURIComponent(storyTitle)}`)
   }
 
   return (
