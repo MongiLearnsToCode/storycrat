@@ -15,6 +15,7 @@ import { api } from "../../../convex/_generated/api"
 import { useConvexStoryStore } from "@/lib/convex-store"
 import { useRouter } from "next/navigation"
 import { useState, useEffect } from "react"
+import { useDebounce } from "@/hooks/use-debounce"
 import { getRandomSuggestion } from "@/lib/ai-suggestions"
 import { exportToTxt, exportToPdf } from "@/lib/export-utils"
 import { Sparkles, Users, ArrowLeft, X, RefreshCw, Download, FileText, FileImage } from "lucide-react"
@@ -58,6 +59,7 @@ function StoryPageContent() {
   const [isCharacterDialogOpen, setIsCharacterDialogOpen] = useState(false)
   const [currentSuggestion, setCurrentSuggestion] = useState<string | null>(null)
   const [beatContent, setBeatContent] = useState('')
+  const debouncedBeatContent = useDebounce(beatContent, 500)
 
   useEffect(() => {
     if (!currentStory) {
@@ -71,6 +73,22 @@ function StoryPageContent() {
     }
   }, [currentStory, currentBeatIndex, router])
 
+  useEffect(() => {
+    if (debouncedBeatContent !== undefined && currentStory && currentBeat) {
+      saveBeatContent(debouncedBeatContent)
+    }
+  }, [debouncedBeatContent])
+
+  const saveBeatContent = (content: string) => {
+    if (currentStory && currentBeat) {
+      updateBeatContent({ 
+        storyId: currentStory._id, 
+        beatId: currentBeat.id, 
+        content 
+      })
+    }
+  }
+
   if (!currentStory) return null
 
   const currentBeat = currentStory.beats[currentBeatIndex]
@@ -79,11 +97,10 @@ function StoryPageContent() {
 
   const handleUpdateBeatContent = (content: string) => {
     setBeatContent(content)
-    updateBeatContent({ 
-      storyId: currentStory._id, 
-      beatId: currentBeat.id, 
-      content 
-    })
+  }
+
+  const handleNextBeat = () => {
+    handleBeatChange(currentBeatIndex + 1)
   }
 
   const handleAddCharacter = () => {
@@ -165,7 +182,7 @@ function StoryPageContent() {
                   <AccordionItem key={beat.id} value={`beat-${index}`}>
                     <AccordionTrigger 
                       className={`text-left text-sm ${index === currentBeatIndex ? 'text-primary' : ''}`}
-                      onClick={() => setCurrentBeat(index)}
+                      onClick={() => handleBeatChange(index)}
                     >
                       <div className="flex items-center gap-2">
                         {beat.completed && <span className="text-green-500 text-xs">✓</span>}
@@ -236,7 +253,7 @@ function StoryPageContent() {
                   AI Suggest
                 </Button>
                 {currentBeatIndex < currentStory.beats.length - 1 && (
-                  <Button onClick={() => setCurrentBeat(currentBeatIndex + 1)}>
+                  <Button onClick={handleNextBeat}>
                     Next Beat →
                   </Button>
                 )}
