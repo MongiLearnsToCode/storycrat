@@ -7,6 +7,7 @@ import { Progress } from "@/components/ui/progress"
 import { Badge } from "@/components/ui/badge"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useMutation } from "convex/react"
@@ -16,7 +17,7 @@ import { useRouter } from "next/navigation"
 import { useState, useEffect } from "react"
 import { getRandomSuggestion } from "@/lib/ai-suggestions"
 import { exportToTxt, exportToPdf } from "@/lib/export-utils"
-import { Sparkles, Users, ArrowLeft, X, RefreshCw, Download } from "lucide-react"
+import { Sparkles, Users, ArrowLeft, X, RefreshCw, Download, FileText, FileImage } from "lucide-react"
 
 export default function StoryPage() {
   const router = useRouter()
@@ -101,14 +102,24 @@ export default function StoryPage() {
             <Badge variant="secondary" className="hidden sm:inline-flex">Hero's Journey</Badge>
           </div>
           <div className="flex items-center gap-2 lg:gap-4 w-full sm:w-auto">
-            <Button variant="outline" size="sm" onClick={() => exportToTxt(currentStory)}>
-              <Download className="h-4 w-4 mr-1" />
-              TXT
-            </Button>
-            <Button variant="outline" size="sm" onClick={() => exportToPdf(currentStory)}>
-              <Download className="h-4 w-4 mr-1" />
-              PDF
-            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm">
+                  <Download className="h-4 w-4 mr-1" />
+                  Export
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem onClick={() => exportToTxt(currentStory)}>
+                  <FileText className="h-4 w-4 mr-2" />
+                  Export as TXT
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => exportToPdf(currentStory)}>
+                  <FileImage className="h-4 w-4 mr-2" />
+                  Export as PDF
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
             <span className="text-xs lg:text-sm text-muted-foreground whitespace-nowrap">
               {completedBeats}/{currentStory.beats.length} beats completed
             </span>
