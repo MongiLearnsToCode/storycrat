@@ -32,13 +32,14 @@ export default defineSchema({
   // Story tables
   stories: defineTable({
     title: v.string(),
-    userId: v.id("user"),
+    userId: v.optional(v.id("user")), // Optional for existing data
     framework: v.string(),
     beats: v.array(v.object({
       id: v.string(),
       title: v.string(),
       content: v.string(),
       completed: v.boolean(),
+      description: v.string(),
     })),
     characters: v.array(v.object({
       id: v.string(),
@@ -46,7 +47,8 @@ export default defineSchema({
       role: v.string(),
       description: v.string(),
     })),
-    createdAt: v.number(),
-    updatedAt: v.number(),
+    createdAt: v.optional(v.number()), // Optional for existing data
+    updatedAt: v.optional(v.number()), // Optional for existing data
+    lastEdited: v.number(),
   }).index("by_user", ["userId"]),
 });

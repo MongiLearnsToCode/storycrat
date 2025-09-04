@@ -29,8 +29,10 @@ export const getStory = query({
 export const createStory = mutation({
   args: { title: v.string() },
   handler: async (ctx, { title }) => {
+    const now = Date.now();
     return await ctx.db.insert("stories", {
       title,
+      userId: "temp-user-id" as any, // TODO: Replace with actual user ID from auth
       framework: "hero-journey",
       beats: heroJourneyBeats.map(beat => ({
         ...beat,
@@ -38,7 +40,9 @@ export const createStory = mutation({
         completed: false
       })),
       characters: [],
-      lastEdited: Date.now(),
+      createdAt: now,
+      updatedAt: now,
+      lastEdited: now,
     });
   },
 });
@@ -59,9 +63,11 @@ export const updateBeatContent = mutation({
         : beat
     );
 
+    const now = Date.now();
     await ctx.db.patch(storyId, {
       beats: updatedBeats,
-      lastEdited: Date.now(),
+      updatedAt: now,
+      lastEdited: now,
     });
   },
 });
@@ -84,9 +90,11 @@ export const addCharacter = mutation({
       description,
     };
 
+    const now = Date.now();
     await ctx.db.patch(storyId, {
       characters: [...story.characters, newCharacter],
-      lastEdited: Date.now(),
+      updatedAt: now,
+      lastEdited: now,
     });
   },
 });
