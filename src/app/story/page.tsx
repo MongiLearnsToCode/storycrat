@@ -47,16 +47,10 @@ export default function StoryPage() {
 function StoryPageContent() {
   const router = useRouter()
   const { 
-    currentStory: storyFromStore, 
+    currentStory, 
     currentBeatIndex, 
-    setCurrentBeat,
-    setCurrentStory 
+    setCurrentBeat 
   } = useConvexStoryStore()
-  
-  // Fetch the actual story from Convex
-  const currentStory = useQuery(api.stories.getStory, 
-    storyFromStore ? { storyId: storyFromStore._id } : "skip"
-  )
   
   const updateBeatContent = useMutation(api.stories.updateBeatContent)
   const addCharacter = useMutation(api.stories.addCharacter)
@@ -69,25 +63,21 @@ function StoryPageContent() {
   const debouncedBeatContent = useDebounce(beatContent, 500)
 
   useEffect(() => {
-    if (!storyFromStore) {
+    if (!currentStory) {
       router.push('/framework')
       return
     }
-  }, [storyFromStore, router])
-
-  useEffect(() => {
-    if (currentStory) {
-      const currentBeat = currentStory.beats[currentBeatIndex]
-      if (currentBeat && currentBeat.content !== beatContent) {
-        setBeatContent(currentBeat.content || '')
-      }
+    
+    const currentBeat = currentStory.beats[currentBeatIndex]
+    if (currentBeat) {
+      setBeatContent(currentBeat.content || '')
     }
-  }, [currentStory, currentBeatIndex])
+  }, [currentStory, currentBeatIndex, router])
 
   useEffect(() => {
     if (debouncedBeatContent !== undefined && currentStory && debouncedBeatContent !== '') {
       const currentBeat = currentStory.beats[currentBeatIndex]
-      if (currentBeat && currentBeat.content !== debouncedBeatContent) {
+      if (currentBeat) {
         setIsSaving(true)
         updateBeatContent({ 
           storyId: currentStory._id, 
@@ -98,24 +88,20 @@ function StoryPageContent() {
     }
   }, [debouncedBeatContent, currentStory, currentBeatIndex, updateBeatContent])
 
-  if (!storyFromStore) return null
-  if (!currentStory) return (
-    <div className="min-h-screen bg-background flex items-center justify-center">
-      <div className="text-center">
-        <h1 className="text-xl font-bold">Loading story...</h1>
-      </div>
-    </div>
-  )
+  if (!currentStory) return null
 
   const currentBeat = currentStory.beats[currentBeatIndex]
 
   const saveBeatContent = (content: string) => {
-    if (currentStory && currentBeat) {
-      updateBeatContent({ 
-        storyId: currentStory._id, 
-        beatId: currentBeat.id, 
-        content 
-      })
+    if (currentStory) {
+      const currentBeat = currentStory.beats[currentBeatIndex]
+      if (currentBeat) {
+        updateBeatContent({ 
+          storyId: currentStory._id, 
+          beatId: currentBeat.id, 
+          content 
+        })
+      }
     }
   }
 
@@ -129,7 +115,16 @@ function StoryPageContent() {
   )
 
   const handleBeatChange = (newBeatIndex: number) => {
-    saveBeatContent(beatContent)
+    if (currentStory && beatContent.trim()) {
+      const currentBeat = currentStory.beats[currentBeatIndex]
+      if (currentBeat) {
+        updateBeatContent({ 
+          storyId: currentStory._id, 
+          beatId: currentBeat.id, 
+          content: beatContent 
+        })
+      }
+    }
     setCurrentBeat(newBeatIndex)
   }
   const completedBeats = currentStory.beats.filter(beat => beat.completed).length
