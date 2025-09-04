@@ -10,7 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { useMutation } from "convex/react"
+import { useMutation, useQuery } from "convex/react"
 import { api } from "../../../convex/_generated/api"
 import { useConvexStoryStore } from "@/lib/convex-store"
 import { useRouter } from "next/navigation"
@@ -47,10 +47,16 @@ export default function StoryPage() {
 function StoryPageContent() {
   const router = useRouter()
   const { 
-    currentStory, 
+    currentStory: storyFromStore, 
     currentBeatIndex, 
-    setCurrentBeat 
+    setCurrentBeat,
+    setCurrentStory 
   } = useConvexStoryStore()
+  
+  // Fetch the actual story from Convex
+  const currentStory = useQuery(api.stories.getStory, 
+    storyFromStore ? { storyId: storyFromStore._id } : "skip"
+  )
   
   const updateBeatContent = useMutation(api.stories.updateBeatContent)
   const addCharacter = useMutation(api.stories.addCharacter)
@@ -63,16 +69,30 @@ function StoryPageContent() {
   const debouncedBeatContent = useDebounce(beatContent, 500)
 
   useEffect(() => {
-    if (!currentStory) {
+    if (!storyFromStore) {
       router.push('/framework')
       return
     }
-    
-    const currentBeat = currentStory.beats[currentBeatIndex]
-    if (currentBeat) {
-      setBeatContent(currentBeat.content || '')
+  }, [storyFromStore, router])
+
+  useEffect(() => {
+    if (currentStory) {
+      setCurrentStory(currentStory)
+      const currentBeat = currentStory.beats[currentBeatIndex]
+      if (currentBeat) {
+        setBeatContent(currentBeat.content || '')
+      }
     }
-  }, [currentStory, currentBeatIndex, router])
+  }, [currentStory, currentBeatIndex, setCurrentStory])
+
+  if (!storyFromStore) return null
+  if (!currentStory) return (
+    <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="text-center">
+        <h1 className="text-xl font-bold">Loading story...</h1>
+      </div>
+    </div>
+  )
 
   const saveBeatContent = (content: string) => {
     if (currentStory && currentBeat) {
@@ -98,7 +118,14 @@ function StoryPageContent() {
     }
   }, [debouncedBeatContent, currentStory, currentBeatIndex, updateBeatContent])
 
-  if (!currentStory) return null
+  if (!storyFromStore) return null
+  if (!currentStory) return (
+    <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="text-center">
+        <h1 className="text-xl font-bold">Loading story...</h1>
+      </div>
+    </div>
+  )
 
   const currentBeat = currentStory.beats[currentBeatIndex]
 

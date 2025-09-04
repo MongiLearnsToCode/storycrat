@@ -19,6 +19,13 @@ export const getStories = query({
   },
 });
 
+export const getStory = query({
+  args: { storyId: v.id("stories") },
+  handler: async (ctx, { storyId }) => {
+    return await ctx.db.get(storyId);
+  },
+});
+
 export const createStory = mutation({
   args: { title: v.string() },
   handler: async (ctx, { title }) => {
