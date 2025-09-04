@@ -3,33 +3,11 @@
 import { Button } from "@/components/ui/button"
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { UserMenu } from "@/components/auth/user-menu"
-import { useSession } from "@/lib/auth-client"
 import { useRouter } from "next/navigation"
-import { useEffect, useState } from "react"
 import { BookOpen, Sparkles, Users, BarChart3, ArrowRight } from "lucide-react"
 
 export default function HomePage() {
-  const { data: session, isPending: isLoading } = useSession()
   const router = useRouter()
-  const [isClient, setIsClient] = useState(false)
-
-  useEffect(() => {
-    setIsClient(true)
-  }, [])
-
-  if (!isClient || isLoading) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-      </div>
-    )
-  }
-
-  if (!session) {
-    router.push('/auth')
-    return null
-  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -40,7 +18,6 @@ export default function HomePage() {
             <BookOpen className="h-6 w-6 lg:h-8 lg:w-8 text-primary" />
             <h1 className="text-xl lg:text-2xl font-bold">StoryGenPro</h1>
           </div>
-          <UserMenu />
         </div>
       </header>
 

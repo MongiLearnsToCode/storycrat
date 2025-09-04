@@ -32,7 +32,6 @@ export const createStory = mutation({
     const now = Date.now();
     return await ctx.db.insert("stories", {
       title,
-      userId: "temp-user-id" as any, // TODO: Replace with actual user ID from auth
       framework: "hero-journey",
       beats: heroJourneyBeats.map(beat => ({
         ...beat,
