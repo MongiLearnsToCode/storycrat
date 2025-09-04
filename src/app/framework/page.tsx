@@ -6,9 +6,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useRouter } from "next/navigation"
 import { useState, useEffect } from "react"
-import { useMutation } from "convex/react"
-import { api } from "../../../convex/_generated/api"
-import { useConvexStoryStore } from "@/lib/convex-store"
+
 import type { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime"
 
 export const dynamic = 'force-dynamic'

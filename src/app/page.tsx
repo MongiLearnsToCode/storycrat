@@ -10,7 +10,7 @@ import { useEffect, useState } from "react"
 import { BookOpen, Sparkles, Users, BarChart3, ArrowRight } from "lucide-react"
 
 export default function HomePage() {
-  const { data: session, isLoading } = useSession()
+  const { data: session, isPending: isLoading } = useSession()
   const router = useRouter()
   const [isClient, setIsClient] = useState(false)
 
