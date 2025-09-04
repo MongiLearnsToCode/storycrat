@@ -19,6 +19,8 @@ import { getRandomSuggestion } from "@/lib/ai-suggestions"
 import { exportToTxt, exportToPdf } from "@/lib/export-utils"
 import { Sparkles, Users, ArrowLeft, X, RefreshCw, Download, FileText, FileImage } from "lucide-react"
 
+export const dynamic = 'force-dynamic'
+
 export default function StoryPage() {
   const router = useRouter()
   const { 

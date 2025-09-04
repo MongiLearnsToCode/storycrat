@@ -10,6 +10,8 @@ import { useRouter } from "next/navigation"
 import { Story } from "@/lib/convex-store"
 import { ArrowLeft, Plus } from "lucide-react"
 
+export const dynamic = 'force-dynamic'
+
 export default function ProjectsPage() {
   const router = useRouter()
   const stories = useQuery(api.stories.getStories)
@@ -28,7 +30,8 @@ export default function ProjectsPage() {
     })
   }
 
-  if (!stories) return <div>Loading...</div>
+  if (stories === undefined) return <div>Loading...</div>
+  if (!stories) return <div>Unable to load stories. Please check your connection.</div>
 
   return (
     <div className="min-h-screen bg-background">

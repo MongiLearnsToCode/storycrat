@@ -10,6 +10,8 @@ import { useMutation } from "convex/react"
 import { api } from "../../../convex/_generated/api"
 import { useConvexStoryStore } from "@/lib/convex-store"
 
+export const dynamic = 'force-dynamic'
+
 export default function FrameworkPage() {
   const router = useRouter()
   const [storyTitle, setStoryTitle] = useState("")
