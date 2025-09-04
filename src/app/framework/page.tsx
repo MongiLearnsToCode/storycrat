@@ -43,9 +43,6 @@ function FrameworkPageContent({ storyTitle, setStoryTitle, router }: {
   setStoryTitle: (title: string) => void
   router: AppRouterInstance
 }) {
-  const createStory = useMutation(api.stories.createStory)
-  const setCurrentStory = useConvexStoryStore(state => state.setCurrentStory)
-
   const handleStartStory = () => {
     if (!storyTitle.trim()) return
 
