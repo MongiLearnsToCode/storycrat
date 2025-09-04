@@ -73,10 +73,6 @@ function StoryPageContent() {
     }
   }, [currentStory, currentBeatIndex, router])
 
-  if (!currentStory) return null
-
-  const currentBeat = currentStory.beats[currentBeatIndex]
-
   const saveBeatContent = (content: string) => {
     if (currentStory && currentBeat) {
       updateBeatContent({ 
@@ -88,10 +84,21 @@ function StoryPageContent() {
   }
 
   useEffect(() => {
-    if (debouncedBeatContent !== undefined && currentStory && currentBeat) {
-      saveBeatContent(debouncedBeatContent)
+    if (debouncedBeatContent !== undefined && currentStory) {
+      const currentBeat = currentStory.beats[currentBeatIndex]
+      if (currentBeat) {
+        updateBeatContent({ 
+          storyId: currentStory._id, 
+          beatId: currentBeat.id, 
+          content: debouncedBeatContent 
+        })
+      }
     }
-  }, [debouncedBeatContent, currentStory, currentBeat, updateBeatContent])
+  }, [debouncedBeatContent, currentStory, currentBeatIndex, updateBeatContent])
+
+  if (!currentStory) return null
+
+  const currentBeat = currentStory.beats[currentBeatIndex]
 
   const handleBeatChange = (newBeatIndex: number) => {
     saveBeatContent(beatContent)
