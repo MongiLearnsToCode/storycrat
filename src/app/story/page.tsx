@@ -22,6 +22,28 @@ import { Sparkles, Users, ArrowLeft, X, RefreshCw, Download, FileText, FileImage
 export const dynamic = 'force-dynamic'
 
 export default function StoryPage() {
+  const [isClient, setIsClient] = useState(false)
+  
+  useEffect(() => {
+    setIsClient(true)
+  }, [])
+
+  if (!isClient) {
+    return (
+      <div className="min-h-screen bg-background">
+        <div className="border-b p-3 lg:p-4">
+          <div className="max-w-[1600px] mx-auto">
+            <h1 className="text-lg lg:text-xl xl:text-2xl font-bold">Loading...</h1>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  return <StoryPageContent />
+}
+
+function StoryPageContent() {
   const router = useRouter()
   const { 
     currentStory, 

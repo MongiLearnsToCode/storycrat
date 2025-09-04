@@ -5,16 +5,44 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useRouter } from "next/navigation"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useMutation } from "convex/react"
 import { api } from "../../../convex/_generated/api"
 import { useConvexStoryStore } from "@/lib/convex-store"
+import type { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime"
 
 export const dynamic = 'force-dynamic'
 
 export default function FrameworkPage() {
   const router = useRouter()
   const [storyTitle, setStoryTitle] = useState("")
+  const [isClient, setIsClient] = useState(false)
+  
+  useEffect(() => {
+    setIsClient(true)
+  }, [])
+
+  if (!isClient) {
+    return (
+      <div className="min-h-screen bg-background p-4 lg:p-6">
+        <div className="max-w-5xl mx-auto py-6 lg:py-12">
+          <div className="text-center mb-8 lg:mb-12">
+            <h1 className="text-2xl lg:text-3xl xl:text-4xl font-bold mb-2 lg:mb-4">Choose Your Framework</h1>
+            <p className="text-muted-foreground text-sm lg:text-base max-w-2xl mx-auto">Loading...</p>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  return <FrameworkPageContent storyTitle={storyTitle} setStoryTitle={setStoryTitle} router={router} />
+}
+
+function FrameworkPageContent({ storyTitle, setStoryTitle, router }: {
+  storyTitle: string
+  setStoryTitle: (title: string) => void
+  router: AppRouterInstance
+}) {
   const createStory = useMutation(api.stories.createStory)
   const setCurrentStory = useConvexStoryStore(state => state.setCurrentStory)
 
