@@ -207,12 +207,14 @@ function StoryPageContent() {
             <CardHeader className="pb-4">
               <CardTitle className="text-lg lg:text-xl flex items-center justify-between">
                 {currentBeat.title}
-                {isSaving && (
-                  <span className="text-xs text-muted-foreground">Saving...</span>
-                )}
-                {isSaved && (
-                  <span className="text-xs text-green-500">Saved</span>
-                )}
+                <div className="flex items-center gap-2">
+                  {isSaving && (
+                    <span className="text-xs text-muted-foreground">Saving...</span>
+                  )}
+                  {isSaved && (
+                    <span className="text-xs text-green-500">Saved</span>
+                  )}
+                </div>
               </CardTitle>
               <CardDescription className="text-sm lg:text-base">{currentBeat.description}</CardDescription>
             </CardHeader>
