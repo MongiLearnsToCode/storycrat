@@ -31,10 +31,11 @@ interface ConvexStoryStore {
   
   setCurrentStory: (story: Story) => void
   setCurrentBeat: (index: number) => void
+  updateBeatContent: (content: string) => void
   clearCurrentStory: () => void
 }
 
-export const useConvexStoryStore = create<ConvexStoryStore>((set) => ({
+export const useConvexStoryStore = create<ConvexStoryStore>((set, get) => ({
   currentStory: null,
   currentBeatIndex: 0,
 
@@ -44,6 +45,25 @@ export const useConvexStoryStore = create<ConvexStoryStore>((set) => ({
 
   setCurrentBeat: (index: number) => {
     set({ currentBeatIndex: index })
+  },
+
+  updateBeatContent: (content: string) => {
+    const { currentStory, currentBeatIndex } = get()
+    if (currentStory) {
+      const newBeats = [...currentStory.beats]
+      newBeats[currentBeatIndex] = {
+        ...newBeats[currentBeatIndex],
+        content,
+        completed: content.trim().length > 0,
+      }
+      set({
+        currentStory: {
+          ...currentStory,
+          beats: newBeats,
+          lastEdited: Date.now(),
+        },
+      })
+    }
   },
 
   clearCurrentStory: () => {

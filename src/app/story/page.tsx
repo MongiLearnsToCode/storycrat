@@ -49,83 +49,49 @@ function StoryPageContent() {
   const { 
     currentStory, 
     currentBeatIndex, 
-    setCurrentBeat 
+    setCurrentBeat,
+    updateBeatContent: updateLocalBeatContent
   } = useConvexStoryStore()
   
-  const updateBeatContent = useMutation(api.stories.updateBeatContent)
+  const updateBeatContentMutation = useMutation(api.stories.updateBeatContent)
   const addCharacter = useMutation(api.stories.addCharacter)
   
   const [newCharacter, setNewCharacter] = useState({ name: '', role: '', description: '' })
   const [isCharacterDialogOpen, setIsCharacterDialogOpen] = useState(false)
   const [currentSuggestion, setCurrentSuggestion] = useState<string | null>(null)
-  const [beatContent, setBeatContent] = useState('')
   const [isSaving, setIsSaving] = useState(false)
-  const debouncedBeatContent = useDebounce(beatContent, 500)
+
+  const debouncedStory = useDebounce(currentStory, 500)
 
   useEffect(() => {
     if (!currentStory) {
       router.push('/framework')
-      return
     }
-    
-    const currentBeat = currentStory.beats[currentBeatIndex]
-    if (currentBeat) {
-      setBeatContent(currentBeat.content || '')
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentBeatIndex, router])
+  }, [currentStory, router])
 
   useEffect(() => {
-    if (debouncedBeatContent !== undefined && currentStory) {
-      const currentBeat = currentStory.beats[currentBeatIndex]
-      if (currentBeat && debouncedBeatContent !== currentBeat.content) {
-        setIsSaving(true)
-        updateBeatContent({ 
-          storyId: currentStory._id, 
-          beatId: currentBeat.id, 
-          content: debouncedBeatContent 
-        }).finally(() => setIsSaving(false))
-      }
+    if (debouncedStory) {
+      setIsSaving(true)
+      const { _id, beats } = debouncedStory
+      const currentBeat = beats[currentBeatIndex]
+      updateBeatContentMutation({ 
+        storyId: _id, 
+        beatId: currentBeat.id, 
+        content: currentBeat.content 
+      }).finally(() => setIsSaving(false))
     }
-  }, [debouncedBeatContent, currentStory, currentBeatIndex, updateBeatContent])
+  }, [debouncedStory, currentBeatIndex, updateBeatContentMutation])
 
   if (!currentStory) return null
 
   const currentBeat = currentStory.beats[currentBeatIndex]
 
-  const saveBeatContent = (content: string) => {
-    if (currentStory) {
-      const currentBeat = currentStory.beats[currentBeatIndex]
-      if (currentBeat) {
-        updateBeatContent({ 
-          storyId: currentStory._id, 
-          beatId: currentBeat.id, 
-          content 
-        })
-      }
-    }
-  }
-
-  if (!currentStory) return null
-
   const handleBeatChange = (newBeatIndex: number) => {
-    if (currentStory && beatContent.trim()) {
-      const currentBeat = currentStory.beats[currentBeatIndex]
-      if (currentBeat) {
-        updateBeatContent({ 
-          storyId: currentStory._id, 
-          beatId: currentBeat.id, 
-          content: beatContent 
-        })
-      }
-    }
     setCurrentBeat(newBeatIndex)
   }
-  const completedBeats = currentStory.beats.filter(beat => beat.completed).length
-  const progress = (completedBeats / currentStory.beats.length) * 100
 
   const handleUpdateBeatContent = (content: string) => {
-    setBeatContent(content)
+    updateLocalBeatContent(content)
   }
 
   const handleNextBeat = () => {
@@ -243,7 +209,7 @@ function StoryPageContent() {
             <CardContent className="space-y-4">
               <Textarea
                 placeholder="Start writing this beat of your story..."
-                value={beatContent}
+                value={currentBeat.content}
                 onChange={(e) => handleUpdateBeatContent(e.target.value)}
                 className="min-h-[300px] lg:min-h-[400px] xl:min-h-[500px] resize-y text-sm lg:text-base"
               />
