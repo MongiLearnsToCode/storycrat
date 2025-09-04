@@ -129,8 +129,6 @@ function StoryPageContent() {
     </div>
   )
 
-  const currentBeat = currentStory.beats[currentBeatIndex]
-
   const handleBeatChange = (newBeatIndex: number) => {
     saveBeatContent(beatContent)
     setCurrentBeat(newBeatIndex)
