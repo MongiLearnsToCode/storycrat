@@ -60,6 +60,7 @@ function StoryPageContent() {
   const [isCharacterDialogOpen, setIsCharacterDialogOpen] = useState(false)
   const [currentSuggestion, setCurrentSuggestion] = useState<string | null>(null)
   const [isSaving, setIsSaving] = useState(false)
+  const [isSaved, setIsSaved] = useState(false)
 
   const debouncedStory = useDebounce(currentStory, 500)
 
@@ -78,6 +79,9 @@ function StoryPageContent() {
         storyId: _id, 
         beatId: currentBeat.id, 
         content: currentBeat.content 
+      }).then(() => {
+        setIsSaved(true)
+        setTimeout(() => setIsSaved(false), 2000)
       }).finally(() => setIsSaving(false))
     }
   }, [debouncedStory, currentBeatIndex, updateBeatContentMutation])
@@ -205,6 +209,9 @@ function StoryPageContent() {
                 {currentBeat.title}
                 {isSaving && (
                   <span className="text-xs text-muted-foreground">Saving...</span>
+                )}
+                {isSaved && (
+                  <span className="text-xs text-green-500">Saved</span>
                 )}
               </CardTitle>
               <CardDescription className="text-sm lg:text-base">{currentBeat.description}</CardDescription>
