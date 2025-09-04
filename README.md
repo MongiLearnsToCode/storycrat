@@ -1,36 +1,64 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# StoryGenPro - Structured Storytelling with AI
+
+A Next.js application that provides writers with a structured, guided environment for story creation using the Hero's Journey framework with AI-assisted suggestions.
+
+## Features
+
+- **Framework-Guided Writing**: Hero's Journey structure with 9 story beats
+- **AI Suggestions**: Context-aware writing prompts for each story beat
+- **Character Management**: Simple character cards with role tracking
+- **Auto-Save**: Persistent story progress using Zustand
+- **Progress Tracking**: Visual progress indicators
+- **Modern UI**: Built with Shadcn UI and modern-minimal theme
 
 ## Getting Started
 
-First, run the development server:
-
+1. Install dependencies:
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+2. Run the development server:
+```bash
+npm run dev
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+3. Open [http://localhost:3000](http://localhost:3000) in your browser
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Project Structure
 
-## Learn More
+- `/src/app/` - Next.js app router pages
+- `/src/lib/store.ts` - Zustand state management
+- `/src/lib/ai-suggestions.ts` - AI suggestion system
+- `/src/components/ui/` - Shadcn UI components
 
-To learn more about Next.js, take a look at the following resources:
+## User Flow
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+1. **Landing Page** → Start Writing CTA
+2. **Framework Selection** → Choose Hero's Journey + Enter story title
+3. **Story Builder** → Write through structured beats with AI assistance
+4. **Character Management** → Add/manage story characters
+5. **Projects List** → View and continue saved stories
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Tech Stack
 
-## Deploy on Vercel
+- **Frontend**: Next.js 15 with App Router
+- **Styling**: TailwindCSS + Shadcn UI (modern-minimal theme)
+- **State**: Zustand with persistence
+- **Icons**: Lucide React
+- **TypeScript**: Full type safety
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## MVP Scope
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+This is the MVP version focusing on:
+- Hero's Journey framework only
+- Basic AI suggestions (no external API)
+- Local storage persistence
+- Core writing workflow
+
+Future enhancements could include:
+- Multiple story frameworks
+- Real AI integration (Gemini API)
+- Export functionality
+- User authentication
+- Cloud storage

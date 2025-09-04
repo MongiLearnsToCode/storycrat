@@ -1,0 +1,50 @@
+
+> storycrat@0.1.0 dev
+> next dev --turbopack
+
+   ▲ Next.js 15.5.2 (Turbopack)
+   - Local:        http://localhost:3000
+   - Network:      http://192.168.18.23:3000
+
+ ✓ Starting...
+ ✓ Ready in 1450ms
+ ○ Compiling / ...
+ ✓ Compiled / in 4.9s
+ GET / 200 in 5494ms
+ ✓ Compiled /framework in 488ms
+ GET /framework 200 in 633ms
+ ○ Compiling /story ...
+ ✓ Compiled /story in 900ms
+ GET /story 200 in 1062ms
+ ✓ Compiled /projects in 434ms
+ GET /projects 200 in 569ms
+ GET / 200 in 183ms
+ ✓ Compiled /favicon.ico in 372ms
+ GET /favicon.ico?favicon.0b3bf435.ico 200 in 731ms
+ GET /framework 200 in 102ms
+ GET / 200 in 103ms
+ GET /projects 200 in 112ms
+ GET /story 200 in 114ms
+ ✓ Compiled in 424ms
+ ✓ Compiled in 394ms
+ ✓ Compiled in 403ms
+ ✓ Compiled in 347ms
+ ✓ Compiled in 424ms
+ ✓ Compiled in 550ms
+ ✓ Compiled /story in 187ms
+ GET /story 200 in 1088ms
+ GET /story 200 in 949ms
+ ✓ Compiled /framework in 152ms
+ GET /framework 200 in 395ms
+ GET /favicon.ico?favicon.0b3bf435.ico 200 in 459ms
+ GET /favicon.ico?favicon.0b3bf435.ico 200 in 256ms
+ ✓ Compiled in 306ms
+ ✓ Compiled in 354ms
+ ✓ Compiled / in 46ms
+ GET / 200 in 260ms
+ ✓ Compiled /projects in 32ms
+ GET /projects 200 in 227ms
+ GET /story 200 in 221ms
+ ✓ Compiled in 383ms
+ ✓ Compiled in 297ms
+ ✓ Compiled in 476ms
