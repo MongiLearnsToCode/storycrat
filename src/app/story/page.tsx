@@ -73,12 +73,6 @@ function StoryPageContent() {
     }
   }, [currentStory, currentBeatIndex, router])
 
-  useEffect(() => {
-    if (debouncedBeatContent !== undefined && currentStory && currentBeat) {
-      saveBeatContent(debouncedBeatContent)
-    }
-  }, [debouncedBeatContent])
-
   const saveBeatContent = (content: string) => {
     if (currentStory && currentBeat) {
       updateBeatContent({ 
@@ -87,6 +81,17 @@ function StoryPageContent() {
         content 
       })
     }
+  }
+
+  useEffect(() => {
+    if (debouncedBeatContent !== undefined && currentStory && currentBeat) {
+      saveBeatContent(debouncedBeatContent)
+    }
+  }, [debouncedBeatContent, currentStory, currentBeat])
+
+  const handleBeatChange = (newBeatIndex: number) => {
+    saveBeatContent(beatContent)
+    setCurrentBeat(newBeatIndex)
   }
 
   if (!currentStory) return null
