@@ -10,7 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { useMutation, useQuery } from "convex/react"
+import { useMutation } from "convex/react"
 import { api } from "../../../convex/_generated/api"
 import { useConvexStoryStore } from "@/lib/convex-store"
 import { useRouter } from "next/navigation"
@@ -105,14 +105,7 @@ function StoryPageContent() {
     }
   }
 
-  if (!storyFromStore) return null
-  if (!currentStory) return (
-    <div className="min-h-screen bg-background flex items-center justify-center">
-      <div className="text-center">
-        <h1 className="text-xl font-bold">Loading story...</h1>
-      </div>
-    </div>
-  )
+  if (!currentStory) return null
 
   const handleBeatChange = (newBeatIndex: number) => {
     if (currentStory && beatContent.trim()) {
