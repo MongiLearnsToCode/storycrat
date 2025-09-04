@@ -59,6 +59,7 @@ function StoryPageContent() {
   const [isCharacterDialogOpen, setIsCharacterDialogOpen] = useState(false)
   const [currentSuggestion, setCurrentSuggestion] = useState<string | null>(null)
   const [beatContent, setBeatContent] = useState('')
+  const [isSaving, setIsSaving] = useState(false)
   const debouncedBeatContent = useDebounce(beatContent, 500)
 
   useEffect(() => {
@@ -87,11 +88,12 @@ function StoryPageContent() {
     if (debouncedBeatContent !== undefined && currentStory) {
       const currentBeat = currentStory.beats[currentBeatIndex]
       if (currentBeat) {
+        setIsSaving(true)
         updateBeatContent({ 
           storyId: currentStory._id, 
           beatId: currentBeat.id, 
           content: debouncedBeatContent 
-        })
+        }).finally(() => setIsSaving(false))
       }
     }
   }, [debouncedBeatContent, currentStory, currentBeatIndex, updateBeatContent])
@@ -215,7 +217,12 @@ function StoryPageContent() {
         <div className="lg:col-span-3 xl:col-span-4">
           <Card>
             <CardHeader className="pb-4">
-              <CardTitle className="text-lg lg:text-xl">{currentBeat.title}</CardTitle>
+              <CardTitle className="text-lg lg:text-xl flex items-center justify-between">
+                {currentBeat.title}
+                {isSaving && (
+                  <span className="text-xs text-muted-foreground">Saving...</span>
+                )}
+              </CardTitle>
               <CardDescription className="text-sm lg:text-base">{currentBeat.description}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
