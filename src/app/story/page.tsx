@@ -73,6 +73,10 @@ function StoryPageContent() {
     }
   }, [currentStory, currentBeatIndex, router])
 
+  if (!currentStory) return null
+
+  const currentBeat = currentStory.beats[currentBeatIndex]
+
   const saveBeatContent = (content: string) => {
     if (currentStory && currentBeat) {
       updateBeatContent({ 
@@ -87,16 +91,12 @@ function StoryPageContent() {
     if (debouncedBeatContent !== undefined && currentStory && currentBeat) {
       saveBeatContent(debouncedBeatContent)
     }
-  }, [debouncedBeatContent, currentStory, currentBeat])
+  }, [debouncedBeatContent, currentStory, currentBeat, updateBeatContent])
 
   const handleBeatChange = (newBeatIndex: number) => {
     saveBeatContent(beatContent)
     setCurrentBeat(newBeatIndex)
   }
-
-  if (!currentStory) return null
-
-  const currentBeat = currentStory.beats[currentBeatIndex]
   const completedBeats = currentStory.beats.filter(beat => beat.completed).length
   const progress = (completedBeats / currentStory.beats.length) * 100
 
