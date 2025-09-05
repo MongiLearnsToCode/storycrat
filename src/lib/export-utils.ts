@@ -170,7 +170,11 @@ export function exportToPdf(story: Story) {
     checkPageBreak(estimatedHeight)
     
     // Beat number and title
-    pdf.setFillColor(beat.completed ? 46, 125, 50 : 158, 158, 158)
+    if (beat.completed) {
+      pdf.setFillColor(46, 125, 50)
+    } else {
+      pdf.setFillColor(158, 158, 158)
+    }
     pdf.circle(margin + 8, yPosition + 5, 6, 'F')
     
     pdf.setTextColor(255, 255, 255)
