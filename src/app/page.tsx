@@ -13,6 +13,26 @@ import { SignedIn, SignedOut, SignInButton } from "@clerk/nextjs"
 export const dynamic = 'force-dynamic'
 
 export default function HomePage() {
+  const publishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
+
+  if (!publishableKey) {
+    // Fallback for build time when Clerk isn't available
+    return (
+      <main className="max-w-4xl mx-auto px-6 py-12">
+        <div className="text-center py-20">
+          <BookOpen className="h-16 w-16 text-muted-foreground mx-auto mb-6" />
+          <h2 className="text-2xl font-semibold mb-3">Welcome to StoryGenPro</h2>
+          <p className="text-muted-foreground mb-8 max-w-md mx-auto">
+            Create structured stories using the Hero&apos;s Journey framework with AI-assisted suggestions.
+          </p>
+          <Button size="lg">
+            Get Started
+          </Button>
+        </div>
+      </main>
+    );
+  }
+
   return (
     <>
       <SignedOut>
