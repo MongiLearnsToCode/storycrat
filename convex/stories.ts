@@ -121,6 +121,28 @@ export const updateBeatContent = mutation({
   },
 });
 
+export const deleteStory = mutation({
+  args: { storyId: v.id("stories") },
+  handler: async (ctx, { storyId }) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw new Error("Not authenticated");
+    }
+    
+    const story = await ctx.db.get(storyId);
+    if (!story) {
+      throw new Error("Story not found");
+    }
+    
+    // Allow deleting stories without userId (legacy) or stories owned by user
+    if (story.userId && story.userId !== identity.subject) {
+      throw new Error("Access denied");
+    }
+
+    await ctx.db.delete(storyId);
+  },
+});
+
 export const addCharacter = mutation({
   args: {
     storyId: v.id("stories"),

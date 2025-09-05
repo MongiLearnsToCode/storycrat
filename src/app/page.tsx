@@ -2,13 +2,21 @@
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { useQuery } from "convex/react"
+import { useQuery, useMutation } from "convex/react"
 import { api } from "../../convex/_generated/api"
 import { useConvexStoryStore } from "@/lib/convex-store"
 import { useRouter } from "next/navigation"
+import { useState } from "react"
 import { Story } from "@/lib/convex-store"
-import { BookOpen, Plus, ArrowRight } from "lucide-react"
+import { BookOpen, Plus, ArrowRight, Trash2, MoreVertical } from "lucide-react"
 import { SignedIn, SignedOut } from "@clerk/nextjs"
+import { DeleteStoryDialog } from "@/components/delete-story-dialog"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 export const dynamic = 'force-dynamic'
 
@@ -61,10 +69,37 @@ function HomeContent() {
   const router = useRouter()
   const stories = useQuery(api.stories.getStories)
   const setCurrentStory = useConvexStoryStore(state => state.setCurrentStory)
+  const deleteStoryMutation = useMutation(api.stories.deleteStory)
+  const [deleteDialog, setDeleteDialog] = useState<{ open: boolean; story: Story | null }>({
+    open: false,
+    story: null
+  })
+  const [isDeleting, setIsDeleting] = useState(false)
 
   const handleContinueStory = (story: Story) => {
     setCurrentStory(story)
     router.push('/story')
+  }
+
+  const handleDeleteClick = (story: Story, e: React.MouseEvent) => {
+    e.stopPropagation()
+    setDeleteDialog({ open: true, story })
+  }
+
+  const handleDeleteConfirm = async () => {
+    if (!deleteDialog.story) return
+    
+    setIsDeleting(true)
+    try {
+      await deleteStoryMutation({ storyId: deleteDialog.story._id })
+      setDeleteDialog({ open: false, story: null })
+      // Show success message (you can add toast here)
+    } catch (error) {
+      console.error('Failed to delete story:', error)
+      // Show error message (you can add toast here)
+    } finally {
+      setIsDeleting(false)
+    }
   }
 
   const formatDate = (timestamp: number) => {
@@ -124,14 +159,38 @@ function HomeContent() {
               const progress = (completedBeats / story.beats.length) * 100
 
               return (
-                <Card key={story._id} className="hover:shadow-md transition-shadow cursor-pointer" onClick={() => handleContinueStory(story)}>
+                <Card key={story._id} className="hover:shadow-md transition-shadow group">
                   <CardHeader>
-                    <CardTitle className="text-lg line-clamp-2">{story.title}</CardTitle>
-                    <CardDescription>
-                      Last edited {formatDate(story.lastEdited)}
-                    </CardDescription>
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1 cursor-pointer" onClick={() => handleContinueStory(story)}>
+                        <CardTitle className="text-lg line-clamp-2">{story.title}</CardTitle>
+                        <CardDescription>
+                          Last edited {formatDate(story.lastEdited)}
+                        </CardDescription>
+                      </div>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            className="opacity-0 group-hover:opacity-100 transition-opacity"
+                          >
+                            <MoreVertical className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem 
+                            onClick={(e) => handleDeleteClick(story, e)}
+                            className="text-destructive focus:text-destructive"
+                          >
+                            <Trash2 className="h-4 w-4 mr-2" />
+                            Delete
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
                   </CardHeader>
-                  <CardContent>
+                  <CardContent className="cursor-pointer" onClick={() => handleContinueStory(story)}>
                     <div className="flex items-center gap-3 mb-4">
                       <div className="flex-1 bg-muted rounded-full h-2">
                         <div 
@@ -151,6 +210,14 @@ function HomeContent() {
               )
             })}
           </div>
+          
+          <DeleteStoryDialog
+            open={deleteDialog.open}
+            onOpenChange={(open) => setDeleteDialog({ open, story: deleteDialog.story })}
+            storyTitle={deleteDialog.story?.title || ""}
+            onConfirm={handleDeleteConfirm}
+            isDeleting={isDeleting}
+          />
         </>
       )}
     </main>
