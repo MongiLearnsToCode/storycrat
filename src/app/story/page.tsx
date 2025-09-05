@@ -18,7 +18,7 @@ import { useState, useEffect } from "react"
 import { useDebounce } from "@/hooks/use-debounce"
 import { getRandomSuggestion } from "@/lib/ai-suggestions"
 import { exportToTxt, exportToPdf } from "@/lib/export-utils"
-import { Sparkles, Users, ArrowLeft, X, RefreshCw, Download, FileText, FileImage } from "lucide-react"
+import { Sparkles, Users, ArrowLeft, X, RefreshCw, Download, FileText, FileImage, Plus } from "lucide-react"
 
 export const dynamic = 'force-dynamic'
 
@@ -192,6 +192,14 @@ function StoryPageContent() {
             <Badge variant="secondary" className="hidden sm:inline-flex">Hero&apos;s Journey</Badge>
           </div>
           <div className="flex items-center gap-2 lg:gap-4 w-full sm:w-auto">
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => router.push('/framework')}
+            >
+              <Plus className="h-4 w-4 mr-1" />
+              New Story
+            </Button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" size="sm">
