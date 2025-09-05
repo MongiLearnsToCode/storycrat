@@ -12,6 +12,9 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useMutation } from "convex/react"
 import { api } from "../../../convex/_generated/api"
+import { saveLocalStory } from "@/lib/local-storage"
+import { useAuth } from "@clerk/nextjs"
+import { Id } from "../../convex/_generated/dataModel"
 import { useConvexStoryStore } from "@/lib/convex-store"
 import { useRouter } from "next/navigation"
 import { useState, useEffect } from "react"
@@ -113,21 +116,41 @@ function StoryPageContent() {
     }
   }, [currentStory, createStoryMutation, setCurrentStory, router])
 
+  const { isSignedIn } = useAuth()
+
   useEffect(() => {
     if (debouncedStory) {
       setIsSaving(true)
       const { _id, beats } = debouncedStory
       const currentBeat = beats[currentBeatIndex]
-      updateBeatContentMutation({ 
-        storyId: _id, 
-        beatId: currentBeat.id, 
-        content: currentBeat.content 
-      }).then(() => {
+      
+      // Check if it's a local story or Convex story
+      if (typeof _id === 'string' && _id.startsWith('local_')) {
+        // Save local story
+        const updatedStory = { ...debouncedStory }
+        updatedStory.beats[currentBeatIndex] = {
+          ...currentBeat,
+          completed: currentBeat.content.trim().length > 0
+        }
+        updatedStory.lastEdited = Date.now()
+        
+        saveLocalStory(updatedStory)
         setIsSaved(true)
         setTimeout(() => setIsSaved(false), 2000)
-      }).finally(() => setIsSaving(false))
+        setIsSaving(false)
+      } else if (isSignedIn) {
+        // Save to Convex
+        updateBeatContentMutation({ 
+          storyId: _id as Id<"stories">, 
+          beatId: currentBeat.id, 
+          content: currentBeat.content 
+        }).then(() => {
+          setIsSaved(true)
+          setTimeout(() => setIsSaved(false), 2000)
+        }).finally(() => setIsSaving(false))
+      }
     }
-  }, [debouncedStory, currentBeatIndex, updateBeatContentMutation])
+  }, [debouncedStory, currentBeatIndex, updateBeatContentMutation, isSignedIn])
 
   if (isCreatingStory || !currentStory) {
     return (
