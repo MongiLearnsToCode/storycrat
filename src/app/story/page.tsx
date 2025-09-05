@@ -19,9 +19,8 @@ import { useConvexStoryStore, Character } from "@/lib/convex-store"
 import { useRouter } from "next/navigation"
 import { useState, useEffect } from "react"
 import { useDebounce } from "@/hooks/use-debounce"
-import { getSuggestion } from "@/lib/ai-suggestions"
 import { exportToTxt, exportToPdf } from "@/lib/export-utils"
-import { Sparkles, Users, ArrowLeft, X, RefreshCw, Download, FileText, FileImage, Plus, Trash2, Edit } from "lucide-react"
+import { Users, ArrowLeft, ArrowRight, Download, FileText, FileImage, Plus, Trash2, Edit } from "lucide-react"
 import { StoryOnboarding } from "@/components/onboarding"
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog"
 
@@ -71,7 +70,6 @@ function StoryPageContent() {
   const [editingCharacter, setEditingCharacter] = useState<Character | null>(null)
   const [characterToDelete, setCharacterToDelete] = useState<Character | null>(null)
   const [isCharacterDialogOpen, setIsCharacterDialogOpen] = useState(false)
-  const [currentSuggestion, setCurrentSuggestion] = useState<string | null>(null)
   const [isSaving, setIsSaving] = useState(false)
   const [isSaved, setIsSaved] = useState(false)
 
@@ -145,6 +143,10 @@ function StoryPageContent() {
     handleBeatChange(currentBeatIndex + 1)
   }
 
+  const handlePreviousBeat = () => {
+    handleBeatChange(currentBeatIndex - 1)
+  }
+
   const handleOpenCharacterDialog = (character: Character | null = null) => {
     setEditingCharacter(character)
     setIsCharacterDialogOpen(true)
@@ -191,19 +193,6 @@ function StoryPageContent() {
     setCharacterToDelete(null)
   }
 
-  const generateAISuggestion = () => {
-    const suggestion = getSuggestion(currentBeat.id)
-    setCurrentSuggestion(suggestion)
-  }
-
-  const refreshSuggestion = () => {
-    const suggestion = getSuggestion(currentBeat.id)
-    setCurrentSuggestion(suggestion)
-  }
-
-  const dismissSuggestion = () => {
-    setCurrentSuggestion(null)
-  }
 
   const getFrameworkDisplayName = (frameworkId: string) => {
     switch (frameworkId) {
@@ -317,35 +306,21 @@ function StoryPageContent() {
                 className="min-h-[300px] lg:min-h-[400px] xl:min-h-[500px] resize-y text-sm lg:text-base"
               />
               
-              {currentSuggestion && (
-                <Card className="bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-800">
-                  <CardHeader className="pb-3">
-                    <div className="flex items-center justify-between">
-                      <CardTitle className="text-sm font-medium text-blue-900 dark:text-blue-100">AI Suggestion</CardTitle>
-                      <div className="flex items-center gap-1">
-                        <Button variant="ghost" size="sm" onClick={refreshSuggestion} className="h-6 w-6 p-0 text-blue-600 hover:text-blue-800 dark:text-blue-400">
-                          <RefreshCw className="h-3 w-3" />
-                        </Button>
-                        <Button variant="ghost" size="sm" onClick={dismissSuggestion} className="h-6 w-6 p-0 text-blue-600 hover:text-blue-800 dark:text-blue-400">
-                          <X className="h-3 w-3" />
-                        </Button>
-                      </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="pt-0">
-                    <p className="text-sm text-blue-800 dark:text-blue-200">{currentSuggestion}</p>
-                  </CardContent>
-                </Card>
-              )}
-
-              <div className="flex flex-col sm:flex-row gap-2">
-                <Button onClick={generateAISuggestion} variant="outline" className="flex items-center gap-2">
-                  <Sparkles className="h-4 w-4" />
-                  AI Suggest
-                </Button>
-                {currentBeatIndex < currentStory.beats.length - 1 && (
-                  <Button onClick={handleNextBeat}>Next Beat →</Button>
-                )}
+              <div className="flex flex-col sm:flex-row gap-2 justify-between">
+                <div className="flex gap-2">
+                  {currentBeatIndex > 0 && (
+                    <Button onClick={handlePreviousBeat} variant="outline" className="flex items-center gap-2">
+                      <ArrowLeft className="h-4 w-4" />
+                      Previous Beat
+                    </Button>
+                  )}
+                  {currentBeatIndex < currentStory.beats.length - 1 && (
+                    <Button onClick={handleNextBeat} className="flex items-center gap-2">
+                      Next Beat
+                      <ArrowRight className="h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
               </div>
             </CardContent>
           </Card>
