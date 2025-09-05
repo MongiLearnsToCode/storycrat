@@ -6,7 +6,7 @@ import { useQuery, useMutation } from "convex/react"
 import { api } from "../../convex/_generated/api"
 import { useConvexStoryStore } from "@/lib/convex-store"
 import { useRouter } from "next/navigation"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Story } from "@/lib/convex-store"
 import { BookOpen, Plus, ArrowRight, Trash2, MoreVertical } from "lucide-react"
 import { SignedIn, SignedOut } from "@clerk/nextjs"
@@ -23,6 +23,22 @@ export const dynamic = 'force-dynamic'
 export default function HomePage() {
   const publishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
   const router = useRouter();
+
+  // Redirect unauthenticated users to framework page
+  useEffect(() => {
+    if (publishableKey && typeof window !== 'undefined') {
+      // Check if user is signed out and redirect
+      const checkAuth = () => {
+        const isSignedOut = !document.querySelector('[data-clerk-signed-in]');
+        if (isSignedOut) {
+          router.push('/framework');
+        }
+      };
+      
+      // Small delay to let Clerk initialize
+      setTimeout(checkAuth, 100);
+    }
+  }, [publishableKey, router]);
 
   if (!publishableKey) {
     // Fallback for build time when Clerk isn't available
@@ -45,8 +61,6 @@ export default function HomePage() {
   return (
     <>
       <SignedOut>
-        {/* Redirect unauthenticated users to framework page */}
-        {typeof window !== 'undefined' && router.push('/framework')}
         <div className="min-h-screen bg-background flex items-center justify-center">
           <div className="text-muted-foreground">Redirecting...</div>
         </div>
