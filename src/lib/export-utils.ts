@@ -104,7 +104,7 @@ export function exportToPdf(story: Story) {
   
   // Helper function to add footer
   const addFooter = () => {
-    const pageNum = pdf.internal.getCurrentPageInfo().pageNumber
+    const pageNum = (pdf as any).internal.getNumberOfPages()
     pdf.setFontSize(9)
     pdf.setTextColor(128, 128, 128)
     pdf.text(`Page ${pageNum}`, pageWidth - margin, pageHeight - 15, { align: 'right' })
@@ -240,7 +240,7 @@ export function exportToPdf(story: Story) {
     pdf.text('Character Profiles', margin, yPosition)
     yPosition += 25
     
-    story.characters.forEach((char, index) => {
+    story.characters.forEach((char) => {
       checkPageBreak(40)
       
       // Character name

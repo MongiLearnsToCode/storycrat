@@ -22,7 +22,7 @@ export default function FrameworkPage() {
     setIsClient(true)
     // Clear any existing story when starting a new one
     clearCurrentStory()
-  }, [])
+  }, [clearCurrentStory])
 
   if (!isClient) {
     return (
