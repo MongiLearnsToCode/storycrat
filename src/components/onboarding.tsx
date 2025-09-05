@@ -64,7 +64,7 @@ export function StoryOnboarding() {
         </div>
 
         <div className="text-center mt-8">
-          <Button onClick={handleDismiss}>Got It, Let's Write!</Button>
+          <Button onClick={handleDismiss}>Got It, Let&apos;s Write!</Button>
         </div>
       </div>
     </div>
