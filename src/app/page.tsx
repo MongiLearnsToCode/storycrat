@@ -96,7 +96,7 @@ function HomeContent() {
         ) : (
           <>
             <div className="flex items-center justify-between mb-8">
-              <h2 className="text-2xl font-semibold">Your Stories</h2>
+              <h2 className="text-2xl font-semibold">Recent Stories</h2>
               {stories.length > 3 && (
                 <Button variant="ghost" onClick={() => router.push('/projects')}>
                   View All
