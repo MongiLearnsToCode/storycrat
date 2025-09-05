@@ -6,6 +6,8 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-brand: var(--brand);
+  --color-brand-foreground: var(--brand-foreground);
   --font-sans: Geist, sans-serif;
   --font-mono: "Fira Code", "Courier New", monospace;
   --color-sidebar-ring: var(--sidebar-ring);
@@ -72,6 +74,8 @@
   --radius: 0.5rem;
   --background: oklch(0.9777 0.0041 301.4256);
   --foreground: oklch(0.3651 0.0325 287.0807);
+  --brand: oklch(0.6104 0.0767 299.7335);
+  --brand-foreground: oklch(0.7058 0.0777 302.0489);
   --card: oklch(1.0000 0 0);
   --card-foreground: oklch(0.3651 0.0325 287.0807);
   --popover: oklch(1.0000 0 0);
@@ -127,6 +131,8 @@
 .dark {
   --background: oklch(0.2166 0.0215 292.8474);
   --foreground: oklch(0.9053 0.0245 293.5570);
+  --brand: oklch(0.7058 0.0777 302.0489);
+  --brand-foreground: oklch(0.6104 0.0767 299.7335);
   --card: oklch(0.2544 0.0301 292.7315);
   --card-foreground: oklch(0.9053 0.0245 293.5570);
   --popover: oklch(0.2544 0.0301 292.7315);
@@ -186,5 +192,43 @@
   body {
     @apply bg-background text-foreground;
     letter-spacing: var(--tracking-normal);
+  }
+}
+
+/* Hero component animations */
+@keyframes appear {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes appear-zoom {
+  0% {
+    opacity: 0;
+    transform: scale(0.98);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-appear {
+  animation: appear 0.5s ease-out forwards;
+}
+
+.animate-appear-zoom {
+  animation: appear-zoom 0.8s ease-out forwards;
+}
+
+/* Utility classes */
+@layer utilities {
+  .text-gradient {
+    @apply bg-clip-text text-transparent bg-gradient-to-b from-foreground via-foreground/90 to-muted-foreground;
   }
 }
