@@ -19,51 +19,10 @@ const heroJourneyBeats = [
   { id: 'return-with-elixir', title: 'Return with the Elixir', description: 'The hero returns home transformed with wisdom to help others.' }
 ];
 
-const threeActBeats = [
-  // Act I: Setup
-  { id: 'opening-image', title: 'Opening Image', description: 'A visual that represents the struggle & tone of the story.' },
-  { id: 'inciting-incident', title: 'Inciting Incident', description: 'The event that sets the story in motion.' },
-  { id: 'plot-point-1', title: 'Plot Point 1', description: 'The protagonist commits to or gets locked into the central conflict.' },
-  // Act II: Confrontation
-  { id: 'first-pinch-point', title: 'First Pinch Point', description: 'A reminder of the antagonistic force and its power.' },
-  { id: 'midpoint', title: 'Midpoint', description: 'A major shift that changes the direction of the story.' },
-  { id: 'second-pinch-point', title: 'Second Pinch Point', description: 'The antagonistic force shows its power again, raising stakes.' },
-  { id: 'plot-point-2', title: 'Plot Point 2', description: 'The final piece of information needed for the climax.' },
-  // Act III: Resolution
-  { id: 'climax', title: 'Climax', description: 'The final confrontation between protagonist and antagonist.' },
-  { id: 'resolution', title: 'Resolution', description: 'The aftermath and new normal after the climax.' }
-];
-
-const haugeBeats = [
-  { id: 'setup', title: 'Setup', description: 'Establish the character in their familiar situation, identity, and longing.' },
-  { id: 'new-situation', title: 'New Situation', description: 'The character enters a new situation that creates inner conflict.' },
-  { id: 'progress', title: 'Progress', description: 'The character makes progress toward their visible goal while avoiding their fear.' },
-  { id: 'complications', title: 'Complications and Higher Stakes', description: 'Obstacles increase and the character must face their inner conflict.' },
-  { id: 'final-push', title: 'Final Push', description: 'The character must risk everything and face their deepest fear.' },
-  { id: 'aftermath', title: 'Aftermath', description: 'The character has achieved a new identity and found their essence.' }
-];
-
-const storyCircleBeats = [
-  { id: 'you', title: 'YOU (Order)', description: 'Character in a zone of comfort.' },
-  { id: 'need', title: 'NEED (Order)', description: 'But they want something.' },
-  { id: 'go', title: 'GO (Order)', description: 'They enter an unfamiliar situation.' },
-  { id: 'search', title: 'SEARCH (Chaos)', description: 'Adapt to that situation.' },
-  { id: 'find', title: 'FIND (Chaos)', description: 'Find what they wanted.' },
-  { id: 'take', title: 'TAKE (Chaos)', description: 'Pay a heavy price for it.' },
-  { id: 'return', title: 'RETURN (Order)', description: 'Then return to their familiar situation.' },
-  { id: 'change', title: 'CHANGE (Order)', description: 'Having changed.' }
-];
-
 function getFrameworkBeats(framework: string) {
   switch (framework) {
     case 'hero-journey':
       return heroJourneyBeats;
-    case 'three-act':
-      return threeActBeats;
-    case 'hauge-6-stage':
-      return haugeBeats;
-    case 'story-circle':
-      return storyCircleBeats;
     default:
       return heroJourneyBeats;
   }
@@ -81,28 +40,6 @@ export const getStories = query({
       .filter((q) => q.eq(q.field("userId"), identity.subject))
       .order("desc")
       .collect();
-  },
-});
-
-export const getStory = query({
-  args: { storyId: v.id("stories") },
-  handler: async (ctx, { storyId }) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
-      return null;
-    }
-    
-    const story = await ctx.db.get(storyId);
-    if (!story) {
-      return null;
-    }
-    
-    // Allow access to stories without userId (legacy) or stories owned by user
-    if (story.userId && story.userId !== identity.subject) {
-      return null;
-    }
-    
-    return story;
   },
 });
 
@@ -143,19 +80,9 @@ export const updateBeatContent = mutation({
     content: v.string() 
   },
   handler: async (ctx, { storyId, beatId, content }) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
-      throw new Error("Not authenticated");
-    }
-    
     const story = await ctx.db.get(storyId);
     if (!story) {
       throw new Error("Story not found");
-    }
-    
-    // Allow editing stories without userId (legacy) or stories owned by user
-    if (story.userId && story.userId !== identity.subject) {
-      throw new Error("Access denied");
     }
 
     const updatedBeats = story.beats.map(beat =>
@@ -169,8 +96,6 @@ export const updateBeatContent = mutation({
       beats: updatedBeats,
       updatedAt: now,
       lastEdited: now,
-      // Add userId if it doesn't exist (migrate legacy stories)
-      ...(story.userId ? {} : { userId: identity.subject }),
     });
   },
 });
@@ -178,21 +103,6 @@ export const updateBeatContent = mutation({
 export const deleteStory = mutation({
   args: { storyId: v.id("stories") },
   handler: async (ctx, { storyId }) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
-      throw new Error("Not authenticated");
-    }
-    
-    const story = await ctx.db.get(storyId);
-    if (!story) {
-      throw new Error("Story not found");
-    }
-    
-    // Allow deleting stories without userId (legacy) or stories owned by user
-    if (story.userId && story.userId !== identity.subject) {
-      throw new Error("Access denied");
-    }
-
     await ctx.db.delete(storyId);
   },
 });
@@ -205,19 +115,9 @@ export const addCharacter = mutation({
     description: v.string(),
   },
   handler: async (ctx, { storyId, name, role, description }) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
-      throw new Error("Not authenticated");
-    }
-    
     const story = await ctx.db.get(storyId);
     if (!story) {
       throw new Error("Story not found");
-    }
-    
-    // Allow editing stories without userId (legacy) or stories owned by user
-    if (story.userId && story.userId !== identity.subject) {
-      throw new Error("Access denied");
     }
 
     const newCharacter = {
@@ -232,8 +132,70 @@ export const addCharacter = mutation({
       characters: [...story.characters, newCharacter],
       updatedAt: now,
       lastEdited: now,
-      // Add userId if it doesn't exist (migrate legacy stories)
-      ...(story.userId ? {} : { userId: identity.subject }),
+    });
+  },
+});
+
+export const updateCharacter = mutation({
+  args: {
+    storyId: v.id("stories"),
+    characterId: v.string(),
+    name: v.string(),
+    role: v.string(),
+    description: v.string(),
+  },
+  handler: async (ctx, { storyId, characterId, name, role, description }) => {
+    const story = await ctx.db.get(storyId);
+    if (!story) {
+      throw new Error("Story not found");
+    }
+
+    const updatedCharacters = story.characters.map(char =>
+      char.id === characterId ? { ...char, name, role, description } : char
+    );
+
+    const now = Date.now();
+    await ctx.db.patch(storyId, {
+      characters: updatedCharacters,
+      updatedAt: now,
+      lastEdited: now,
+    });
+  },
+});
+
+export const deleteCharacter = mutation({
+  args: {
+    storyId: v.id("stories"),
+    characterId: v.string(),
+  },
+  handler: async (ctx, { storyId, characterId }) => {
+    const story = await ctx.db.get(storyId);
+    if (!story) {
+      throw new Error("Story not found");
+    }
+
+    const updatedCharacters = story.characters.filter(char => char.id !== characterId);
+
+    const now = Date.now();
+    await ctx.db.patch(storyId, {
+      characters: updatedCharacters,
+      updatedAt: now,
+      lastEdited: now,
+    });
+  },
+});
+
+export const updateStoryTitle = mutation({
+  args: { 
+    storyId: v.id("stories"), 
+    title: v.string() 
+  },
+  handler: async (ctx, { storyId, title }) => {
+    const now = Date.now();
+    await ctx.db.patch(storyId, {
+      title,
+      updatedAt: now,
+      lastEdited: now,
     });
   },
 });

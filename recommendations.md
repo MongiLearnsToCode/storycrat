@@ -13,7 +13,7 @@
   - [x] **Short-Term:** Modify the suggestion logic to cycle through options instead of picking one randomly.
   - [ ] **Long-Term (Optional):** Integrate a real LLM for context-aware suggestions.
 
-- [ ] **4. Expand Character Management:**
-  - [ ] Implement functionality to edit existing characters.
-  - [ ] Implement functionality to delete characters.
+- [x] **4. Expand Character Management:**
+  - [x] Implement functionality to edit existing characters.
+  - [x] Implement functionality to delete characters.
   - [ ] Add more fields to the character creation/editing dialog (e.g., "Appearance", "Backstory").
