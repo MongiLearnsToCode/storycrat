@@ -8,12 +8,13 @@ import { useConvexStoryStore } from "@/lib/convex-store"
 import { useRouter } from "next/navigation"
 import { Story } from "@/lib/convex-store"
 import { BookOpen, Plus, ArrowRight } from "lucide-react"
-import { SignedIn, SignedOut, SignInButton } from "@clerk/nextjs"
+import { SignedIn, SignedOut } from "@clerk/nextjs"
 
 export const dynamic = 'force-dynamic'
 
 export default function HomePage() {
   const publishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
+  const router = useRouter();
 
   if (!publishableKey) {
     // Fallback for build time when Clerk isn't available
@@ -25,7 +26,7 @@ export default function HomePage() {
           <p className="text-muted-foreground mb-8 max-w-md mx-auto">
             Create structured stories using the Hero&apos;s Journey framework with AI-assisted suggestions.
           </p>
-          <Button size="lg">
+          <Button size="lg" onClick={() => router.push('/sign-in')}>
             Get Started
           </Button>
         </div>
@@ -43,11 +44,9 @@ export default function HomePage() {
             <p className="text-muted-foreground mb-8 max-w-md mx-auto">
               Create structured stories using the Hero&apos;s Journey framework with AI-assisted suggestions.
             </p>
-            <SignInButton>
-              <Button size="lg">
-                Get Started
-              </Button>
-            </SignInButton>
+            <Button size="lg" onClick={() => router.push('/sign-in')}>
+              Get Started
+            </Button>
           </div>
         </div>
       </SignedOut>

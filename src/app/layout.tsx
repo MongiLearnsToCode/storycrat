@@ -5,11 +5,11 @@ import { Toaster } from "@/components/ui/sonner";
 import { ConvexClientProvider } from "@/components/convex-provider";
 import {
   ClerkProvider,
-  SignInButton,
   SignedIn,
   SignedOut,
   UserButton,
 } from "@clerk/nextjs";
+import Link from "next/link";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -44,7 +44,11 @@ export default function RootLayout({
             <header className="border-b p-4">
               <div className="max-w-4xl mx-auto flex items-center justify-between">
                 <h1 className="text-xl font-bold">StoryGenPro</h1>
-                <div>Sign In</div>
+                <div>
+                  <Link href="/sign-in" className="text-sm hover:underline">
+                    Sign In
+                  </Link>
+                </div>
               </div>
             </header>
             {children}
@@ -67,7 +71,9 @@ export default function RootLayout({
                 <h1 className="text-xl font-bold">StoryGenPro</h1>
                 <div>
                   <SignedOut>
-                    <SignInButton />
+                    <Link href="/sign-in" className="text-sm hover:underline">
+                      Sign In
+                    </Link>
                   </SignedOut>
                   <SignedIn>
                     <UserButton />
