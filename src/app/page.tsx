@@ -9,6 +9,7 @@ import { useRouter } from "next/navigation"
 import { useState, useEffect } from "react"
 import { Story } from "@/lib/convex-store"
 import { BookOpen, Plus, ArrowRight, Trash2, MoreVertical } from "lucide-react"
+import { Id } from "../../convex/_generated/dataModel"
 import { deleteLocalStory } from "@/lib/local-storage"
 import { useAuth, SignedIn, SignedOut } from "@clerk/nextjs"
 import { DeleteStoryDialog } from "@/components/delete-story-dialog"
@@ -108,7 +109,7 @@ function HomeContent() {
         deleteLocalStory(storyId)
       } else if (isSignedIn) {
         // Delete Convex story
-        await deleteStoryMutation({ storyId: storyId as any })
+        await deleteStoryMutation({ storyId: storyId as Id<"stories"> })
       }
       
       setDeleteDialog({ open: false, story: null })
