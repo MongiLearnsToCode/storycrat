@@ -30,10 +30,11 @@ export function DeleteStoryDialog({
   isDeleting = false
 }: DeleteStoryDialogProps) {
   const [confirmText, setConfirmText] = useState("")
-  const isConfirmed = confirmText === storyTitle
+  const safeStoryTitle = storyTitle || ""
+  const isConfirmed = confirmText === safeStoryTitle
 
   const handleConfirm = () => {
-    if (isConfirmed) {
+    if (isConfirmed && safeStoryTitle) {
       onConfirm()
       setConfirmText("")
     }
@@ -42,6 +43,11 @@ export function DeleteStoryDialog({
   const handleCancel = () => {
     setConfirmText("")
     onOpenChange(false)
+  }
+
+  // Don't render if no story title
+  if (!safeStoryTitle && open) {
+    return null
   }
 
   return (
@@ -60,12 +66,12 @@ export function DeleteStoryDialog({
         <div className="space-y-4">
           <div className="p-3 bg-muted rounded-md">
             <p className="text-sm font-medium">Story to delete:</p>
-            <p className="text-sm text-muted-foreground">{storyTitle}</p>
+            <p className="text-sm text-muted-foreground">{safeStoryTitle}</p>
           </div>
           
           <div className="space-y-2">
             <Label htmlFor="confirm-text">
-              Type <span className="font-mono font-semibold">{storyTitle}</span> to confirm:
+              Type <span className="font-mono font-semibold">{safeStoryTitle}</span> to confirm:
             </Label>
             <Input
               id="confirm-text"
