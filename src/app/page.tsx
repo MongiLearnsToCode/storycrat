@@ -9,7 +9,8 @@ import { useRouter } from "next/navigation"
 import { useState, useEffect } from "react"
 import { Story } from "@/lib/convex-store"
 import { BookOpen, Plus, ArrowRight, Trash2, MoreVertical } from "lucide-react"
-import { SignedIn, SignedOut } from "@clerk/nextjs"
+import { deleteLocalStory } from "@/lib/local-storage"
+import { useAuth, SignedIn, SignedOut } from "@clerk/nextjs"
 import { DeleteStoryDialog } from "@/components/delete-story-dialog"
 import {
   DropdownMenu,
@@ -77,6 +78,7 @@ function HomeContent() {
   const stories = useQuery(api.stories.getStories)
   const setCurrentStory = useConvexStoryStore(state => state.setCurrentStory)
   const deleteStoryMutation = useMutation(api.stories.deleteStory)
+  const { isSignedIn } = useAuth()
   const [deleteDialog, setDeleteDialog] = useState<{ open: boolean; story: Story | null }>({
     open: false,
     story: null
@@ -98,12 +100,20 @@ function HomeContent() {
     
     setIsDeleting(true)
     try {
-      await deleteStoryMutation({ storyId: deleteDialog.story._id })
+      const storyId = deleteDialog.story._id
+      
+      // Check if it's a local story (string ID) or Convex story (object ID)
+      if (typeof storyId === 'string' && storyId.startsWith('local_')) {
+        // Delete local story
+        deleteLocalStory(storyId)
+      } else if (isSignedIn) {
+        // Delete Convex story
+        await deleteStoryMutation({ storyId: storyId as any })
+      }
+      
       setDeleteDialog({ open: false, story: null })
-      // Show success message (you can add toast here)
     } catch (error) {
       console.error('Failed to delete story:', error)
-      // Show error message (you can add toast here)
     } finally {
       setIsDeleting(false)
     }
