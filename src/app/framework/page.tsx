@@ -9,7 +9,7 @@ import { useState, useEffect } from "react"
 import { useConvexStoryStore } from "@/lib/convex-store"
 import { useMutation } from "convex/react"
 import { api } from "../../../convex/_generated/api"
-import { Check } from "lucide-react"
+import { Check, Save } from "lucide-react"
 import { useAuth } from "@clerk/nextjs"
 import { saveLocalStory, generateLocalId } from "@/lib/local-storage"
 
@@ -256,14 +256,17 @@ export default function FrameworkPage() {
           </Button>
           
           {!isSignedIn && storyTitle.trim() && selectedFramework && (
-            <p className="text-sm text-muted-foreground max-w-md mx-auto">
-              💾 Your story will be saved locally. <button 
-                onClick={() => router.push('/sign-in')} 
-                className="text-primary underline hover:no-underline"
-              >
-                Sign up
-              </button> to access it from any device.
-            </p>
+            <div className="flex items-start gap-2 text-sm text-muted-foreground max-w-md mx-auto">
+              <Save className="h-4 w-4 text-amber-500 mt-0.5 flex-shrink-0" />
+              <p>
+                Your work will disappear when you close this tab or browser. <button 
+                  onClick={() => router.push('/sign-in')} 
+                  className="text-primary underline hover:no-underline"
+                >
+                  Sign up
+                </button> to keep it safe and access it anytime.
+              </p>
+            </div>
           )}
           
           <div>
