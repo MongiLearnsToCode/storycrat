@@ -43,7 +43,12 @@ export const getStory = query({
     }
     
     const story = await ctx.db.get(storyId);
-    if (!story || story.userId !== identity.subject) {
+    if (!story) {
+      return null;
+    }
+    
+    // Allow access to stories without userId (legacy) or stories owned by user
+    if (story.userId && story.userId !== identity.subject) {
       return null;
     }
     
@@ -90,8 +95,13 @@ export const updateBeatContent = mutation({
     }
     
     const story = await ctx.db.get(storyId);
-    if (!story || story.userId !== identity.subject) {
-      throw new Error("Story not found or access denied");
+    if (!story) {
+      throw new Error("Story not found");
+    }
+    
+    // Allow editing stories without userId (legacy) or stories owned by user
+    if (story.userId && story.userId !== identity.subject) {
+      throw new Error("Access denied");
     }
 
     const updatedBeats = story.beats.map(beat =>
@@ -105,6 +115,8 @@ export const updateBeatContent = mutation({
       beats: updatedBeats,
       updatedAt: now,
       lastEdited: now,
+      // Add userId if it doesn't exist (migrate legacy stories)
+      ...(story.userId ? {} : { userId: identity.subject }),
     });
   },
 });
@@ -123,8 +135,13 @@ export const addCharacter = mutation({
     }
     
     const story = await ctx.db.get(storyId);
-    if (!story || story.userId !== identity.subject) {
-      throw new Error("Story not found or access denied");
+    if (!story) {
+      throw new Error("Story not found");
+    }
+    
+    // Allow editing stories without userId (legacy) or stories owned by user
+    if (story.userId && story.userId !== identity.subject) {
+      throw new Error("Access denied");
     }
 
     const newCharacter = {
@@ -139,6 +156,8 @@ export const addCharacter = mutation({
       characters: [...story.characters, newCharacter],
       updatedAt: now,
       lastEdited: now,
+      // Add userId if it doesn't exist (migrate legacy stories)
+      ...(story.userId ? {} : { userId: identity.subject }),
     });
   },
 });

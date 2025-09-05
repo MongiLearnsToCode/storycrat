@@ -22,6 +22,6 @@ export default defineSchema({
     createdAt: v.optional(v.number()),
     updatedAt: v.optional(v.number()),
     lastEdited: v.number(),
-    userId: v.string(), // Clerk user ID as string
+    userId: v.optional(v.string()), // Optional for backward compatibility
   }),
 });
