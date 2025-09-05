@@ -188,13 +188,26 @@ function StoryPageContent() {
         role: newCharacter.role,
         description: newCharacter.description,
       }
+      
       addLocalCharacter(character)
-      addCharacterMutation({
-        storyId: currentStory._id,
-        name: character.name,
-        role: character.role,
-        description: character.description,
-      })
+      
+      // Only add to Convex if it's a signed-in user with a Convex story
+      if (isSignedIn && typeof currentStory._id !== 'string') {
+        addCharacterMutation({
+          storyId: currentStory._id as Id<"stories">,
+          name: character.name,
+          role: character.role,
+          description: character.description,
+        })
+      } else if (typeof currentStory._id === 'string' && currentStory._id.startsWith('local_')) {
+        // For local stories, update the story in localStorage
+        const updatedStory = { ...currentStory }
+        updatedStory.characters = [...updatedStory.characters, character]
+        updatedStory.lastEdited = Date.now()
+        saveLocalStory(updatedStory)
+        setCurrentStory(updatedStory)
+      }
+      
       setNewCharacter({ name: '', role: '', description: '' })
       setIsCharacterDialogOpen(false)
     }
