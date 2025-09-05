@@ -10,7 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { useMutation } from "convex/react"
+import { useMutation, useQuery } from "convex/react"
 import { api } from "../../../convex/_generated/api"
 import { saveLocalStory } from "@/lib/local-storage"
 import { useAuth } from "@clerk/nextjs"
@@ -82,6 +82,7 @@ function StoryPageContent() {
   }, [currentStory, router])
 
   const { isSignedIn } = useAuth()
+  const stories = useQuery(api.stories.getStories)
 
   useEffect(() => {
     if (debouncedStory) {
@@ -121,6 +122,8 @@ function StoryPageContent() {
       </div>
     )
   }
+
+  const showOnboarding = isSignedIn && stories?.length === 0
 
   const currentBeat = currentStory.beats[currentBeatIndex]
 
@@ -215,7 +218,7 @@ function StoryPageContent() {
 
   return (
     <div className="min-h-screen bg-background">
-      <StoryOnboarding />
+      {showOnboarding && <StoryOnboarding />}
       <div className="border-b p-3 lg:p-4">
         <div className="max-w-[1600px] mx-auto flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="flex items-center gap-2 lg:gap-4">
