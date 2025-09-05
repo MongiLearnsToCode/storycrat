@@ -74,7 +74,7 @@ function StoryPageContent() {
     
     if (title && !currentStory) {
       setIsCreatingStory(true)
-      createStoryMutation({ title })
+      createStoryMutation({ title, framework: "hero-journey" })
         .then(storyId => {
           const newStory = {
             _id: storyId,
