@@ -10,6 +10,7 @@ import {
   UserButton,
 } from "@clerk/nextjs";
 import Link from "next/link";
+import { Footer } from "@/components/footer";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -53,6 +54,7 @@ export default function RootLayout({
             </header>
             {children}
             <Toaster />
+            <Footer />
           </ConvexClientProvider>
         </body>
       </html>
@@ -83,6 +85,7 @@ export default function RootLayout({
             </header>
             {children}
             <Toaster />
+            <Footer />
           </ConvexClientProvider>
         </body>
       </html>

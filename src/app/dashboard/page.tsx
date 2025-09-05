@@ -8,7 +8,7 @@ import { useConvexStoryStore } from "@/lib/convex-store"
 import { useRouter } from "next/navigation"
 import { useState, useMemo } from "react"
 import { Story } from "@/lib/convex-store"
-import { BookOpen, Plus, ArrowRight, Trash2, MoreVertical, Search, FileText, BarChart3 } from "lucide-react"
+import { BookOpen, Plus, Trash2, MoreVertical, Search, FileText, BarChart3 } from "lucide-react"
 import { Id } from "../../../convex/_generated/dataModel"
 import { deleteLocalStory } from "@/lib/local-storage"
 import { useAuth, useUser } from "@clerk/nextjs"
@@ -29,7 +29,6 @@ export const dynamic = 'force-dynamic'
 export default function DashboardPage() {
   const stories = useQuery(api.stories.getStories)
   const { user } = useUser()
-  const router = useRouter()
 
   if (stories === undefined) {
     return <DashboardLoadingSkeleton />
