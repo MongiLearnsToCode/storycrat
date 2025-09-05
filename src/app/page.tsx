@@ -70,7 +70,9 @@ export default function LandingPage() {
             </div>
           </div>
           
-          <FeaturesSectionWithHoverEffects />
+          <div className="flex justify-center items-center">
+            <FeaturesSectionWithHoverEffects />
+          </div>
         </div>
         
         {/* Background decorative elements */}
