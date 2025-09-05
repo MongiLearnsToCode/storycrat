@@ -9,8 +9,8 @@
   - [x] Implement a simple, interactive onboarding tour for the `/story` page.
   - [x] Use popovers or highlights to explain the Story Structure, Writing Area, AI Suggestions, and Character panel.
 
-- [ ] **3. Enhance AI Suggestions:**
-  - [ ] **Short-Term:** Modify the suggestion logic to cycle through options instead of picking one randomly.
+- [x] **3. Enhance AI Suggestions:**
+  - [x] **Short-Term:** Modify the suggestion logic to cycle through options instead of picking one randomly.
   - [ ] **Long-Term (Optional):** Integrate a real LLM for context-aware suggestions.
 
 - [ ] **4. Expand Character Management:**

@@ -55,13 +55,23 @@ export const aiSuggestions = {
   ]
 }
 
-export function getRandomSuggestion(beatId: string): string {
+let lastSuggestionIndexes: { [key: string]: number } = {};
+
+export function getSuggestion(beatId: string): string {
   const suggestions = aiSuggestions[beatId as keyof typeof aiSuggestions] || [
     "Consider the emotional core of this scene.",
     "What conflict drives this moment forward?",
     "How does this advance your character's growth?",
     "What obstacles can you introduce here?"
-  ]
-  
-  return suggestions[Math.floor(Math.random() * suggestions.length)]
+  ];
+
+  let lastIndex = lastSuggestionIndexes[beatId];
+  if (lastIndex === undefined) {
+    lastIndex = -1;
+  }
+
+  const nextIndex = (lastIndex + 1) % suggestions.length;
+  lastSuggestionIndexes[beatId] = nextIndex;
+
+  return suggestions[nextIndex];
 }

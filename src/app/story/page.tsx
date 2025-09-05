@@ -19,7 +19,7 @@ import { useConvexStoryStore } from "@/lib/convex-store"
 import { useRouter } from "next/navigation"
 import { useState, useEffect } from "react"
 import { useDebounce } from "@/hooks/use-debounce"
-import { getRandomSuggestion } from "@/lib/ai-suggestions"
+import { getSuggestion } from "@/lib/ai-suggestions"
 import { exportToTxt, exportToPdf } from "@/lib/export-utils"
 import { Sparkles, Users, ArrowLeft, X, RefreshCw, Download, FileText, FileImage, Plus } from "lucide-react"
 import { StoryOnboarding } from "@/components/onboarding"
@@ -215,12 +215,12 @@ function StoryPageContent() {
   }
 
   const generateAISuggestion = () => {
-    const suggestion = getRandomSuggestion(currentBeat.id)
+    const suggestion = getSuggestion(currentBeat.id)
     setCurrentSuggestion(suggestion)
   }
 
   const refreshSuggestion = () => {
-    const suggestion = getRandomSuggestion(currentBeat.id)
+    const suggestion = getSuggestion(currentBeat.id)
     setCurrentSuggestion(suggestion)
   }
 
