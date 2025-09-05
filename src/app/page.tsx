@@ -86,7 +86,7 @@ function HomeContent() {
             <BookOpen className="h-16 w-16 text-muted-foreground mx-auto mb-6" />
             <h2 className="text-2xl font-semibold mb-3">Welcome to StoryGenPro</h2>
             <p className="text-muted-foreground mb-8 max-w-md mx-auto">
-              Create structured stories using the Hero's Journey framework with AI-assisted suggestions.
+              Create structured stories using the Hero&apos;s Journey framework with AI-assisted suggestions.
             </p>
             <Button size="lg" onClick={() => router.push('/framework')}>
               <Plus className="h-4 w-4 mr-2" />
