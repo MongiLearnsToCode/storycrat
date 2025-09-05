@@ -21,20 +21,44 @@ const heroJourneyBeats = [
 
 export const getStories = query({
   handler: async (ctx) => {
-    return await ctx.db.query("stories").order("desc").collect();
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      return [];
+    }
+    
+    return await ctx.db
+      .query("stories")
+      .filter((q) => q.eq(q.field("userId"), identity.subject))
+      .order("desc")
+      .collect();
   },
 });
 
 export const getStory = query({
   args: { storyId: v.id("stories") },
   handler: async (ctx, { storyId }) => {
-    return await ctx.db.get(storyId);
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      return null;
+    }
+    
+    const story = await ctx.db.get(storyId);
+    if (!story || story.userId !== identity.subject) {
+      return null;
+    }
+    
+    return story;
   },
 });
 
 export const createStory = mutation({
   args: { title: v.string() },
   handler: async (ctx, { title }) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw new Error("Not authenticated");
+    }
+    
     const now = Date.now();
     return await ctx.db.insert("stories", {
       title,
@@ -48,6 +72,7 @@ export const createStory = mutation({
       createdAt: now,
       updatedAt: now,
       lastEdited: now,
+      userId: identity.subject,
     });
   },
 });
@@ -59,8 +84,15 @@ export const updateBeatContent = mutation({
     content: v.string() 
   },
   handler: async (ctx, { storyId, beatId, content }) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw new Error("Not authenticated");
+    }
+    
     const story = await ctx.db.get(storyId);
-    if (!story) throw new Error("Story not found");
+    if (!story || story.userId !== identity.subject) {
+      throw new Error("Story not found or access denied");
+    }
 
     const updatedBeats = story.beats.map(beat =>
       beat.id === beatId 
@@ -85,8 +117,15 @@ export const addCharacter = mutation({
     description: v.string(),
   },
   handler: async (ctx, { storyId, name, role, description }) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw new Error("Not authenticated");
+    }
+    
     const story = await ctx.db.get(storyId);
-    if (!story) throw new Error("Story not found");
+    if (!story || story.userId !== identity.subject) {
+      throw new Error("Story not found or access denied");
+    }
 
     const newCharacter = {
       id: crypto.randomUUID(),
