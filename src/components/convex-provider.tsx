@@ -11,16 +11,19 @@ export function ConvexClientProvider({ children }: { children: React.ReactNode }
   
   const convex = useMemo(() => {
     if (!convexUrl) return null
-    
-    return new ConvexReactClient(convexUrl, {
-      auth: {
-        getToken: () => getToken({ template: "convex" }),
-      },
-    })
-  }, [getToken])
+    return new ConvexReactClient(convexUrl)
+  }, [])
 
   if (!convex) {
     return <>{children}</>
+  }
+  
+  // Set the auth token on the client
+  if (getToken) {
+    convex.setAuth(async () => {
+      const token = await getToken({ template: "convex" })
+      return token ?? undefined
+    })
   }
   
   return <ConvexProvider client={convex}>{children}</ConvexProvider>
