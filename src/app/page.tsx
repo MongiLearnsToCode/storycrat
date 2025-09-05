@@ -1,5 +1,7 @@
 'use client'
 
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { useQuery } from "convex/react"
 import { api } from "../../convex/_generated/api"
 import { useConvexStoryStore } from "@/lib/convex-store"
@@ -19,7 +21,7 @@ export default function DashboardPage() {
 
   if (!isClient) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-background">
         <div className="text-center py-12">Loading...</div>
       </div>
     )
@@ -52,33 +54,40 @@ function DashboardContent() {
   const recentStories = stories.slice(0, 3)
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
+    <div className="flex min-h-screen bg-background">
       {/* Sidebar */}
-      <aside className="w-64 bg-white border-r border-gray-200 flex flex-col">
-        <div className="flex items-center p-6 border-b border-gray-200">
-          <BookOpen className="h-8 w-8 text-purple-500" />
-          <span className="text-xl font-bold ml-2 text-gray-800">StoryGenPro</span>
+      <aside className="w-64 bg-sidebar border-r border-sidebar-border flex flex-col">
+        <div className="flex items-center p-6 border-b border-sidebar-border">
+          <BookOpen className="h-8 w-8 text-sidebar-primary" />
+          <span className="text-xl font-bold ml-2 text-sidebar-foreground">StoryGenPro</span>
         </div>
         <nav className="flex-1 p-4 space-y-2">
-          <a className="flex items-center px-4 py-2 text-gray-700 bg-purple-100 rounded-lg font-semibold">
+          <div className="flex items-center px-4 py-2 text-sidebar-primary-foreground bg-sidebar-primary rounded-lg font-semibold">
             <LayoutDashboard className="h-5 w-5 mr-3" />
             Dashboard
-          </a>
-          <button 
+          </div>
+          <Button 
+            variant="ghost"
             onClick={() => router.push('/projects')}
-            className="flex items-center px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg w-full text-left"
+            className="flex items-center px-4 py-2 text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground rounded-lg w-full justify-start"
           >
             <FolderOpen className="h-5 w-5 mr-3" />
             Projects
-          </button>
-          <a className="flex items-center px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg">
+          </Button>
+          <Button 
+            variant="ghost"
+            className="flex items-center px-4 py-2 text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground rounded-lg w-full justify-start"
+          >
             <Settings className="h-5 w-5 mr-3" />
             Settings
-          </a>
-          <a className="flex items-center px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg">
+          </Button>
+          <Button 
+            variant="ghost"
+            className="flex items-center px-4 py-2 text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground rounded-lg w-full justify-start"
+          >
             <Lightbulb className="h-5 w-5 mr-3" />
             Feedback
-          </a>
+          </Button>
         </nav>
       </aside>
 
@@ -87,42 +96,44 @@ function DashboardContent() {
         <div className="max-w-7xl mx-auto">
           <div className="flex justify-between items-center mb-8">
             <div></div>
-            <button 
+            <Button 
               onClick={() => router.push('/framework')}
-              className="flex items-center justify-center bg-purple-500 text-white py-2 px-4 rounded-lg shadow-sm hover:bg-purple-600 transition-colors"
+              className="flex items-center"
             >
-              <Plus className="h-5 w-5 mr-2" />
+              <Plus className="h-4 w-4 mr-2" />
               New Story
-            </button>
+            </Button>
           </div>
 
           <div className="mt-8">
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-semibold text-gray-800">Recent Stories</h2>
+              <h2 className="text-xl font-semibold text-foreground">Recent Stories</h2>
               {stories.length > 3 && (
-                <button 
+                <Button 
+                  variant="ghost"
                   onClick={() => router.push('/projects')}
-                  className="flex items-center text-sm font-medium text-purple-600 hover:text-purple-800"
+                  className="flex items-center text-sm font-medium text-primary hover:text-primary/80"
                 >
                   View All
                   <ArrowRight className="ml-1 h-4 w-4" />
-                </button>
+                </Button>
               )}
             </div>
 
             {stories.length === 0 ? (
-              <div className="bg-white p-8 rounded-lg border border-gray-200 shadow-sm text-center">
-                <BookOpen className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">No stories yet</h3>
-                <p className="text-gray-500 mb-4">Create your first story to get started</p>
-                <button 
-                  onClick={() => router.push('/framework')}
-                  className="bg-purple-500 text-white py-2 px-4 rounded-lg hover:bg-purple-600 transition-colors"
-                >
-                  <Plus className="h-4 w-4 mr-2 inline" />
-                  Create Your First Story
-                </button>
-              </div>
+              <Card className="p-8 text-center">
+                <CardContent>
+                  <BookOpen className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                  <CardTitle className="text-lg mb-2">No stories yet</CardTitle>
+                  <CardDescription className="mb-4">
+                    Create your first story to get started
+                  </CardDescription>
+                  <Button onClick={() => router.push('/framework')}>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Create Your First Story
+                  </Button>
+                </CardContent>
+              </Card>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {recentStories.map((story) => {
@@ -130,35 +141,36 @@ function DashboardContent() {
                   const progress = (completedBeats / story.beats.length) * 100
 
                   return (
-                    <div key={story._id} className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm flex flex-col justify-between">
-                      <div>
+                    <Card key={story._id} className="hover:shadow-md transition-shadow">
+                      <CardHeader className="pb-4">
                         <div className="flex justify-between items-start">
-                          <h3 className="text-lg font-semibold text-gray-900">{story.title}</h3>
+                          <CardTitle className="text-lg">{story.title}</CardTitle>
                         </div>
-                        <p className="text-sm text-gray-500 mt-1">
+                        <CardDescription className="text-sm">
                           Last edited {formatDate(story.lastEdited)}
-                        </p>
+                        </CardDescription>
                         <div className="flex items-center mt-4">
-                          <div className="w-full bg-gray-200 rounded-full h-1.5">
+                          <div className="w-full bg-muted rounded-full h-1.5">
                             <div 
-                              className="bg-purple-500 h-1.5 rounded-full" 
+                              className="bg-primary h-1.5 rounded-full transition-all" 
                               style={{ width: `${progress}%` }}
                             />
                           </div>
-                          <span className="text-sm font-medium text-gray-600 ml-3">
+                          <span className="text-sm font-medium text-muted-foreground ml-3">
                             {Math.round(progress)}%
                           </span>
                         </div>
-                      </div>
-                      <div className="mt-6">
-                        <button 
+                      </CardHeader>
+                      <CardContent>
+                        <Button 
+                          variant="secondary"
                           onClick={() => handleContinueStory(story)}
-                          className="w-full bg-purple-100 text-purple-700 font-medium py-2 px-4 rounded-md hover:bg-purple-200 transition-colors text-sm"
+                          className="w-full"
                         >
                           Continue Writing
-                        </button>
-                      </div>
-                    </div>
+                        </Button>
+                      </CardContent>
+                    </Card>
                   )
                 })}
               </div>
