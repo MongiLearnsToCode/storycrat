@@ -7,20 +7,54 @@ import { Label } from "@/components/ui/label"
 import { useRouter } from "next/navigation"
 import { useState, useEffect } from "react"
 import { useConvexStoryStore } from "@/lib/convex-store"
-
-import type { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime"
+import { useMutation } from "convex/react"
+import { api } from "../../../convex/_generated/api"
+import { Check } from "lucide-react"
 
 export const dynamic = 'force-dynamic'
+
+const frameworks = [
+  {
+    id: 'hero-journey',
+    title: "Hero's Journey",
+    description: "Joseph Campbell's classic monomyth structure with 12 stages",
+    stages: 12,
+    bestFor: "Epic adventures, personal transformation stories"
+  },
+  {
+    id: 'three-act',
+    title: "Three-Act Structure",
+    description: "Traditional dramatic structure with setup, confrontation, and resolution",
+    stages: 9,
+    bestFor: "Screenplays, novels, most commercial fiction"
+  },
+  {
+    id: 'hauge-6-stage',
+    title: "Michael Hauge's 6 Stage Structure",
+    description: "Character-driven structure focusing on identity and essence",
+    stages: 6,
+    bestFor: "Character-driven stories, romance, personal growth"
+  },
+  {
+    id: 'story-circle',
+    title: "Dan Harmon's Story Circle",
+    description: "Simplified hero's journey based on order vs. chaos",
+    stages: 8,
+    bestFor: "TV episodes, comedy, ensemble stories"
+  }
+]
 
 export default function FrameworkPage() {
   const router = useRouter()
   const [storyTitle, setStoryTitle] = useState("")
+  const [selectedFramework, setSelectedFramework] = useState("")
   const [isClient, setIsClient] = useState(false)
-  const { clearCurrentStory } = useConvexStoryStore()
+  const [isCreating, setIsCreating] = useState(false)
+  const { clearCurrentStory, setCurrentStory } = useConvexStoryStore()
+  const createStory = useMutation(api.stories.createStory)
   
   useEffect(() => {
     setIsClient(true)
-    // Clear any existing story when starting a new one
     clearCurrentStory()
   }, [clearCurrentStory])
 
@@ -37,18 +71,34 @@ export default function FrameworkPage() {
     )
   }
 
-  return <FrameworkPageContent storyTitle={storyTitle} setStoryTitle={setStoryTitle} router={router} />
-}
+  const handleCreateStory = async () => {
+    if (!storyTitle.trim() || !selectedFramework) return
 
-function FrameworkPageContent({ storyTitle, setStoryTitle, router }: {
-  storyTitle: string
-  setStoryTitle: (title: string) => void
-  router: AppRouterInstance
-}) {
-  const handleStartStory = () => {
-    if (!storyTitle.trim()) return
-
-    router.push(`/story?title=${encodeURIComponent(storyTitle)}`)
+    setIsCreating(true)
+    try {
+      const storyId = await createStory({ 
+        title: storyTitle.trim(),
+        framework: selectedFramework
+      })
+      
+      const newStory = {
+        _id: storyId,
+        title: storyTitle.trim(),
+        framework: selectedFramework,
+        beats: [],
+        characters: [],
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+        lastEdited: Date.now()
+      }
+      setCurrentStory(newStory)
+      
+      router.push('/story')
+    } catch (error) {
+      console.error('Failed to create story:', error)
+    } finally {
+      setIsCreating(false)
+    }
   }
 
   return (
@@ -56,7 +106,9 @@ function FrameworkPageContent({ storyTitle, setStoryTitle, router }: {
       <div className="max-w-5xl mx-auto py-6 lg:py-12">
         <div className="text-center mb-8 lg:mb-12">
           <h1 className="text-2xl lg:text-3xl xl:text-4xl font-bold mb-2 lg:mb-4">Choose Your Framework</h1>
-          <p className="text-muted-foreground text-sm lg:text-base max-w-2xl mx-auto">Select a storytelling structure to guide your writing</p>
+          <p className="text-muted-foreground text-sm lg:text-base max-w-2xl mx-auto">
+            Select a proven storytelling structure to guide your writing process
+          </p>
         </div>
 
         <div className="mb-8 lg:mb-12 max-w-2xl mx-auto">
@@ -67,63 +119,62 @@ function FrameworkPageContent({ storyTitle, setStoryTitle, router }: {
             value={storyTitle}
             onChange={(e) => setStoryTitle(e.target.value)}
             className="mt-2 lg:mt-3 text-base lg:text-lg h-12 lg:h-14"
+            disabled={isCreating}
           />
         </div>
 
-        <div className="grid gap-6 lg:gap-8 md:grid-cols-2 max-w-4xl mx-auto">
-          <Card className="border-2 border-primary shadow-lg hover:shadow-xl transition-shadow">
-            <CardHeader className="pb-4 lg:pb-6">
-              <CardTitle className="flex items-center gap-2 text-lg lg:text-xl">
-                Hero&apos;s Journey
-                <span className="text-xs bg-primary text-primary-foreground px-2 py-1 rounded">Available</span>
-              </CardTitle>
-              <CardDescription className="text-sm lg:text-base">
-                The classic monomyth structure used in countless stories from Star Wars to Harry Potter.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4 lg:space-y-6">
-              <ul className="text-sm lg:text-base text-muted-foreground space-y-2">
-                <li>• 12 structured story beats</li>
-                <li>• Three-act structure</li>
-                <li>• Proven narrative framework</li>
-              </ul>
-              <Button 
-                className="w-full h-12 lg:h-14 text-base lg:text-lg" 
-                onClick={handleStartStory}
-                disabled={!storyTitle.trim()}
-              >
-                Select Hero&apos;s Journey
-              </Button>
-            </CardContent>
-          </Card>
-
-          <Card className="opacity-60 hover:opacity-70 transition-opacity">
-            <CardHeader className="pb-4 lg:pb-6">
-              <CardTitle className="flex items-center gap-2 text-lg lg:text-xl">
-                Three-Act Structure
-                <span className="text-xs bg-muted text-muted-foreground px-2 py-1 rounded">Coming Soon</span>
-              </CardTitle>
-              <CardDescription className="text-sm lg:text-base">
-                Classic beginning, middle, and end structure for screenplays and novels.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4 lg:space-y-6">
-              <ul className="text-sm lg:text-base text-muted-foreground space-y-2">
-                <li>• Setup, confrontation, resolution</li>
-                <li>• Industry standard format</li>
-                <li>• Flexible story pacing</li>
-              </ul>
-              <Button className="w-full h-12 lg:h-14 text-base lg:text-lg" disabled>
-                Coming Soon
-              </Button>
-            </CardContent>
-          </Card>
+        <div className="grid gap-6 lg:gap-8 md:grid-cols-2 max-w-6xl mx-auto mb-8">
+          {frameworks.map((framework) => (
+            <Card 
+              key={framework.id}
+              className={`cursor-pointer transition-all hover:shadow-md ${
+                selectedFramework === framework.id 
+                  ? 'ring-2 ring-primary bg-primary/5' 
+                  : ''
+              }`}
+              onClick={() => setSelectedFramework(framework.id)}
+            >
+              <CardHeader className="pb-4 lg:pb-6">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-lg lg:text-xl">{framework.title}</CardTitle>
+                  {selectedFramework === framework.id && (
+                    <Check className="h-5 w-5 text-primary" />
+                  )}
+                </div>
+                <CardDescription className="text-sm lg:text-base">
+                  {framework.description}
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Stages:</span>
+                    <span className="font-medium">{framework.stages}</span>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground">Best for:</span>
+                    <p className="text-sm mt-1">{framework.bestFor}</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
         </div>
 
-        <div className="mt-8 lg:mt-12 text-center">
-          <Button variant="outline" onClick={() => router.push('/')} className="h-12 lg:h-14 px-6 lg:px-8">
-            ← Back to Home
+        <div className="text-center space-y-4">
+          <Button 
+            className="h-12 lg:h-14 px-8 text-base lg:text-lg" 
+            onClick={handleCreateStory}
+            disabled={!storyTitle.trim() || !selectedFramework || isCreating}
+          >
+            {isCreating ? 'Creating...' : 'Start Writing'}
           </Button>
+          
+          <div>
+            <Button variant="outline" onClick={() => router.push('/')} className="h-12 lg:h-14 px-6 lg:px-8">
+              ← Back to Home
+            </Button>
+          </div>
         </div>
       </div>
     </div>

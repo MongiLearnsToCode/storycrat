@@ -19,6 +19,56 @@ const heroJourneyBeats = [
   { id: 'return-with-elixir', title: 'Return with the Elixir', description: 'The hero returns home transformed with wisdom to help others.' }
 ];
 
+const threeActBeats = [
+  // Act I: Setup
+  { id: 'opening-image', title: 'Opening Image', description: 'A visual that represents the struggle & tone of the story.' },
+  { id: 'inciting-incident', title: 'Inciting Incident', description: 'The event that sets the story in motion.' },
+  { id: 'plot-point-1', title: 'Plot Point 1', description: 'The protagonist commits to or gets locked into the central conflict.' },
+  // Act II: Confrontation
+  { id: 'first-pinch-point', title: 'First Pinch Point', description: 'A reminder of the antagonistic force and its power.' },
+  { id: 'midpoint', title: 'Midpoint', description: 'A major shift that changes the direction of the story.' },
+  { id: 'second-pinch-point', title: 'Second Pinch Point', description: 'The antagonistic force shows its power again, raising stakes.' },
+  { id: 'plot-point-2', title: 'Plot Point 2', description: 'The final piece of information needed for the climax.' },
+  // Act III: Resolution
+  { id: 'climax', title: 'Climax', description: 'The final confrontation between protagonist and antagonist.' },
+  { id: 'resolution', title: 'Resolution', description: 'The aftermath and new normal after the climax.' }
+];
+
+const haugeBeats = [
+  { id: 'setup', title: 'Setup', description: 'Establish the character in their familiar situation, identity, and longing.' },
+  { id: 'new-situation', title: 'New Situation', description: 'The character enters a new situation that creates inner conflict.' },
+  { id: 'progress', title: 'Progress', description: 'The character makes progress toward their visible goal while avoiding their fear.' },
+  { id: 'complications', title: 'Complications and Higher Stakes', description: 'Obstacles increase and the character must face their inner conflict.' },
+  { id: 'final-push', title: 'Final Push', description: 'The character must risk everything and face their deepest fear.' },
+  { id: 'aftermath', title: 'Aftermath', description: 'The character has achieved a new identity and found their essence.' }
+];
+
+const storyCircleBeats = [
+  { id: 'you', title: 'YOU (Order)', description: 'Character in a zone of comfort.' },
+  { id: 'need', title: 'NEED (Order)', description: 'But they want something.' },
+  { id: 'go', title: 'GO (Order)', description: 'They enter an unfamiliar situation.' },
+  { id: 'search', title: 'SEARCH (Chaos)', description: 'Adapt to that situation.' },
+  { id: 'find', title: 'FIND (Chaos)', description: 'Find what they wanted.' },
+  { id: 'take', title: 'TAKE (Chaos)', description: 'Pay a heavy price for it.' },
+  { id: 'return', title: 'RETURN (Order)', description: 'Then return to their familiar situation.' },
+  { id: 'change', title: 'CHANGE (Order)', description: 'Having changed.' }
+];
+
+function getFrameworkBeats(framework: string) {
+  switch (framework) {
+    case 'hero-journey':
+      return heroJourneyBeats;
+    case 'three-act':
+      return threeActBeats;
+    case 'hauge-6-stage':
+      return haugeBeats;
+    case 'story-circle':
+      return storyCircleBeats;
+    default:
+      return heroJourneyBeats;
+  }
+}
+
 export const getStories = query({
   handler: async (ctx) => {
     const identity = await ctx.auth.getUserIdentity();
@@ -57,18 +107,22 @@ export const getStory = query({
 });
 
 export const createStory = mutation({
-  args: { title: v.string() },
-  handler: async (ctx, { title }) => {
+  args: { 
+    title: v.string(),
+    framework: v.string()
+  },
+  handler: async (ctx, { title, framework }) => {
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) {
       throw new Error("Not authenticated");
     }
     
+    const beats = getFrameworkBeats(framework);
     const now = Date.now();
     return await ctx.db.insert("stories", {
       title,
-      framework: "hero-journey",
-      beats: heroJourneyBeats.map(beat => ({
+      framework,
+      beats: beats.map(beat => ({
         ...beat,
         content: "",
         completed: false
