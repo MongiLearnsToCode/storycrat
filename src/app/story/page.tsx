@@ -6,7 +6,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Progress } from "@/components/ui/progress"
 import { Badge } from "@/components/ui/badge"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -127,7 +127,7 @@ function StoryPageContent() {
   useEffect(() => {
     if (debouncedStory) {
       setIsSaving(true)
-      const { _id, beats, title, characters } = debouncedStory
+      const { _id, beats, title } = debouncedStory
       const currentBeat = beats[currentBeatIndex]
       
       if (typeof _id === 'string' && _id.startsWith('local_')) {
@@ -412,7 +412,7 @@ function StoryPageContent() {
           <AlertDialogHeader>
             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
             <AlertDialogDescription>
-              This will permanently delete the character "{characterToDelete?.name}". This action cannot be undone.
+              This will permanently delete the character &quot;{characterToDelete?.name}&quot;. This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

@@ -55,7 +55,7 @@ export const aiSuggestions = {
   ]
 }
 
-let lastSuggestionIndexes: { [key: string]: number } = {};
+const lastSuggestionIndexes: { [key: string]: number } = {};
 
 export function getSuggestion(beatId: string): string {
   const suggestions = aiSuggestions[beatId as keyof typeof aiSuggestions] || [

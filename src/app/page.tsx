@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button"
 import { useRouter } from "next/navigation"
-import { BookOpen, Feather, Zap } from "lucide-react"
+import { BookOpen, Feather, Zap, Users } from "lucide-react"
 import { SignedIn, SignedOut } from "@clerk/nextjs"
 
 export default function LandingPage() {
@@ -61,21 +61,21 @@ export default function LandingPage() {
                 <Feather className="h-10 w-10 mx-auto text-primary"/>
               <h3 className="text-xl font-bold">Proven Frameworks</h3>
               <p className="text-muted-foreground">
-                Start with the time-tested Hero's Journey to build a compelling narrative arc.
+                Start with the time-tested Hero&apos;s Journey to build a compelling narrative arc.
               </p>
             </div>
             <div className="grid gap-1 text-center">
                 <Zap className="h-10 w-10 mx-auto text-primary"/>
               <h3 className="text-xl font-bold">AI-Powered Suggestions</h3>
               <p className="text-muted-foreground">
-                Overcome writer's block with creative hints and ideas for every step of your story.
+                Overcome writer&apos;s block with creative hints and ideas for every step of your story.
               </p>
             </div>
             <div className="grid gap-1 text-center">
                 <Users className="h-10 w-10 mx-auto text-primary"/>
               <h3 className="text-xl font-bold">Character Management</h3>
               <p className="text-muted-foreground">
-                Keep track of your story's cast with dedicated character profiles.
+                Keep track of your story&apos;s cast with dedicated character profiles.
               </p>
             </div>
           </div>

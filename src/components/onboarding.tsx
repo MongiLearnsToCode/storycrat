@@ -46,7 +46,7 @@ export function StoryOnboarding() {
           <div className="p-4 border rounded-lg">
             <h3 className="font-semibold mb-2">1. Story Structure</h3>
             <p className="text-sm text-muted-foreground">
-              On the left, you’ll find the beats of your story. Click on any beat to start writing in it.
+                            On the left, you’ll find the beats of your story. Click on any beat to start writing in it.
             </p>
           </div>
           <div className="p-4 border rounded-lg bg-primary/10">
