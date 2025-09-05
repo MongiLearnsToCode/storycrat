@@ -17,12 +17,15 @@ export interface StoryBeat {
 }
 
 export interface Story {
-  _id: Id<"stories">
+  _id: Id<"stories"> | string // Support both Convex IDs and local string IDs
   title: string
   framework: string
   beats: StoryBeat[]
   characters: Character[]
   lastEdited: number
+  createdAt?: number
+  updatedAt?: number
+  userId?: string
 }
 
 interface ConvexStoryStore {
