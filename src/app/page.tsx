@@ -110,7 +110,7 @@ export default function LandingPage() {
                   <div className="absolute left-0 inset-y-0 h-6 group-hover/feature:h-8 w-1 rounded-tr-full rounded-br-full bg-border group-hover/feature:bg-primary transition-all duration-200 origin-center"></div>
                   <span className="group-hover/feature:translate-x-2 transition duration-200 inline-block text-foreground">Proven Frameworks</span>
                 </div>
-                <p className="text-sm text-muted-foreground max-w-xs relative z-10 px-10">Choose from time-tested storytelling structures like the Hero's Journey and Three-Act Structure to guide your narrative.</p>
+                <p className="text-sm text-muted-foreground max-w-xs relative z-10 px-10">Choose from time-tested storytelling structures like the Hero&apos;s Journey and Three-Act Structure to guide your narrative.</p>
               </div>
               <div className="flex flex-col lg:border-r py-10 relative group/feature lg:border-b border-border">
                 <div className="opacity-0 group-hover/feature:opacity-100 transition duration-200 absolute inset-0 h-full w-full bg-gradient-to-t from-muted/50 to-transparent pointer-events-none"></div>
@@ -172,7 +172,7 @@ export default function LandingPage() {
                   <div className="absolute left-0 inset-y-0 h-6 group-hover/feature:h-8 w-1 rounded-tr-full rounded-br-full bg-border group-hover/feature:bg-primary transition-all duration-200 origin-center"></div>
                   <span className="group-hover/feature:translate-x-2 transition duration-200 inline-block text-foreground">Multiple Frameworks</span>
                 </div>
-                <p className="text-sm text-muted-foreground max-w-xs relative z-10 px-10">Switch between Hero's Journey, Story Circle, Three-Act Structure, and more to find what works for your story.</p>
+                <p className="text-sm text-muted-foreground max-w-xs relative z-10 px-10">Switch between Hero&apos;s Journey, Story Circle, Three-Act Structure, and more to find what works for your story.</p>
               </div>
               <div className="flex flex-col lg:border-r py-10 relative group/feature border-border">
                 <div className="opacity-0 group-hover/feature:opacity-100 transition duration-200 absolute inset-0 h-full w-full bg-gradient-to-b from-muted/50 to-transparent pointer-events-none"></div>
