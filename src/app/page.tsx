@@ -19,16 +19,13 @@ export default function LandingPage() {
                   Unlock Your Best Story with StoryGenPro
                 </h1>
                 <p className="max-w-[600px] text-muted-foreground md:text-xl">
-                  A structured, guided environment for story creation using proven frameworks and AI-assisted suggestions.
+                  Transform your ideas into compelling stories using proven frameworks and AI-powered suggestions. Start writing in seconds.
                 </p>
               </div>
               <div className="flex flex-col gap-2 min-[400px]:flex-row">
                 <SignedOut>
                   <Button size="lg" onClick={() => router.push('/framework')}>
-                    Get Started for Free
-                  </Button>
-                  <Button size="lg" variant="outline" onClick={() => router.push('/sign-in')}>
-                    Sign In
+                    Start Writing Now
                   </Button>
                 </SignedOut>
                 <SignedIn>

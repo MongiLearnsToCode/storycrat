@@ -9,7 +9,7 @@ import { useState, useEffect } from "react"
 import { useConvexStoryStore } from "@/lib/convex-store"
 import { useMutation } from "convex/react"
 import { api } from "../../../convex/_generated/api"
-import { Check, Info, Zap } from "lucide-react"
+import { Check } from "lucide-react"
 import { useAuth } from "@clerk/nextjs"
 import { saveLocalStory, generateLocalId } from "@/lib/local-storage"
 
@@ -186,46 +186,15 @@ export default function FrameworkPage() {
 
   return (
     <div className="min-h-screen bg-background p-4 lg:p-6">
-      {!isSignedIn && (
-        <div className="bg-blue-50 border-b border-blue-200 p-3 mb-6">
-          <div className="flex items-center justify-between max-w-5xl mx-auto">
-            <div className="flex items-center gap-2">
-              <Zap className="h-4 w-4 text-blue-600" />
-              <span className="text-sm text-blue-800">
-                Start writing immediately! Stories save to your browser. Sign up to access from any device.
-              </span>
-            </div>
-            <Button size="sm" variant="outline" onClick={() => router.push('/sign-in')}>
-              Sign Up
-            </Button>
-          </div>
-        </div>
-      )}
       
       <div className="max-w-5xl mx-auto py-6 lg:py-12">
         <div className="text-center mb-8 lg:mb-12">
-          <h1 className="text-2xl lg:text-3xl xl:text-4xl font-bold mb-2 lg:mb-4">Choose Your Framework</h1>
+          <h1 className="text-2xl lg:text-3xl xl:text-4xl font-bold mb-2 lg:mb-4">Create Your Story</h1>
           <p className="text-muted-foreground text-sm lg:text-base max-w-2xl mx-auto">
-            Select a proven storytelling structure to guide your writing process
+            Choose a proven storytelling framework and give your story a title to begin
           </p>
         </div>
 
-        {!isSignedIn && (
-          <Card className="border-blue-200 bg-blue-50 mb-8">
-            <CardContent className="pt-6">
-              <div className="flex items-start gap-3">
-                <Info className="h-5 w-5 text-blue-600 mt-0.5" />
-                <div>
-                  <h3 className="font-medium text-blue-900">Guest Mode</h3>
-                  <p className="text-sm text-blue-700 mt-1">
-                    Create unlimited stories that save automatically to your browser. 
-                    Sign up anytime to access your work from any device and keep it permanently.
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        )}
 
         <div className="mb-8 lg:mb-12 max-w-2xl mx-auto">
           <Label htmlFor="title" className="text-base lg:text-lg font-medium">Story Title</Label>
@@ -285,6 +254,17 @@ export default function FrameworkPage() {
           >
             {isCreating ? 'Creating...' : 'Start Writing'}
           </Button>
+          
+          {!isSignedIn && storyTitle.trim() && selectedFramework && (
+            <p className="text-sm text-muted-foreground max-w-md mx-auto">
+              💾 Your story will be saved locally. <button 
+                onClick={() => router.push('/sign-in')} 
+                className="text-primary underline hover:no-underline"
+              >
+                Sign up
+              </button> to access it from any device.
+            </p>
+          )}
           
           <div>
             <Button variant="outline" onClick={() => router.push('/')} className="h-12 lg:h-14 px-6 lg:px-8">
