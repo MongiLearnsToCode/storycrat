@@ -3,13 +3,14 @@
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import { Input } from "@/components/ui/input"
 import { useQuery } from "convex/react"
 import { api } from "../../../convex/_generated/api"
 import { useConvexStoryStore } from "@/lib/convex-store"
 import { useRouter } from "next/navigation"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { Story } from "@/lib/convex-store"
-import { ArrowLeft, Plus, BookOpen } from "lucide-react"
+import { ArrowLeft, Plus, BookOpen, Search } from "lucide-react"
 
 export const dynamic = 'force-dynamic'
 
@@ -35,6 +36,7 @@ function ProjectsContent() {
   const router = useRouter()
   const stories = useQuery(api.stories.getStories)
   const setCurrentStory = useConvexStoryStore(state => state.setCurrentStory)
+  const [searchQuery, setSearchQuery] = useState("")
 
   const handleContinueStory = (story: Story) => {
     setCurrentStory(story)
@@ -53,6 +55,14 @@ function ProjectsContent() {
     const completedBeats = story.beats.filter(beat => beat.completed).length
     return (completedBeats / story.beats.length) * 100
   }
+
+  const filteredStories = useMemo(() => {
+    if (!stories || !searchQuery.trim()) return stories || []
+    
+    return stories.filter(story =>
+      story.title.toLowerCase().includes(searchQuery.toLowerCase())
+    )
+  }, [stories, searchQuery])
 
   if (stories === undefined) {
     return (
@@ -103,59 +113,78 @@ function ProjectsContent() {
           </div>
         ) : (
           <>
-            <div className="mb-6">
+            <div className="flex items-center justify-between mb-6">
               <p className="text-muted-foreground">
-                {stories.length} {stories.length === 1 ? 'story' : 'stories'}
+                {filteredStories.length} of {stories.length} {stories.length === 1 ? 'story' : 'stories'}
               </p>
+              <div className="relative w-80">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search stories..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
             </div>
 
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {stories.map((story) => {
-                const progress = getProgress(story)
-                const completedBeats = story.beats.filter(beat => beat.completed).length
+            {filteredStories.length === 0 ? (
+              <div className="text-center py-12">
+                <Search className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                <h3 className="text-lg font-semibold mb-2">No stories found</h3>
+                <p className="text-muted-foreground">
+                  Try adjusting your search terms
+                </p>
+              </div>
+            ) : (
+              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                {filteredStories.map((story) => {
+                  const progress = getProgress(story)
+                  const completedBeats = story.beats.filter(beat => beat.completed).length
 
-                return (
-                  <Card key={story._id} className="hover:shadow-md transition-shadow">
-                    <CardHeader>
-                      <div className="flex items-start justify-between gap-3">
-                        <CardTitle className="text-lg line-clamp-2 flex-1">{story.title}</CardTitle>
-                        <Badge variant="secondary" className="text-xs shrink-0">
-                          {story.framework}
-                        </Badge>
-                      </div>
-                      <CardDescription>
-                        Last edited {formatDate(story.lastEdited)}
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-4">
-                        <div className="flex items-center gap-3">
-                          <div className="flex-1 bg-muted rounded-full h-2">
-                            <div 
-                              className="bg-primary h-2 rounded-full transition-all"
-                              style={{ width: `${progress}%` }}
-                            />
+                  return (
+                    <Card key={story._id} className="hover:shadow-md transition-shadow">
+                      <CardHeader>
+                        <div className="flex items-start justify-between gap-3">
+                          <CardTitle className="text-lg line-clamp-2 flex-1">{story.title}</CardTitle>
+                          <Badge variant="secondary" className="text-xs shrink-0">
+                            {story.framework}
+                          </Badge>
+                        </div>
+                        <CardDescription>
+                          Last edited {formatDate(story.lastEdited)}
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-4">
+                          <div className="flex items-center gap-3">
+                            <div className="flex-1 bg-muted rounded-full h-2">
+                              <div 
+                                className="bg-primary h-2 rounded-full transition-all"
+                                style={{ width: `${progress}%` }}
+                              />
+                            </div>
+                            <span className="text-sm font-medium text-muted-foreground">
+                              {Math.round(progress)}%
+                            </span>
                           </div>
-                          <span className="text-sm font-medium text-muted-foreground">
-                            {Math.round(progress)}%
-                          </span>
+                          <div className="text-sm text-muted-foreground">
+                            {completedBeats} of {story.beats.length} beats completed
+                          </div>
+                          <Button 
+                            onClick={() => handleContinueStory(story)} 
+                            className="w-full"
+                            variant="secondary"
+                          >
+                            Continue Writing
+                          </Button>
                         </div>
-                        <div className="text-sm text-muted-foreground">
-                          {completedBeats} of {story.beats.length} beats completed
-                        </div>
-                        <Button 
-                          onClick={() => handleContinueStory(story)} 
-                          className="w-full"
-                          variant="secondary"
-                        >
-                          Continue Writing
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                )
-              })}
-            </div>
+                      </CardContent>
+                    </Card>
+                  )
+                })}
+              </div>
+            )}
           </>
         )}
       </main>
