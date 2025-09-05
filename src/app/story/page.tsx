@@ -195,13 +195,24 @@ function StoryPageContent() {
         const updatedCharacter = { ...editingCharacter, ...characterData }
         updateLocalCharacter(updatedCharacter)
         if (isSignedIn && typeof currentStory._id !== 'string') {
-          updateCharacterMutation({ storyId: currentStory._id as Id<"stories">, ...updatedCharacter })
+          updateCharacterMutation({ 
+            storyId: currentStory._id as Id<"stories">, 
+            characterId: updatedCharacter.id,
+            name: updatedCharacter.name,
+            role: updatedCharacter.role,
+            description: updatedCharacter.description
+          })
         }
       } else {
         const newCharacter = { ...characterData, id: crypto.randomUUID() }
         addLocalCharacter(newCharacter)
         if (isSignedIn && typeof currentStory._id !== 'string') {
-          addCharacterMutation({ storyId: currentStory._id as Id<"stories">, ...newCharacter })
+          addCharacterMutation({ 
+            storyId: currentStory._id as Id<"stories">,
+            name: newCharacter.name,
+            role: newCharacter.role,
+            description: newCharacter.description
+          })
         }
       }
     }
