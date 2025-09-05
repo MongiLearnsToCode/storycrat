@@ -5,7 +5,7 @@ import type { NextRequest } from "next/server";
 export default function middleware(request: NextRequest) {
   // Only use Clerk middleware if publishable key is available
   if (process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY) {
-    return clerkMiddleware()(request);
+    return clerkMiddleware()(request, NextResponse.next);
   }
   
   // Fallback: just continue without Clerk middleware
