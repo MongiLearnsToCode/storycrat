@@ -31,6 +31,30 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const publishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
+
+  if (!publishableKey) {
+    // Fallback layout for build time when Clerk keys aren't available
+    return (
+      <html lang="en">
+        <body
+          className={`${geistSans.variable} ${geistMono.variable} antialiased font-sans`}
+        >
+          <ConvexClientProvider>
+            <header className="border-b p-4">
+              <div className="max-w-4xl mx-auto flex items-center justify-between">
+                <h1 className="text-xl font-bold">StoryGenPro</h1>
+                <div>Sign In</div>
+              </div>
+            </header>
+            {children}
+            <Toaster />
+          </ConvexClientProvider>
+        </body>
+      </html>
+    );
+  }
+
   return (
     <ClerkProvider>
       <html lang="en">
