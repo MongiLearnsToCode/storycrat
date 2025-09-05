@@ -34,7 +34,7 @@ export default function HomePage() {
           <p className="text-muted-foreground mb-8 max-w-md mx-auto">
             Create structured stories using the Hero&apos;s Journey framework with AI-assisted suggestions.
           </p>
-          <Button size="lg" onClick={() => router.push('/sign-in')}>
+          <Button size="lg" onClick={() => router.push('/framework')}>
             Get Started
           </Button>
         </div>
@@ -45,17 +45,10 @@ export default function HomePage() {
   return (
     <>
       <SignedOut>
+        {/* Redirect unauthenticated users to framework page */}
+        {typeof window !== 'undefined' && router.push('/framework')}
         <div className="min-h-screen bg-background flex items-center justify-center">
-          <div className="text-center py-20">
-            <BookOpen className="h-16 w-16 text-muted-foreground mx-auto mb-6" />
-            <h2 className="text-2xl font-semibold mb-3">Welcome to StoryGenPro</h2>
-            <p className="text-muted-foreground mb-8 max-w-md mx-auto">
-              Create structured stories using the Hero&apos;s Journey framework with AI-assisted suggestions.
-            </p>
-            <Button size="lg" onClick={() => router.push('/sign-in')}>
-              Get Started
-            </Button>
-          </div>
+          <div className="text-muted-foreground">Redirecting...</div>
         </div>
       </SignedOut>
       <SignedIn>
