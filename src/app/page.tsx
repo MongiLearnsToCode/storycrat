@@ -76,9 +76,8 @@ export default function LandingPage() {
         </div>
         
         {/* Background decorative elements */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute -top-24 -right-24 h-96 w-96 rounded-full bg-primary/5 blur-3xl" />
-          <div className="absolute -bottom-24 -left-24 h-96 w-96 rounded-full bg-primary/5 blur-3xl" />
+        <div className="absolute inset-0 overflow-hidden pointer-events-none flex items-center justify-center">
+          <div className="h-[600px] w-[600px] rounded-full bg-primary/5 blur-3xl" />
         </div>
       </section>
     </main>
