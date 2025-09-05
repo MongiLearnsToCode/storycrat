@@ -5,9 +5,9 @@
   - [x] Move the existing "recent stories" view to a new `/dashboard` route for authenticated users.
   - [x] Update authentication and routing logic to direct logged-in users to `/dashboard`.
 
-- [ ] **2. Add Onboarding to the Story Editor:**
-  - [ ] Implement a simple, interactive onboarding tour for the `/story` page.
-  - [ ] Use popovers or highlights to explain the Story Structure, Writing Area, AI Suggestions, and Character panel.
+- [x] **2. Add Onboarding to the Story Editor:**
+  - [x] Implement a simple, interactive onboarding tour for the `/story` page.
+  - [x] Use popovers or highlights to explain the Story Structure, Writing Area, AI Suggestions, and Character panel.
 
 - [ ] **3. Enhance AI Suggestions:**
   - [ ] **Short-Term:** Modify the suggestion logic to cycle through options instead of picking one randomly.
