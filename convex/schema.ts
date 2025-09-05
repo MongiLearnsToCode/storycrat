@@ -18,6 +18,8 @@ export default defineSchema({
       name: v.string(),
       role: v.string(),
       description: v.string(),
+      appearance: v.optional(v.string()),
+      backstory: v.optional(v.string()),
     })),
     createdAt: v.optional(v.number()),
     updatedAt: v.optional(v.number()),

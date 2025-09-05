@@ -16,4 +16,4 @@
 - [x] **4. Expand Character Management:**
   - [x] Implement functionality to edit existing characters.
   - [x] Implement functionality to delete characters.
-  - [ ] Add more fields to the character creation/editing dialog (e.g., "Appearance", "Backstory").
+  - [x] Add more fields to the character creation/editing dialog (e.g., "Appearance", "Backstory").

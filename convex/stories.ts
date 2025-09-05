@@ -113,8 +113,10 @@ export const addCharacter = mutation({
     name: v.string(),
     role: v.string(),
     description: v.string(),
+    appearance: v.optional(v.string()),
+    backstory: v.optional(v.string()),
   },
-  handler: async (ctx, { storyId, name, role, description }) => {
+  handler: async (ctx, { storyId, name, role, description, appearance, backstory }) => {
     const story = await ctx.db.get(storyId);
     if (!story) {
       throw new Error("Story not found");
@@ -125,6 +127,8 @@ export const addCharacter = mutation({
       name,
       role,
       description,
+      appearance,
+      backstory,
     };
 
     const now = Date.now();
@@ -143,15 +147,17 @@ export const updateCharacter = mutation({
     name: v.string(),
     role: v.string(),
     description: v.string(),
+    appearance: v.optional(v.string()),
+    backstory: v.optional(v.string()),
   },
-  handler: async (ctx, { storyId, characterId, name, role, description }) => {
+  handler: async (ctx, { storyId, characterId, name, role, description, appearance, backstory }) => {
     const story = await ctx.db.get(storyId);
     if (!story) {
       throw new Error("Story not found");
     }
 
     const updatedCharacters = story.characters.map(char =>
-      char.id === characterId ? { ...char, name, role, description } : char
+      char.id === characterId ? { ...char, name, role, description, appearance, backstory } : char
     );
 
     const now = Date.now();

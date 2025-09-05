@@ -163,7 +163,9 @@ function StoryPageContent() {
             characterId: updatedCharacter.id,
             name: updatedCharacter.name,
             role: updatedCharacter.role,
-            description: updatedCharacter.description
+            description: updatedCharacter.description,
+            appearance: updatedCharacter.appearance,
+            backstory: updatedCharacter.backstory
           })
         }
       } else {
@@ -174,7 +176,9 @@ function StoryPageContent() {
             storyId: currentStory._id as Id<"stories">,
             name: newCharacter.name,
             role: newCharacter.role,
-            description: newCharacter.description
+            description: newCharacter.description,
+            appearance: newCharacter.appearance,
+            backstory: newCharacter.backstory
           })
         }
       }
@@ -398,22 +402,28 @@ function CharacterDialog({ open, onOpenChange, onSave, character }: CharacterDia
   const [name, setName] = useState('')
   const [role, setRole] = useState('')
   const [description, setDescription] = useState('')
+  const [appearance, setAppearance] = useState('')
+  const [backstory, setBackstory] = useState('')
 
   useEffect(() => {
     if (character) {
       setName(character.name)
       setRole(character.role)
       setDescription(character.description)
+      setAppearance(character.appearance || '')
+      setBackstory(character.backstory || '')
     } else {
       setName('')
       setRole('')
       setDescription('')
+      setAppearance('')
+      setBackstory('')
     }
   }, [character])
 
   const handleSave = () => {
     if (name.trim()) {
-      onSave({ name, role, description })
+      onSave({ name, role, description, appearance, backstory })
       onOpenChange(false)
     }
   }
@@ -436,6 +446,14 @@ function CharacterDialog({ open, onOpenChange, onSave, character }: CharacterDia
           <div className="space-y-2">
             <Label htmlFor="char-desc">Description</Label>
             <Textarea id="char-desc" placeholder="Brief character description..." value={description} onChange={(e) => setDescription(e.target.value)} className="min-h-[80px]" />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="char-appearance">Appearance</Label>
+            <Textarea id="char-appearance" placeholder="Physical appearance, clothing, etc..." value={appearance} onChange={(e) => setAppearance(e.target.value)} className="min-h-[80px]" />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="char-backstory">Backstory</Label>
+            <Textarea id="char-backstory" placeholder="Relevant history, motivations, etc..." value={backstory} onChange={(e) => setBackstory(e.target.value)} className="min-h-[80px]" />
           </div>
           <Button onClick={handleSave} className="w-full mt-6">{character ? 'Save Changes' : 'Add Character'}</Button>
         </div>

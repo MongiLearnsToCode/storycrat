@@ -6,6 +6,8 @@ export interface Character {
   name: string
   role: string
   description: string
+  appearance?: string
+  backstory?: string
 }
 
 export interface StoryBeat {
