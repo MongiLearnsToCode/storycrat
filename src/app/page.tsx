@@ -8,11 +8,11 @@ import { useConvexStoryStore } from "@/lib/convex-store"
 import { useRouter } from "next/navigation"
 import { useState, useEffect } from "react"
 import { Story } from "@/lib/convex-store"
-import { BookOpen, Plus, ArrowRight, Settings, Lightbulb, FolderOpen, LayoutDashboard } from "lucide-react"
+import { BookOpen, Plus, ArrowRight } from "lucide-react"
 
 export const dynamic = 'force-dynamic'
 
-export default function DashboardPage() {
+export default function HomePage() {
   const [isClient, setIsClient] = useState(false)
   
   useEffect(() => {
@@ -21,16 +21,16 @@ export default function DashboardPage() {
 
   if (!isClient) {
     return (
-      <div className="min-h-screen bg-background">
-        <div className="text-center py-12">Loading...</div>
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-muted-foreground">Loading...</div>
       </div>
     )
   }
 
-  return <DashboardContent />
+  return <HomeContent />
 }
 
-function DashboardContent() {
+function HomeContent() {
   const router = useRouter()
   const stories = useQuery(api.stories.getStories)
   const setCurrentStory = useConvexStoryStore(state => state.setCurrentStory)
@@ -43,140 +43,103 @@ function DashboardContent() {
   const formatDate = (timestamp: number) => {
     return new Date(timestamp).toLocaleDateString('en-US', {
       month: 'short',
-      day: 'numeric',
-      year: 'numeric'
+      day: 'numeric'
     })
   }
 
-  if (stories === undefined) return <div>Loading...</div>
-  if (!stories) return <div>Unable to load stories. Please check your connection.</div>
+  if (stories === undefined) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-muted-foreground">Loading...</div>
+      </div>
+    )
+  }
+
+  if (!stories) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-muted-foreground">Unable to load stories</div>
+      </div>
+    )
+  }
 
   const recentStories = stories.slice(0, 3)
 
   return (
-    <div className="flex min-h-screen bg-background">
-      {/* Sidebar */}
-      <aside className="w-64 bg-sidebar border-r border-sidebar-border flex flex-col">
-        <div className="flex items-center p-6 border-b border-sidebar-border">
-          <BookOpen className="h-8 w-8 text-sidebar-primary" />
-          <span className="text-xl font-bold ml-2 text-sidebar-foreground">StoryGenPro</span>
-        </div>
-        <nav className="flex-1 p-4 space-y-2">
-          <div className="flex items-center px-4 py-2 text-sidebar-primary-foreground bg-sidebar-primary rounded-lg font-semibold">
-            <LayoutDashboard className="h-5 w-5 mr-3" />
-            Dashboard
+    <div className="min-h-screen bg-background">
+      <header className="border-b">
+        <div className="max-w-4xl mx-auto px-6 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <BookOpen className="h-7 w-7 text-primary" />
+            <h1 className="text-xl font-bold">StoryGenPro</h1>
           </div>
-          <Button 
-            variant="ghost"
-            onClick={() => router.push('/projects')}
-            className="flex items-center px-4 py-2 text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground rounded-lg w-full justify-start"
-          >
-            <FolderOpen className="h-5 w-5 mr-3" />
-            Projects
+          <Button onClick={() => router.push('/framework')}>
+            <Plus className="h-4 w-4 mr-2" />
+            New Story
           </Button>
-          <Button 
-            variant="ghost"
-            className="flex items-center px-4 py-2 text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground rounded-lg w-full justify-start"
-          >
-            <Settings className="h-5 w-5 mr-3" />
-            Settings
-          </Button>
-          <Button 
-            variant="ghost"
-            className="flex items-center px-4 py-2 text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground rounded-lg w-full justify-start"
-          >
-            <Lightbulb className="h-5 w-5 mr-3" />
-            Feedback
-          </Button>
-        </nav>
-      </aside>
+        </div>
+      </header>
 
-      {/* Main Content */}
-      <main className="flex-1 p-8">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex justify-between items-center mb-8">
-            <div></div>
-            <Button 
-              onClick={() => router.push('/framework')}
-              className="flex items-center"
-            >
+      <main className="max-w-4xl mx-auto px-6 py-12">
+        {stories.length === 0 ? (
+          <div className="text-center py-20">
+            <BookOpen className="h-16 w-16 text-muted-foreground mx-auto mb-6" />
+            <h2 className="text-2xl font-semibold mb-3">Welcome to StoryGenPro</h2>
+            <p className="text-muted-foreground mb-8 max-w-md mx-auto">
+              Create structured stories using the Hero's Journey framework with AI-assisted suggestions.
+            </p>
+            <Button size="lg" onClick={() => router.push('/framework')}>
               <Plus className="h-4 w-4 mr-2" />
-              New Story
+              Create Your First Story
             </Button>
           </div>
-
-          <div className="mt-8">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-semibold text-foreground">Recent Stories</h2>
+        ) : (
+          <>
+            <div className="flex items-center justify-between mb-8">
+              <h2 className="text-2xl font-semibold">Your Stories</h2>
               {stories.length > 3 && (
-                <Button 
-                  variant="ghost"
-                  onClick={() => router.push('/projects')}
-                  className="flex items-center text-sm font-medium text-primary hover:text-primary/80"
-                >
+                <Button variant="ghost" onClick={() => router.push('/projects')}>
                   View All
-                  <ArrowRight className="ml-1 h-4 w-4" />
+                  <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               )}
             </div>
 
-            {stories.length === 0 ? (
-              <Card className="p-8 text-center">
-                <CardContent>
-                  <BookOpen className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                  <CardTitle className="text-lg mb-2">No stories yet</CardTitle>
-                  <CardDescription className="mb-4">
-                    Create your first story to get started
-                  </CardDescription>
-                  <Button onClick={() => router.push('/framework')}>
-                    <Plus className="h-4 w-4 mr-2" />
-                    Create Your First Story
-                  </Button>
-                </CardContent>
-              </Card>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {recentStories.map((story) => {
-                  const completedBeats = story.beats.filter(beat => beat.completed).length
-                  const progress = (completedBeats / story.beats.length) * 100
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+              {recentStories.map((story) => {
+                const completedBeats = story.beats.filter(beat => beat.completed).length
+                const progress = (completedBeats / story.beats.length) * 100
 
-                  return (
-                    <Card key={story._id} className="hover:shadow-md transition-shadow">
-                      <CardHeader className="pb-4">
-                        <div className="flex justify-between items-start">
-                          <CardTitle className="text-lg">{story.title}</CardTitle>
+                return (
+                  <Card key={story._id} className="hover:shadow-md transition-shadow cursor-pointer" onClick={() => handleContinueStory(story)}>
+                    <CardHeader>
+                      <CardTitle className="text-lg line-clamp-2">{story.title}</CardTitle>
+                      <CardDescription>
+                        Last edited {formatDate(story.lastEdited)}
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="flex items-center gap-3 mb-4">
+                        <div className="flex-1 bg-muted rounded-full h-2">
+                          <div 
+                            className="bg-primary h-2 rounded-full transition-all" 
+                            style={{ width: `${progress}%` }}
+                          />
                         </div>
-                        <CardDescription className="text-sm">
-                          Last edited {formatDate(story.lastEdited)}
-                        </CardDescription>
-                        <div className="flex items-center mt-4">
-                          <div className="w-full bg-muted rounded-full h-1.5">
-                            <div 
-                              className="bg-primary h-1.5 rounded-full transition-all" 
-                              style={{ width: `${progress}%` }}
-                            />
-                          </div>
-                          <span className="text-sm font-medium text-muted-foreground ml-3">
-                            {Math.round(progress)}%
-                          </span>
-                        </div>
-                      </CardHeader>
-                      <CardContent>
-                        <Button 
-                          variant="secondary"
-                          onClick={() => handleContinueStory(story)}
-                          className="w-full"
-                        >
-                          Continue Writing
-                        </Button>
-                      </CardContent>
-                    </Card>
-                  )
-                })}
-              </div>
-            )}
-          </div>
-        </div>
+                        <span className="text-sm font-medium text-muted-foreground">
+                          {Math.round(progress)}%
+                        </span>
+                      </div>
+                      <Button variant="secondary" className="w-full">
+                        Continue Writing
+                      </Button>
+                    </CardContent>
+                  </Card>
+                )
+              })}
+            </div>
+          </>
+        )}
       </main>
     </div>
   )
