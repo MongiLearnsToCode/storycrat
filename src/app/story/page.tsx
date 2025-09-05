@@ -232,9 +232,9 @@ function StoryPageContent() {
       <div className="border-b p-3 lg:p-4">
         <div className="max-w-[1600px] mx-auto flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="flex items-center gap-2 lg:gap-4">
-            <Button variant="ghost" size="sm" onClick={() => router.push('/')}>
+            <Button variant="ghost" size="sm" onClick={() => router.push('/dashboard')}>
               <ArrowLeft className="h-4 w-4 mr-2" />
-              Home
+              Dashboard
             </Button>
             <h1 className="text-lg lg:text-xl xl:text-2xl font-bold truncate">{currentStory.title}</h1>
             <Badge variant="secondary" className="hidden sm:inline-flex">Hero&apos;s Journey</Badge>
