@@ -83,8 +83,8 @@ function FrameworkPageContent({ storyTitle, setStoryTitle, router }: {
             </CardHeader>
             <CardContent className="space-y-4 lg:space-y-6">
               <ul className="text-sm lg:text-base text-muted-foreground space-y-2">
-                <li>• 9 structured story beats</li>
-                <li>• Character transformation arc</li>
+                <li>• 12 structured story beats</li>
+                <li>• Three-act structure</li>
                 <li>• Proven narrative framework</li>
               </ul>
               <Button 
