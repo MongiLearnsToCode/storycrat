@@ -26,11 +26,11 @@ export default function ProjectsPage() {
     return (
       <div className="min-h-screen bg-background">
         <div className="border-b p-3 lg:p-4">
-          <div className="max-w-7xl mx-auto flex items-center justify-between">
+          <div className="max-w-none mx-auto flex items-center justify-between">
             <h1 className="text-xl lg:text-2xl xl:text-3xl font-bold">My Stories</h1>
           </div>
         </div>
-        <div className="max-w-7xl mx-auto p-4 lg:p-6">
+        <div className="px-4 lg:px-8">
           <div className="text-center py-12">Loading...</div>
         </div>
       </div>
@@ -71,7 +71,7 @@ function ProjectsPageContent() {
   return (
     <div className="min-h-screen bg-background">
       <div className="border-b p-3 lg:p-4">
-        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div className="max-w-none mx-auto px-4 lg:px-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="flex items-center gap-2 lg:gap-4">
             <Button variant="ghost" size="sm" onClick={() => router.push('/')}>
               <ArrowLeft className="h-4 w-4 mr-2" />
@@ -114,7 +114,7 @@ function ProjectsPageContent() {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto p-4 lg:p-6">
+      <div className="px-4 lg:px-8">
         {stories.length === 0 ? (
           <div className="text-center py-12 lg:py-20">
             <h2 className="text-xl lg:text-2xl font-semibold mb-2">No stories yet</h2>
