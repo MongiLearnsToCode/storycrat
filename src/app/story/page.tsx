@@ -59,8 +59,7 @@ function StoryPageContent() {
     addCharacter: addLocalCharacter,
     updateCharacter: updateLocalCharacter,
     deleteCharacter: deleteLocalCharacter,
-    updateTitle: updateLocalTitle,
-    setCurrentStory
+    updateTitle: updateLocalTitle
   } = useConvexStoryStore()
   
   const updateBeatContentMutation = useMutation(api.stories.updateBeatContent)
@@ -68,7 +67,6 @@ function StoryPageContent() {
   const updateCharacterMutation = useMutation(api.stories.updateCharacter)
   const deleteCharacterMutation = useMutation(api.stories.deleteCharacter)
   const updateStoryTitleMutation = useMutation(api.stories.updateStoryTitle)
-  const createStoryMutation = useMutation(api.stories.createStory)
   
   const [editingCharacter, setEditingCharacter] = useState<Character | null>(null)
   const [characterToDelete, setCharacterToDelete] = useState<Character | null>(null)
@@ -76,51 +74,14 @@ function StoryPageContent() {
   const [currentSuggestion, setCurrentSuggestion] = useState<string | null>(null)
   const [isSaving, setIsSaving] = useState(false)
   const [isSaved, setIsSaved] = useState(false)
-  const [isCreatingStory, setIsCreatingStory] = useState(false)
 
   const debouncedStory = useDebounce(currentStory, 500)
 
   useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search)
-    const title = urlParams.get('title')
-    
-    if (title && !currentStory) {
-      setIsCreatingStory(true)
-      createStoryMutation({ title, framework: "hero-journey" })
-        .then(storyId => {
-          const newStory = {
-            _id: storyId,
-            title,
-            framework: "hero-journey",
-            beats: [
-              { id: 'ordinary-world', title: 'The Ordinary World', description: 'Show the hero in their normal life before transformation begins.', content: '', completed: false },
-              { id: 'call-to-adventure', title: 'The Call to Adventure', description: 'The hero is presented with a problem or challenge.', content: '', completed: false },
-              { id: 'refusal-of-call', title: 'Refusal of the Call', description: 'The hero hesitates or refuses the adventure.', content: '', completed: false },
-              { id: 'meeting-mentor', title: 'Meeting the Mentor', description: 'The hero encounters a wise figure who gives advice.', content: '', completed: false },
-              { id: 'crossing-threshold', title: 'Crossing the First Threshold', description: 'The hero commits to the adventure and enters a new world.', content: '', completed: false },
-              { id: 'tests-allies-enemies', title: 'Tests, Allies, and Enemies', description: 'The hero faces challenges and makes allies and enemies.', content: '', completed: false },
-              { id: 'approach-inmost-cave', title: 'Approach to the Inmost Cave', description: 'The hero prepares for the major challenge in the special world.', content: '', completed: false },
-              { id: 'ordeal', title: 'The Ordeal', description: 'The hero faces their greatest fear or most difficult challenge.', content: '', completed: false },
-              { id: 'reward', title: 'Reward (Seizing the Sword)', description: 'The hero survives and gains something from the experience.', content: '', completed: false },
-              { id: 'road-back', title: 'The Road Back', description: 'The hero begins the journey back to the ordinary world.', content: '', completed: false },
-              { id: 'resurrection', title: 'The Resurrection', description: 'The hero faces a final test and is transformed.', content: '', completed: false },
-              { id: 'return-with-elixir', title: 'Return with the Elixir', description: 'The hero returns home transformed with wisdom to help others.', content: '', completed: false }
-            ],
-            characters: [],
-            lastEdited: Date.now()
-          }
-          setCurrentStory(newStory)
-          router.replace('/story')
-        })
-        .catch(error => {
-          console.error('Failed to create story:', error)
-          router.push('/framework')
-        })
-        .finally(() => setIsCreatingStory(false))
-    } else if (!currentStory && !title) {
+    if (!currentStory) {
       router.push('/framework')
     }
-  }, [currentStory, createStoryMutation, setCurrentStory, router])
+  }, [currentStory, router])
 
   const { isSignedIn } = useAuth()
 
@@ -152,12 +113,12 @@ function StoryPageContent() {
     }
   }, [debouncedStory, currentBeatIndex, updateBeatContentMutation, updateStoryTitleMutation, isSignedIn])
 
-  if (isCreatingStory || !currentStory) {
+  if (!currentStory) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Creating your story...</p>
+          <p className="text-muted-foreground">Loading story...</p>
         </div>
       </div>
     )
@@ -244,6 +205,21 @@ function StoryPageContent() {
     setCurrentSuggestion(null)
   }
 
+  const getFrameworkDisplayName = (frameworkId: string) => {
+    switch (frameworkId) {
+      case 'hero-journey':
+        return "Hero's Journey"
+      case 'three-act':
+        return "Three-Act Structure"
+      case 'hauge-6-stage':
+        return "6-Stage Structure"
+      case 'story-circle':
+        return "Story Circle"
+      default:
+        return "Unknown Framework"
+    }
+  }
+
   return (
     <div className="min-h-screen bg-background">
       <StoryOnboarding />
@@ -255,7 +231,7 @@ function StoryPageContent() {
               Dashboard
             </Button>
             <Input value={currentStory.title} onChange={(e) => handleTitleChange(e.target.value)} className="text-lg lg:text-xl xl:text-2xl font-bold truncate bg-transparent border-none focus-visible:ring-0 focus-visible:ring-offset-0" />
-            <Badge variant="secondary" className="hidden sm:inline-flex">Hero&apos;s Journey</Badge>
+            <Badge variant="secondary" className="hidden sm:inline-flex">{getFrameworkDisplayName(currentStory.framework)}</Badge>
           </div>
           <div className="flex items-center gap-2 lg:gap-4 w-full sm:w-auto">
             <Button 
