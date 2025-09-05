@@ -24,10 +24,10 @@ export default function LandingPage() {
             icon: <BookOpen className="mr-2 h-4 w-4" />
           }}
           mockupImage={{
-            src: "https://images.unsplash.com/photo-1542831371-29b0f74f9713?q=80&w=1200&h=800&auto=format&fit=crop",
+            src: "/images/storycrat-interface-mockup.png",
             alt: "StoryGenPro Interface - Story Writing Dashboard",
-            width: 1200,
-            height: 800
+            width: 1400,
+            height: 900
           }}
         />
       </SignedOut>
@@ -45,10 +45,10 @@ export default function LandingPage() {
             icon: <Feather className="mr-2 h-4 w-4" />
           }}
           mockupImage={{
-            src: "https://images.unsplash.com/photo-1542831371-29b0f74f9713?q=80&w=1200&h=800&auto=format&fit=crop",
+            src: "/images/storycrat-interface-mockup.png",
             alt: "StoryGenPro Interface - Story Writing Dashboard",
-            width: 1200,
-            height: 800
+            width: 1400,
+            height: 900
           }}
         />
       </SignedIn>
