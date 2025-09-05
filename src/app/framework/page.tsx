@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useRouter } from "next/navigation"
 import { useState, useEffect } from "react"
+import { useConvexStoryStore } from "@/lib/convex-store"
 
 import type { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime"
 
@@ -15,9 +16,12 @@ export default function FrameworkPage() {
   const router = useRouter()
   const [storyTitle, setStoryTitle] = useState("")
   const [isClient, setIsClient] = useState(false)
+  const { clearCurrentStory } = useConvexStoryStore()
   
   useEffect(() => {
     setIsClient(true)
+    // Clear any existing story when starting a new one
+    clearCurrentStory()
   }, [])
 
   if (!isClient) {
