@@ -6,10 +6,10 @@ import { Textarea } from "@/components/ui/textarea"
 import { Progress } from "@/components/ui/progress"
 import { Badge } from "@/components/ui/badge"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
+
 import { useMutation, useQuery } from "convex/react"
 import { api } from "../../../convex/_generated/api"
 import { saveLocalStory } from "@/lib/local-storage"
@@ -19,10 +19,13 @@ import { useConvexStoryStore, Character } from "@/lib/convex-store"
 import { useRouter } from "next/navigation"
 import { useState, useEffect } from "react"
 import { useDebounce } from "@/hooks/use-debounce"
-import { exportToTxt, exportToPdf } from "@/lib/export-utils"
+import { exportToTxt } from "@/lib/export-utils";
 import { Users, ArrowLeft, ArrowRight, Download, FileText, FileImage, Plus, Trash2, Edit } from "lucide-react"
-import { StoryOnboarding } from "@/components/onboarding"
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog"
+import { default as dynamicImport } from 'next/dynamic'
+
+const StoryOnboarding = dynamicImport(() => import('@/components/onboarding').then(mod => mod.StoryOnboarding), { ssr: false })
+const DeleteCharacterDialog = dynamicImport(() => import('@/components/delete-character-dialog').then(mod => mod.DeleteCharacterDialog), { ssr: false })
+const CharacterDialog = dynamicImport(() => import('@/components/character-dialog').then(mod => mod.CharacterDialog), { ssr: false })
 
 export const dynamic = 'force-dynamic'
 
@@ -250,7 +253,12 @@ function StoryPageContent() {
                   <FileText className="h-4 w-4 mr-2" />
                   Export as TXT
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => exportToPdf(currentStory)}>
+                <DropdownMenuItem
+                  onClick={async () => {
+                    const { exportToPdf } = await import("@/lib/pdf-export");
+                    exportToPdf(currentStory);
+                  }}
+                >
                   <FileImage className="h-4 w-4 mr-2" />
                   Export as PDF
                 </DropdownMenuItem>
@@ -376,91 +384,15 @@ function StoryPageContent() {
         character={editingCharacter}
       />
 
-      <AlertDialog open={!!characterToDelete} onOpenChange={(open) => !open && setCharacterToDelete(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This will permanently delete the character &quot;{characterToDelete?.name}&quot;. This action cannot be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDeleteCharacter}>Delete</AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <DeleteCharacterDialog
+        open={!!characterToDelete}
+        onOpenChange={(open) => !open && setCharacterToDelete(null)}
+        onDelete={handleDeleteCharacter}
+        character={characterToDelete}
+      />
+
+      
     </div>
   )
 }
 
-interface CharacterDialogProps {
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  onSave: (character: Omit<Character, 'id'>) => void
-  character: Character | null
-}
-
-function CharacterDialog({ open, onOpenChange, onSave, character }: CharacterDialogProps) {
-  const [name, setName] = useState('')
-  const [role, setRole] = useState('')
-  const [description, setDescription] = useState('')
-  const [appearance, setAppearance] = useState('')
-  const [backstory, setBackstory] = useState('')
-
-  useEffect(() => {
-    if (character) {
-      setName(character.name)
-      setRole(character.role)
-      setDescription(character.description)
-      setAppearance(character.appearance || '')
-      setBackstory(character.backstory || '')
-    } else {
-      setName('')
-      setRole('')
-      setDescription('')
-      setAppearance('')
-      setBackstory('')
-    }
-  }, [character])
-
-  const handleSave = () => {
-    if (name.trim()) {
-      onSave({ name, role, description, appearance, backstory })
-      onOpenChange(false)
-    }
-  }
-
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader className="pb-4">
-          <DialogTitle>{character ? 'Edit Character' : 'Add Character'}</DialogTitle>
-        </DialogHeader>
-        <div className="space-y-6">
-          <div className="space-y-2">
-            <Label htmlFor="char-name">Name</Label>
-            <Input id="char-name" value={name} onChange={(e) => setName(e.target.value)} />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="char-role">Role</Label>
-            <Input id="char-role" placeholder="e.g., Hero, Mentor, Villain" value={role} onChange={(e) => setRole(e.target.value)} />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="char-desc">Description</Label>
-            <Textarea id="char-desc" placeholder="Brief character description..." value={description} onChange={(e) => setDescription(e.target.value)} className="min-h-[80px]" />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="char-appearance">Appearance</Label>
-            <Textarea id="char-appearance" placeholder="Physical appearance, clothing, etc..." value={appearance} onChange={(e) => setAppearance(e.target.value)} className="min-h-[80px]" />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="char-backstory">Backstory</Label>
-            <Textarea id="char-backstory" placeholder="Relevant history, motivations, etc..." value={backstory} onChange={(e) => setBackstory(e.target.value)} className="min-h-[80px]" />
-          </div>
-          <Button onClick={handleSave} className="w-full mt-6">{character ? 'Save Changes' : 'Add Character'}</Button>
-        </div>
-      </DialogContent>
-    </Dialog>
-  )
-}
