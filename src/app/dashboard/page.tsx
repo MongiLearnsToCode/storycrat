@@ -1,10 +1,10 @@
 'use client'
 
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useUser } from "@clerk/nextjs"
-import { Book, Bot, Briefcase, CheckCircle, LayoutGrid, ListChecks, Plus, User, Users, TrendingUp, FileText, Trophy } from "lucide-react"
+import { Book, Bot, Briefcase, Plus, Users, TrendingUp, FileText, Trophy } from "lucide-react"
 import Link from "next/link"
 import { useQuery, useMutation } from "convex/react"
 import { api } from "../../../convex/_generated/api"
@@ -12,6 +12,7 @@ import { Story, Character } from "@/lib/convex-store"
 import { useRouter } from "next/navigation"
 import { useConvexStoryStore } from "@/lib/convex-store"
 import { CharacterDialog } from "@/components/character-dialog"
+import { CharacterSheet } from "@/components/character-sheet"
 import { useState } from "react"
 import { Id } from "../../../convex/_generated/dataModel"
 
@@ -20,8 +21,12 @@ export default function DashboardPage() {
   const stories = useQuery(api.stories.getStories)
   const router = useRouter()
   const setCurrentStory = useConvexStoryStore(state => state.setCurrentStory)
+  
   const [isCharacterDialogOpen, setCharacterDialogOpen] = useState(false)
+  const [editingCharacter, setEditingCharacter] = useState<Character | null>(null)
+
   const addCharacterMutation = useMutation(api.stories.addCharacter)
+  const updateCharacterMutation = useMutation(api.stories.updateCharacter)
 
   const getGreeting = () => {
     const hour = new Date().getHours()
@@ -44,13 +49,33 @@ export default function DashboardPage() {
 
   const activeStory = stories && stories.length > 0 ? stories[0] : null
 
-  const handleAddCharacter = async (character: Omit<Character, 'id'>) => {
+  const handleSaveCharacter = async (characterData: Omit<Character, 'id'>) => {
     if (!activeStory) return;
-    await addCharacterMutation({
-      storyId: activeStory._id as Id<"stories">,
-      ...character
-    });
+
+    if (editingCharacter) {
+      await updateCharacterMutation({
+        storyId: activeStory._id as Id<"stories">,
+        characterId: editingCharacter.id,
+        ...characterData
+      });
+    } else {
+      await addCharacterMutation({
+        storyId: activeStory._id as Id<"stories">,
+        ...characterData
+      });
+    }
+    setEditingCharacter(null)
   };
+
+  const handleAddCharacterClick = () => {
+    setEditingCharacter(null)
+    setCharacterDialogOpen(true)
+  }
+
+  const handleEditCharacterClick = (character: Character) => {
+    setEditingCharacter(character)
+    setCharacterDialogOpen(true)
+  }
 
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
@@ -69,19 +94,20 @@ export default function DashboardPage() {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {activeStory && <ActiveStorySnapshot story={activeStory} onContinue={handleContinueStory} />}
         {stories && <ProjectWideInsights stories={stories} />}
-        <CharacterDirectory onAddCharacter={() => setCharacterDialogOpen(true)} characters={activeStory?.characters || []} />
+        <CharacterDirectory characters={activeStory?.characters || []} onAddCharacter={handleAddCharacterClick} onEditCharacter={handleEditCharacterClick} />
         <FrameworkExplorer />
       </div>
       <CharacterDialog
         open={isCharacterDialogOpen}
         onOpenChange={setCharacterDialogOpen}
-        onSave={handleAddCharacter}
-        character={null}
+        onSave={handleSaveCharacter}
+        character={editingCharacter}
       />
     </div>
   )
 }
 
+// ... (ActiveStorySnapshot and ProjectWideInsights components remain the same)
 function ActiveStorySnapshot({ story, onContinue }: { story: Story, onContinue: (story: Story) => void }) {
   const completedBeats = story.beats.filter(beat => beat.completed).length
   const progress = (completedBeats / story.beats.length) * 100
@@ -155,7 +181,7 @@ function ProjectWideInsights({ stories }: { stories: Story[] }) {
   )
 }
 
-function CharacterDirectory({ onAddCharacter, characters }: { onAddCharacter: () => void, characters: Character[] }) {
+function CharacterDirectory({ characters, onAddCharacter, onEditCharacter }: { characters: Character[], onAddCharacter: () => void, onEditCharacter: (character: Character) => void }) {
     return (
         <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -165,21 +191,18 @@ function CharacterDirectory({ onAddCharacter, characters }: { onAddCharacter: ()
                 </CardTitle>
             </CardHeader>
             <CardContent className="text-center text-muted-foreground pt-6">
-                {characters.length === 0 ? (
-                    <p className="text-sm">No characters created yet.</p>
-                ) : (
-                    <div className="flex justify-center space-x-2">
-                        {characters.slice(0, 4).map(char => (
-                            <Avatar key={char.id}>
-                                <AvatarFallback>{char.name.substring(0, 2)}</AvatarFallback>
-                            </Avatar>
-                        ))}
-                    </div>
-                )}
-                <Button variant="outline" size="sm" className="mt-4" onClick={onAddCharacter}>
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add Character
-                </Button>
+                <div className="flex justify-center space-x-2 mb-4">
+                    {characters.slice(0, 4).map(char => (
+                        <Avatar key={char.id}>
+                            <AvatarFallback>{char.name.substring(0, 2)}</AvatarFallback>
+                        </Avatar>
+                    ))}
+                </div>
+                <CharacterSheet characters={characters} onAddCharacter={onAddCharacter} onEditCharacter={onEditCharacter}>
+                    <Button variant="outline" size="sm">
+                        View Characters
+                    </Button>
+                </CharacterSheet>
             </CardContent>
         </Card>
     )

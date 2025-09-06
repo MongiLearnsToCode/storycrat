@@ -23,20 +23,22 @@ export function CharacterDialog({ open, onOpenChange, onSave, character }: Chara
   const [backstory, setBackstory] = useState('')
 
   useEffect(() => {
-    if (character) {
-      setName(character.name)
-      setRole(character.role)
-      setDescription(character.description)
-      setAppearance(character.appearance || '')
-      setBackstory(character.backstory || '')
-    } else {
-      setName('')
-      setRole('')
-      setDescription('')
-      setAppearance('')
-      setBackstory('')
+    if (open) {
+      if (character) {
+        setName(character.name)
+        setRole(character.role)
+        setDescription(character.description)
+        setAppearance(character.appearance || '')
+        setBackstory(character.backstory || '')
+      } else {
+        setName('')
+        setRole('')
+        setDescription('')
+        setAppearance('')
+        setBackstory('')
+      }
     }
-  }, [character])
+  }, [character, open])
 
   const handleSave = () => {
     if (name.trim()) {
