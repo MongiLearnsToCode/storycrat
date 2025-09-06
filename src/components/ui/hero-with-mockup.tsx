@@ -37,11 +37,7 @@ export function HeroWithMockup({
     text: "Get Started",
     href: "/get-started",
   },
-  secondaryCta = {
-    text: "GitHub",
-    href: "https://github.com/your-repo",
-    icon: <Github className="mr-2 h-4 w-4" />,
-  },
+  secondaryCta,
   mockupImage,
   className,
 }: HeroWithMockupProps) {
@@ -108,28 +104,30 @@ export function HeroWithMockup({
               )}
             </Button>
 
-            <Button
-              asChild={!secondaryCta.onClick && !!secondaryCta.href}
-              size="lg"
-              variant="ghost"
-              onClick={secondaryCta.onClick}
-              className={cn(
-                "text-foreground/80 dark:text-foreground/70",
-                "transition-all duration-300",
-              )}
-            >
-              {secondaryCta.onClick || !secondaryCta.href ? (
-                <>
-                  {secondaryCta.icon}
-                  {secondaryCta.text}
-                </>
-              ) : (
-                <a href={secondaryCta.href}>
-                  {secondaryCta.icon}
-                  {secondaryCta.text}
-                </a>
-              )}
-            </Button>
+            {secondaryCta && (
+              <Button
+                asChild={!secondaryCta.onClick && !!secondaryCta.href}
+                size="lg"
+                variant="ghost"
+                onClick={secondaryCta.onClick}
+                className={cn(
+                  "text-foreground/80 dark:text-foreground/70",
+                  "transition-all duration-300",
+                )}
+              >
+                {secondaryCta.onClick || !secondaryCta.href ? (
+                  <>
+                    {secondaryCta.icon}
+                    {secondaryCta.text}
+                  </>
+                ) : (
+                  <a href={secondaryCta.href}>
+                    {secondaryCta.icon}
+                    {secondaryCta.text}
+                  </a>
+                )}
+              </Button>
+            )}
           </div>
 
           {/* Mockup */}
