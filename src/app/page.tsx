@@ -19,11 +19,7 @@ export default function LandingPage() {
             text: "Start Writing Now",
             onClick: () => router.push('/framework')
           }}
-          secondaryCta={{
-            text: "View Demo",
-            onClick: () => router.push('/framework'),
-            icon: <BookOpen className="mr-2 h-4 w-4" />
-          }}
+          
           mockupImage={{
             src: "/images/storycrat-interface-mockup.png",
             alt: "StoryGenPro Interface - Story Writing Dashboard",
