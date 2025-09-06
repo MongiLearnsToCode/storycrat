@@ -4,6 +4,8 @@ import { Mockup } from "@/components/ui/mockup"
 import { Glow } from "@/components/ui/glow"
 import { Github } from "lucide-react"
 import Image from "next/image"
+import { useScrollAnimation } from "@/hooks/useScrollAnimation";
+import { useRef } from "react";
 
 interface HeroWithMockupProps {
   title: string
@@ -43,6 +45,9 @@ export function HeroWithMockup({
   mockupImage,
   className,
 }: HeroWithMockupProps) {
+  const mockupRef = useRef(null);
+  const animationStyle = useScrollAnimation(mockupRef);
+
   return (
     <section
       className={cn(
@@ -128,7 +133,7 @@ export function HeroWithMockup({
           </div>
 
           {/* Mockup */}
-          <div className="relative w-full pt-12 px-4 sm:px-6 lg:px-8">
+          <div ref={mockupRef} style={animationStyle} className="relative w-full pt-12 px-4 sm:px-6 lg:px-8">
             <Mockup
               className={cn(
                 "animate-appear opacity-0 [animation-delay:700ms]",
