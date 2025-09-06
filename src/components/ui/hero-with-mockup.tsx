@@ -45,7 +45,7 @@ export function HeroWithMockup({
   mockupImage,
   className,
 }: HeroWithMockupProps) {
-  const mockupRef = useRef(null);
+  const mockupRef = useRef<HTMLDivElement>(null);
   const animationStyle = useScrollAnimation(mockupRef);
 
   return (

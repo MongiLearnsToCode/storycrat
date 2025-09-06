@@ -1,7 +1,7 @@
 
 import { useState, useEffect, RefObject } from 'react';
 
-export function useScrollAnimation(ref: RefObject<HTMLElement>) {
+export function useScrollAnimation(ref: RefObject<HTMLElement | null>) {
   const [style, setStyle] = useState({});
 
   useEffect(() => {
