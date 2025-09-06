@@ -36,11 +36,7 @@ export default function LandingPage() {
             text: "Go to Dashboard",
             onClick: () => router.push('/dashboard')
           }}
-          secondaryCta={{
-            text: "New Story",
-            onClick: () => router.push('/framework'),
-            icon: <Feather className="mr-2 h-4 w-4" />
-          }}
+          
           mockupImage={{
             src: "/images/storycrat-interface-mockup.png",
             alt: "StoryGenPro Interface - Story Writing Dashboard",
