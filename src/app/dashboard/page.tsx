@@ -4,11 +4,19 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useUser } from "@clerk/nextjs"
-import { Briefcase, LayoutGrid, ListChecks, Plus, User, Users } from "lucide-react"
+import { Book, Bot, Briefcase, CheckCircle, LayoutGrid, ListChecks, Plus, User, Users, TrendingUp, FileText, Trophy } from "lucide-react"
 import Link from "next/link"
+import { useQuery } from "convex/react"
+import { api } from "../../../convex/_generated/api"
+import { Story } from "@/lib/convex-store"
+import { useRouter } from "next/navigation"
+import { useConvexStoryStore } from "@/lib/convex-store"
 
 export default function DashboardPage() {
   const { user } = useUser()
+  const stories = useQuery(api.stories.getStories)
+  const router = useRouter()
+  const setCurrentStory = useConvexStoryStore(state => state.setCurrentStory)
 
   const getGreeting = () => {
     const hour = new Date().getHours()
@@ -24,6 +32,13 @@ export default function DashboardPage() {
     year: 'numeric',
   })
 
+  const handleContinueStory = (story: Story) => {
+    setCurrentStory(story)
+    router.push('/story')
+  }
+
+  const activeStory = stories && stories.length > 0 ? stories[0] : null
+
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
       <div className="flex items-center justify-between space-y-2">
@@ -32,94 +47,132 @@ export default function DashboardPage() {
           <h2 className="text-3xl font-bold tracking-tight">{getGreeting()}, {user?.firstName || 'User'}</h2>
         </div>
         <div className="flex items-center space-x-2">
-          <Button variant="outline">
-            <LayoutGrid className="h-4 w-4 mr-2" />
-            Customize
+          <Button onClick={() => router.push('/framework')}>
+            <Plus className="h-4 w-4 mr-2" />
+            New Story
           </Button>
         </div>
       </div>
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        <Card className="lg:col-span-1">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium flex items-center">
-              <Briefcase className="h-4 w-4 mr-2 text-primary" />
-              Recent Projects
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center space-x-4">
-              <div className="bg-primary text-primary-foreground p-3 rounded-lg">
-                <Briefcase className="h-6 w-6" />
-              </div>
-              <div>
-                <p className="font-semibold">A Deal With Dax</p>
-                <div className="flex items-center text-sm text-muted-foreground">
-                  <Avatar className="h-5 w-5 mr-1">
-                    <AvatarFallback>SM</AvatarFallback>
-                  </Avatar>
-                  <span className="text-xs">SM</span>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium flex items-center">
-              <ListChecks className="h-4 w-4 mr-2 text-primary" />
-              My Tasks
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="text-center text-muted-foreground">
-            <div className="flex flex-col items-center justify-center h-full pt-4">
-              <ListChecks className="h-8 w-8 mb-4 text-gray-300" />
-              <p className="text-sm">No task cards assigned to you</p>
-              <Button variant="link" className="mt-2">
-                <Plus className="h-4 w-4 mr-1" />
-                View Task Boards
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium flex items-center">
-              <User className="h-4 w-4 mr-2 text-primary" />
-              Recent Activity
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="text-center text-muted-foreground">
-            <div className="flex flex-col items-center justify-center h-full pt-4">
-                <User className="h-8 w-8 mb-4 text-gray-300" />
-                <p className="text-sm">No recent activity</p>
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="lg:col-span-1">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium flex items-center">
-              <Users className="h-4 w-4 mr-2 text-primary" />
-              My Team
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="flex items-center space-x-6">
-            <div className="flex flex-col items-center">
-              <Avatar className="h-12 w-12">
-                <AvatarImage src={user?.imageUrl} />
-                <AvatarFallback>{user?.firstName?.[0]}{user?.lastName?.[0]}</AvatarFallback>
-              </Avatar>
-              <p className="font-semibold mt-2 text-sm">{user?.firstName} {user?.lastName}</p>
-              <p className="text-xs text-muted-foreground">Owner</p>
-            </div>
-            <div className="flex flex-col items-center">
-              <Button variant="outline" className="rounded-full h-12 w-12 p-0">
-                <Plus className="h-6 w-6" />
-              </Button>
-              <p className="font-semibold mt-2 text-sm">Invite User</p>
-            </div>
-          </CardContent>
-        </Card>
+        {activeStory && <ActiveStorySnapshot story={activeStory} onContinue={handleContinueStory} />}
+        {stories && <ProjectWideInsights stories={stories} />}
+        <CharacterDirectory />
+        <FrameworkExplorer />
       </div>
     </div>
   )
+}
+
+function ActiveStorySnapshot({ story, onContinue }: { story: Story, onContinue: (story: Story) => void }) {
+  const completedBeats = story.beats.filter(beat => beat.completed).length
+  const progress = (completedBeats / story.beats.length) * 100
+
+  return (
+    <Card className="lg:col-span-2">
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <CardTitle className="text-sm font-medium flex items-center">
+          <Briefcase className="h-4 w-4 mr-2 text-primary" />
+          Active Story Snapshot
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <h3 className="text-2xl font-bold">{story.title}</h3>
+        <p className="text-xs text-muted-foreground">Last edited: {new Date(story.lastEdited).toLocaleDateString()}</p>
+        <div className="flex items-center gap-3 my-4">
+          <div className="flex-1 bg-muted rounded-full h-1.5">
+            <div className="bg-primary h-1.5 rounded-full" style={{ width: `${progress}%` }} />
+          </div>
+          <span className="text-xs font-medium text-muted-foreground">
+            {completedBeats}/{story.beats.length} Beats
+          </span>
+        </div>
+        <Button onClick={() => onContinue(story)}>Continue Writing</Button>
+      </CardContent>
+    </Card>
+  )
+}
+
+function ProjectWideInsights({ stories }: { stories: Story[] }) {
+  const totalWords = stories.reduce((acc, story) =>
+    acc + story.beats.reduce((beatAcc, beat) => beatAcc + (beat.content?.split(/\s+/).filter(Boolean).length || 0), 0)
+    , 0)
+
+  const completedStories = stories.filter(story => story.beats.every(beat => beat.completed)).length
+
+  const frameworkCounts = stories.reduce((acc, story) => {
+    acc[story.framework] = (acc[story.framework] || 0) + 1
+    return acc
+  }, {} as Record<string, number>)
+
+  const mostUsedFramework = Object.keys(frameworkCounts).reduce((a, b) => frameworkCounts[a] > frameworkCounts[b] ? a : b, '')
+  const frameworkMap: { [key: string]: string } = {
+      'hero-journey': "Hero's Journey",
+      'three-act': "Three-Act Structure",
+  }
+
+  return (
+    <Card>
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <CardTitle className="text-sm font-medium flex items-center">
+          <TrendingUp className="h-4 w-4 mr-2 text-primary" />
+          Project-Wide Insights
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="flex items-center">
+          <FileText className="h-4 w-4 mr-3 text-muted-foreground" />
+          <p className="text-sm">Total Word Count: <span className="font-semibold">{totalWords.toLocaleString()}</span></p>
+        </div>
+        <div className="flex items-center">
+          <Trophy className="h-4 w-4 mr-3 text-muted-foreground" />
+          <p className="text-sm">Stories Completed: <span className="font-semibold">{completedStories}</span></p>
+        </div>
+        <div className="flex items-center">
+          <Book className="h-4 w-4 mr-3 text-muted-foreground" />
+          <p className="text-sm">Most Used Framework: <span className="font-semibold">{frameworkMap[mostUsedFramework] || mostUsedFramework}</span></p>
+        </div>
+      </CardContent>
+    </Card>
+  )
+}
+
+function CharacterDirectory() {
+    return (
+        <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium flex items-center">
+                    <Users className="h-4 w-4 mr-2 text-primary" />
+                    Character Directory
+                </CardTitle>
+            </CardHeader>
+            <CardContent className="text-center text-muted-foreground pt-6">
+                <p className="text-sm">No characters created yet.</p>
+                <Button variant="outline" size="sm" className="mt-4">
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Character
+                </Button>
+            </CardContent>
+        </Card>
+    )
+}
+
+function FrameworkExplorer() {
+    return (
+        <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium flex items-center">
+                    <Bot className="h-4 w-4 mr-2 text-primary" />
+                    Framework Explorer
+                </CardTitle>
+            </CardHeader>
+            <CardContent className="text-center text-muted-foreground pt-6">
+                <p className="text-sm font-semibold">Framework of the Week</p>
+                <p className="text-lg font-bold mt-2">Three-Act Structure</p>
+                <p className="text-xs mt-1">A classic narrative arc for compelling stories.</p>
+                <Button variant="secondary" size="sm" className="mt-4">
+                    Learn More
+                </Button>
+            </CardContent>
+        </Card>
+    )
 }
