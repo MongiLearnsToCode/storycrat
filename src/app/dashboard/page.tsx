@@ -12,7 +12,7 @@ import { Story, Character } from "@/lib/convex-store"
 import { useRouter } from "next/navigation"
 import { useConvexStoryStore } from "@/lib/convex-store"
 import { CharacterDialog } from "@/components/character-dialog"
-import { CharacterSheet } from "@/components/character-sheet"
+import { CharacterGalleryModal } from "@/components/character-gallery-modal"
 import { useState } from "react"
 import { Id } from "../../../convex/_generated/dataModel"
 
@@ -22,6 +22,7 @@ export default function DashboardPage() {
   const router = useRouter()
   const setCurrentStory = useConvexStoryStore(state => state.setCurrentStory)
   
+  const [isGalleryOpen, setGalleryOpen] = useState(false)
   const [isCharacterDialogOpen, setCharacterDialogOpen] = useState(false)
   const [editingCharacter, setEditingCharacter] = useState<Character | null>(null)
 
@@ -94,9 +95,21 @@ export default function DashboardPage() {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {activeStory && <ActiveStorySnapshot story={activeStory} onContinue={handleContinueStory} />}
         {stories && <ProjectWideInsights stories={stories} />}
-        <CharacterDirectory characters={activeStory?.characters || []} onAddCharacter={handleAddCharacterClick} onEditCharacter={handleEditCharacterClick} />
+        <CharacterDirectory characters={activeStory?.characters || []} onManageClick={() => setGalleryOpen(true)} />
         <FrameworkExplorer />
       </div>
+      
+      <CharacterGalleryModal
+        open={isGalleryOpen}
+        onOpenChange={setGalleryOpen}
+        characters={activeStory?.characters || []}
+        onAddCharacter={handleAddCharacterClick}
+        onEditCharacter={handleEditCharacterClick}
+      >
+        {/* This is the trigger, but we trigger it from the CharacterDirectory card, so this can be empty */}
+        <div />
+      </CharacterGalleryModal>
+
       <CharacterDialog
         open={isCharacterDialogOpen}
         onOpenChange={setCharacterDialogOpen}
@@ -107,7 +120,6 @@ export default function DashboardPage() {
   )
 }
 
-// ... (ActiveStorySnapshot and ProjectWideInsights components remain the same)
 function ActiveStorySnapshot({ story, onContinue }: { story: Story, onContinue: (story: Story) => void }) {
   const completedBeats = story.beats.filter(beat => beat.completed).length
   const progress = (completedBeats / story.beats.length) * 100
@@ -181,7 +193,7 @@ function ProjectWideInsights({ stories }: { stories: Story[] }) {
   )
 }
 
-function CharacterDirectory({ characters, onAddCharacter, onEditCharacter }: { characters: Character[], onAddCharacter: () => void, onEditCharacter: (character: Character) => void }) {
+function CharacterDirectory({ characters, onManageClick }: { characters: Character[], onManageClick: () => void }) {
     return (
         <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -198,11 +210,9 @@ function CharacterDirectory({ characters, onAddCharacter, onEditCharacter }: { c
                         </Avatar>
                     ))}
                 </div>
-                <CharacterSheet characters={characters} onAddCharacter={onAddCharacter} onEditCharacter={onEditCharacter}>
-                    <Button variant="outline" size="sm">
-                        View Characters
-                    </Button>
-                </CharacterSheet>
+                <Button variant="outline" size="sm" onClick={onManageClick}>
+                    Manage Characters
+                </Button>
             </CardContent>
         </Card>
     )
