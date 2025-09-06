@@ -1,25 +1,39 @@
-
 import { useState, useEffect, RefObject } from 'react';
 
 export function useScrollAnimation(ref: RefObject<HTMLElement | null>) {
-  const [style, setStyle] = useState({});
+  const [style, setStyle] = useState({
+    opacity: 0,
+    transform: 'translateY(20px)',
+    transition: 'opacity 0.5s ease-out, transform 0.5s ease-out',
+  });
 
   useEffect(() => {
-    function handleScroll() {
-      if (ref.current) {
-        const scrollY = window.scrollY;
-        const slowDown = 2;
-        const scaleAmount = Math.max(1 - scrollY / 1000, 0.9);
-
-        setStyle({
-          transform: `translateY(${-(scrollY / slowDown)}px) scale(${scaleAmount})`,
-          transition: 'transform 0.1s ease-out',
-        });
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setStyle({
+            opacity: 1,
+            transform: 'translateY(0px)',
+            transition: 'opacity 0.5s ease-out, transform 0.5s ease-out',
+          });
+        }
+      },
+      {
+        threshold: 0.1,
       }
+    );
+
+    const currentRef = ref.current;
+
+    if (currentRef) {
+      observer.observe(currentRef);
     }
 
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    return () => {
+      if (currentRef) {
+        observer.unobserve(currentRef);
+      }
+    };
   }, [ref]);
 
   return style;
