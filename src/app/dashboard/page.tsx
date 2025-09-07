@@ -95,7 +95,7 @@ export default function DashboardPage() {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {activeStory && <ActiveStorySnapshot story={activeStory} onContinue={handleContinueStory} />}
         {stories && <ProjectWideInsights stories={stories} />}
-        <CharacterDirectory characters={activeStory?.characters || []} onManageClick={() => setGalleryOpen(true)} />
+        <CharacterDirectory characters={activeStory?.characters || []} onManageClick={() => setGalleryOpen(true)} onAddCharacter={handleAddCharacterClick} onEditCharacter={handleEditCharacterClick} />
         <FrameworkExplorer />
       </div>
       
@@ -193,7 +193,7 @@ function ProjectWideInsights({ stories }: { stories: Story[] }) {
   )
 }
 
-function CharacterDirectory({ characters, onManageClick }: { characters: Character[], onManageClick: () => void }) {
+function CharacterDirectory({ characters, onManageClick, onAddCharacter, onEditCharacter }: { characters: Character[], onManageClick: () => void, onAddCharacter: () => void, onEditCharacter: (character: Character) => void }) {
     return (
         <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -201,18 +201,45 @@ function CharacterDirectory({ characters, onManageClick }: { characters: Charact
                     <Users className="h-4 w-4 mr-2 text-primary" />
                     Character Directory
                 </CardTitle>
-            </CardHeader>
-            <CardContent className="text-center text-muted-foreground pt-6">
-                <div className="flex justify-center space-x-2 mb-4">
-                    {characters.slice(0, 4).map(char => (
-                        <Avatar key={char.id}>
-                            <AvatarFallback>{char.name.substring(0, 2)}</AvatarFallback>
-                        </Avatar>
-                    ))}
-                </div>
-                <Button variant="outline" size="sm" onClick={onManageClick}>
-                    Manage Characters
+                <Button variant="ghost" size="sm" onClick={onAddCharacter}>
+                    <Plus className="h-4 w-4" />
                 </Button>
+            </CardHeader>
+            <CardContent>
+                {characters.length > 0 ? (
+                    <ul className="space-y-4">
+                        {characters.slice(0, 3).map(char => (
+                            <li key={char.id} className="flex items-center justify-between">
+                                <div className="flex items-center space-x-4">
+                                    <Avatar>
+                                        <AvatarFallback>{char.name.substring(0, 2)}</AvatarFallback>
+                                    </Avatar>
+                                    <div>
+                                        <p className="font-semibold">{char.name}</p>
+                                        <p className="text-sm text-muted-foreground">{char.description?.substring(0, 30) || 'No description'}...</p>
+                                    </div>
+                                </div>
+                                <Button variant="outline" size="sm" onClick={() => onEditCharacter(char)}>
+                                    Edit
+                                </Button>
+                            </li>
+                        ))}
+                    </ul>
+                ) : (
+                    <div className="text-center text-muted-foreground pt-6">
+                        <p>No characters yet.</p>
+                        <Button variant="secondary" size="sm" className="mt-4" onClick={onAddCharacter}>
+                            Add Character
+                        </Button>
+                    </div>
+                )}
+                {characters.length > 3 && (
+                    <div className="text-center mt-4">
+                        <Button variant="outline" size="sm" onClick={onManageClick}>
+                            View All ({characters.length})
+                        </Button>
+                    </div>
+                )}
             </CardContent>
         </Card>
     )
