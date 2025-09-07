@@ -232,10 +232,6 @@ export default function FrameworkPage() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Stages:</span>
-                    <span className="font-medium">{framework.stages}</span>
-                  </div>
                   <div>
                     <span className="text-muted-foreground">Best for:</span>
                     <p className="text-sm mt-1">{framework.bestFor}</p>
