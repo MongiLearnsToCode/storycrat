@@ -1,8 +1,8 @@
-# StoryGenPro Mockup Images
+# StoryCrat Mockup Images
 
 ## storycrat-interface-mockup.png
 
-This should be the screenshot of the StoryGenPro interface showing:
+This should be the screenshot of the StoryCrat interface showing:
 - The Story Circle framework selected
 - "YOU (Order)" beat expanded 
 - Story Structure panel on the left

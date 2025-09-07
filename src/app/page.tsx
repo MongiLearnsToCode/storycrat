@@ -22,7 +22,7 @@ export default function LandingPage() {
           
           mockupImage={{
             src: "/images/storycrat-interface-mockup.png",
-            alt: "StoryGenPro Interface - Story Writing Dashboard",
+            alt: "StoryCrat Interface - Story Writing Dashboard",
             width: 1400,
             height: 900
           }}
@@ -30,7 +30,7 @@ export default function LandingPage() {
       </SignedOut>
       <SignedIn>
         <HeroWithMockup
-          title="Welcome Back to StoryGenPro"
+          title="Welcome Back to StoryCrat"
           description="Continue crafting your stories with structured frameworks and powerful writing tools."
           primaryCta={{
             text: "Go to Dashboard",
@@ -39,7 +39,7 @@ export default function LandingPage() {
           
           mockupImage={{
             src: "/images/storycrat-interface-mockup.png",
-            alt: "StoryGenPro Interface - Story Writing Dashboard",
+            alt: "StoryCrat Interface - Story Writing Dashboard",
             width: 1400,
             height: 900
           }}
@@ -57,7 +57,7 @@ export default function LandingPage() {
                 Everything You Need to Write Better Stories
               </h2>
               <p className="max-w-[700px] text-lg text-muted-foreground">
-                From proven storytelling frameworks to advanced character development, StoryGenPro provides all the tools you need to craft compelling narratives.
+                From proven storytelling frameworks to advanced character development, StoryCrat provides all the tools you need to craft compelling narratives.
               </p>
             </div>
           </div>

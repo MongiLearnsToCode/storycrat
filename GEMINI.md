@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-This is a Next.js application called StoryGenPro that provides writers with a structured, guided environment for story creation using the Hero's Journey framework with AI-assisted suggestions.
+This is a Next.js application called StoryCrat that provides writers with a structured, guided environment for story creation using the Hero's Journey framework with AI-assisted suggestions.
 
 **Key Technologies:**
 

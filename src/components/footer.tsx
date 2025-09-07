@@ -38,7 +38,7 @@ export function Footer() {
           </div>
         </nav>
         <div className="mt-8 text-center">
-          <p className="text-base text-muted-foreground">&copy; {new Date().getFullYear()} StoryGenPro. All rights reserved.</p>
+          <p className="text-base text-muted-foreground">&copy; {new Date().getFullYear()} StoryCrat. All rights reserved.</p>
         </div>
       </div>
     </footer>

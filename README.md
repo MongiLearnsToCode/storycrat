@@ -1,4 +1,4 @@
-# StoryGenPro - Structured Storytelling with AI
+# StoryCrat - Structured Storytelling with AI
 
 A Next.js application that provides writers with a structured, guided environment for story creation using the Hero's Journey framework with AI-assisted suggestions.
 

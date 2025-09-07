@@ -1,4 +1,4 @@
-# StoryGenPro UX Improvement Plan
+# StoryCrat UX Improvement Plan
 
 - [x] **1. Improve the New User Welcome Experience:**
   - [x] Redesign the root page (`/`) as a welcoming landing page for all users.

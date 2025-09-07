@@ -5,7 +5,7 @@ export default function NotFound() {
   return (
     <html lang="en">
       <head>
-        <title>Page Not Found - StoryGenPro</title>
+        <title>Page Not Found - StoryCrat</title>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
       </head>
       <body className="min-h-screen bg-background flex items-center justify-center font-sans antialiased">

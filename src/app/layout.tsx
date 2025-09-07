@@ -23,7 +23,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "StoryGenPro - Structured Storytelling with AI",
+  title: "StoryCrat - Structured Storytelling with AI",
   description: "Create complete stories using proven frameworks with AI assistance",
 };
 
@@ -44,7 +44,7 @@ export default function RootLayout({
           <ConvexClientProvider>
             <header className="border-b p-4">
               <div className="max-w-4xl mx-auto flex items-center justify-between">
-                <h1 className="text-xl font-bold">StoryGenPro</h1>
+                 <h1 className="text-xl font-bold">StoryCrat</h1>
                 <div>
                   <Link href="/sign-in" className="text-sm hover:underline">
                     Sign In
@@ -70,7 +70,7 @@ export default function RootLayout({
           <ConvexClientProvider>
             <header className="border-b p-4">
               <div className="max-w-4xl mx-auto flex items-center justify-between">
-                <h1 className="text-xl font-bold">StoryGenPro</h1>
+                 <h1 className="text-xl font-bold">StoryCrat</h1>
                 <div>
                   <SignedOut>
                     <Link href="/sign-in" className="text-sm hover:underline">
