@@ -2,10 +2,7 @@ import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Mockup } from "@/components/ui/mockup"
 import { Glow } from "@/components/ui/glow"
-import { Github } from "lucide-react"
 import Image from "next/image"
-import { useScrollAnimation } from "@/hooks/useScrollAnimation";
-import { useRef } from "react";
 
 interface HeroWithMockupProps {
   title: string
@@ -41,15 +38,13 @@ export function HeroWithMockup({
   mockupImage,
   className,
 }: HeroWithMockupProps) {
-  const mockupRef = useRef<HTMLDivElement>(null);
-  const animationStyle = useScrollAnimation(mockupRef);
-
   return (
     <section
       className={cn(
         "relative bg-background text-foreground",
         "py-12 px-4 md:py-24 lg:py-32",
         "overflow-hidden",
+        "animate-appear",
         className,
       )}
     >
@@ -64,6 +59,7 @@ export function HeroWithMockup({
               "text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl",
               "leading-[1.1] sm:leading-[1.1]",
               "drop-shadow-sm dark:drop-shadow-[0_0_15px_rgba(255,255,255,0.1)]",
+              "opacity-0 [animation-delay:100ms]"
             )}
           >
             {title}
@@ -72,7 +68,7 @@ export function HeroWithMockup({
           {/* Description */}
           <p
             className={cn(
-              "max-w-[550px] animate-appear opacity-0 [animation-delay:150ms]",
+              "max-w-[550px] animate-appear opacity-0 [animation-delay:250ms]",
               "text-base sm:text-lg md:text-xl",
               "text-muted-foreground",
               "font-medium",
@@ -84,7 +80,7 @@ export function HeroWithMockup({
           {/* CTAs */}
           <div
             className="relative z-10 flex flex-wrap justify-center gap-4 
-            animate-appear opacity-0 [animation-delay:300ms]"
+            animate-appear opacity-0 [animation-delay:400ms]"
           >
             <Button
               asChild={!primaryCta.onClick && !!primaryCta.href}
@@ -131,10 +127,9 @@ export function HeroWithMockup({
           </div>
 
           {/* Mockup */}
-          <div ref={mockupRef} style={animationStyle} className="relative w-full pt-12 px-4 sm:px-6 lg:px-8">
+          <div className="relative w-full pt-12 px-4 sm:px-6 lg:px-8 animate-appear opacity-0 [animation-delay:700ms]">
             <Mockup
               className={cn(
-                "animate-appear opacity-0 [animation-delay:700ms]",
                 "shadow-[0_0_50px_-12px_rgba(0,0,0,0.3)] dark:shadow-[0_0_50px_-12px_rgba(255,255,255,0.1)]",
                 "border-primary/10 dark:border-primary/5",
               )}
