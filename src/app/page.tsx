@@ -1,7 +1,6 @@
 'use client'
 
 import { useRouter } from "next/navigation"
-import { BookOpen, Feather } from "lucide-react"
 import { SignedIn, SignedOut } from "@clerk/nextjs"
 import { HeroWithMockup } from "@/components/ui/hero-with-mockup"
 import { FeaturesSectionWithHoverEffects } from "@/components/ui/features-section-with-hover-effects"
@@ -46,23 +45,23 @@ export default function LandingPage() {
         />
       </SignedIn>
 
-      <section className="relative w-full py-12 md:py-24 lg:py-32 bg-gradient-to-b from-background to-muted/30">
+      <section className="relative w-full py-12 md:py-24 lg:py-32 bg-gradient-to-b from-background to-muted/30 animate-appear opacity-0 [animation-delay:1200ms]">
         <div className="container mx-auto px-4 md:px-6 relative z-10">
           <div className="flex flex-col items-center justify-center space-y-4 text-center mb-16">
             <div className="space-y-6">
-              <div className="inline-flex items-center rounded-full bg-primary/10 px-4 py-2 text-sm font-medium text-primary">
+              <div className="inline-flex items-center rounded-full bg-primary/10 px-4 py-2 text-sm font-medium text-primary animate-appear opacity-0 [animation-delay:1400ms]">
                 ✨ Powerful Features
               </div>
-              <h2 className="text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl bg-gradient-to-b from-foreground to-foreground/70 bg-clip-text text-transparent">
+              <h2 className="text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl bg-gradient-to-b from-foreground to-foreground/70 bg-clip-text text-transparent animate-appear opacity-0 [animation-delay:1500ms]">
                 Everything You Need to Write Better Stories
               </h2>
-              <p className="max-w-[700px] text-lg text-muted-foreground">
+              <p className="max-w-[700px] text-lg text-muted-foreground animate-appear opacity-0 [animation-delay:1600ms]">
                 From proven storytelling frameworks to advanced character development, StoryCrat provides all the tools you need to craft compelling narratives.
               </p>
             </div>
           </div>
-          
-          <div className="flex justify-center items-center">
+
+          <div className="flex justify-center items-center animate-appear opacity-0 [animation-delay:1700ms]">
             <FeaturesSectionWithHoverEffects />
           </div>
         </div>
