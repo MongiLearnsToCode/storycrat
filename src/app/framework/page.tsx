@@ -33,8 +33,8 @@ const frameworks = [
   {
     id: 'hauge-6-stage',
     title: "Michael Hauge's 6 Stage Structure",
-    description: "Character-driven structure focusing on identity and essence",
-    stages: 6,
+    description: "A character-driven structure focusing on the intertwined Outer Journey (Plot) and Inner Journey (Character Arc).",
+    stages: 17,
     bestFor: "Character-driven stories, romance, personal growth"
   },
   {
@@ -109,28 +109,20 @@ export default function FrameworkPage() {
         ]
       case 'hauge-6-stage':
         return [
-          { id: 'setup', title: 'Setup', description: 'Establish the character in their familiar situation, identity, and longing.' },
-          { id: 'new-situation', title: 'New Situation', description: 'The character enters a new situation that creates inner conflict.' },
-          { id: 'progress', title: 'Progress', description: 'The character makes progress toward their visible goal while avoiding their fear.' },
-          { id: 'complications', title: 'Complications and Higher Stakes', description: 'Obstacles increase and the character must face their inner conflict.' },
-          { id: 'final-push', title: 'Final Push', description: 'The character must risk everything and face their deepest fear.' },
-          { id: 'aftermath', title: 'Aftermath', description: 'The character has achieved a new identity and found their essence.' }
-        ]
-      case 'story-circle':
-        return [
-          { id: 'you', title: 'YOU (Order)', description: 'Character in a zone of comfort.' },
-          { id: 'need', title: 'NEED (Order)', description: 'But they want something.' },
-          { id: 'go', title: 'GO (Order)', description: 'They enter an unfamiliar situation.' },
-          { id: 'search', title: 'SEARCH (Chaos)', description: 'Adapt to that situation.' },
-          { id: 'find', title: 'FIND (Chaos)', description: 'Find what they wanted.' },
-          { id: 'take', title: 'TAKE (Chaos)', description: 'Pay a heavy price for it.' },
-          { id: 'return', title: 'RETURN (Order)', description: 'Then return to their familiar situation.' },
-          { id: 'change', title: 'CHANGE (Order)', description: 'Having changed.' }
-        ]
-      default:
-        return []
-    }
-  }
+          // Outer Journey
+          { id: 'hauge-oj-setup', title: 'Outer Journey: Setup (0-10%)', description: 'Introduce the main character and their world.' },
+          { id: 'hauge-oj-tp1', title: 'Outer Journey: Turning Point #1: Opportunity (~10%)', description: 'An event occurs that sets the main character on a new path and creates a goal.' },
+          { id: 'hauge-oj-new-situation', title: 'Outer Journey: New Situation (10-25%)', description: 'The character adapts to the new circumstances and figures out how to approach the goal.' },
+          { id: 'hauge-oj-tp2', title: 'Outer Journey: Turning Point #2: Change of Plans (~25%)', description: "A new event changes the character's strategy or goal, solidifying their commitment." },
+          { id: 'hauge-oj-progress', title: 'Outer Journey: Progress (25-50%)', description: 'The character actively works toward the goal, experiencing successes and failures. This is the first half of Act II.' },
+          { id: 'hauge-oj-tp3', title: 'Outer Journey: Turning Point #3: Point of No Return (~50%)', description: 'The character crosses a line where they can no longer turn back.' },
+          { id: 'hauge-oj-complications', title: 'Outer Journey: Complications & Higher Stakes (50-75%)', description: 'Obstacles increase and stakes become higher.' },
+          { id: 'hauge-oj-tp4', title: 'Outer Journey: Turning Point #4: Major Setback (~75%)', description: 'A significant failure or loss makes the character question their ability to succeed.' },
+          { id: 'hauge-oj-final-push', title: 'Outer Journey: Final Push (75-90/99%)', description: 'The character makes an all-out effort to achieve their goal.' },
+          { id: 'hauge-oj-tp5', title: 'Outer Journey: Turning Point #5: Climax (~90-99%)', description: "The peak of the story's conflict where the character either succeeds or fails." },
+          { id: 'hauge-oj-aftermath', title: 'Outer Journey: Aftermath (99-100%)', description: 'Show the results of the climax and how the character\'s world has changed.' },
+          // Inner Journey
+          { id: 'hauge-ij-s1', title: 'Inner Journey: Stage I: Living Fully Within Identity', description: 'The character begins defined by fear or a \
 
   const handleCreateStory = async () => {
     if (!storyTitle.trim() || !selectedFramework) return
