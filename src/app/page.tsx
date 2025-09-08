@@ -4,9 +4,26 @@ import { useRouter } from "next/navigation"
 import { SignedIn, SignedOut } from "@clerk/nextjs"
 import { HeroWithMockup } from "@/components/ui/hero-with-mockup"
 import { FeaturesSectionWithHoverEffects } from "@/components/ui/features-section-with-hover-effects"
+import { useConvexStoryStore } from "@/lib/convex-store"
+import { useQuery } from "convex/react"
+import { api } from "../../convex/_generated/api"
 
 export default function LandingPage() {
   const router = useRouter()
+  const stories = useQuery(api.stories.getStories)
+  const { setCurrentStory } = useConvexStoryStore()
+
+  const handleContinueWriting = () => {
+    if (stories && stories.length > 0) {
+      const lastStory = stories.reduce((latest, story) => {
+        return new Date(story.lastEdited) > new Date(latest.lastEdited) ? story : latest
+      })
+      setCurrentStory(lastStory)
+      router.push('/story')
+    } else {
+      router.push('/framework')
+    }
+  }
 
   return (
     <main className="flex-1">
@@ -15,8 +32,12 @@ export default function LandingPage() {
           title="Craft Compelling Stories with Proven Frameworks"
           description="Transform your ideas into structured narratives using the Hero's Journey and other time-tested storytelling frameworks. No more writer's block."
           primaryCta={{
-            text: "Start Writing Now",
+            text: "Start Writing",
             onClick: () => router.push('/framework')
+          }}
+          secondaryCta={{
+            text: "Sign Up for Free",
+            onClick: () => router.push('/sign-up')
           }}
           
           mockupImage={{
@@ -32,8 +53,12 @@ export default function LandingPage() {
           title="Welcome Back to StoryCrat"
           description="Continue crafting your stories with structured frameworks and powerful writing tools."
           primaryCta={{
-            text: "Go to Dashboard",
-            onClick: () => router.push('/dashboard')
+            text: "Continue Writing",
+            onClick: handleContinueWriting
+          }}
+          secondaryCta={{
+            text: "My Projects",
+            onClick: () => router.push('/projects')
           }}
           
           mockupImage={{
