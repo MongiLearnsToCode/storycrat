@@ -34,7 +34,7 @@ const frameworks = [
     id: 'hauge-6-stage',
     title: "Michael Hauge's 6 Stage Structure",
     description: "A character-driven structure focusing on the intertwined Outer Journey (Plot) and Inner Journey (Character Arc).",
-    stages: 17,
+    stages: 11,
     bestFor: "Character-driven stories, romance, personal growth"
   },
   {
@@ -109,25 +109,17 @@ export default function FrameworkPage() {
         ]
       case 'hauge-6-stage':
         return [
-          // Outer Journey
-          { id: 'hauge-oj-setup', title: 'Outer Journey: Setup (0-10%)', description: 'Introduce the main character and their world.' },
-          { id: 'hauge-oj-tp1', title: 'Outer Journey: Turning Point #1: Opportunity (~10%)', description: 'An event occurs that sets the main character on a new path and creates a goal.' },
-          { id: 'hauge-oj-new-situation', title: 'Outer Journey: New Situation (10-25%)', description: 'The character adapts to the new circumstances and figures out how to approach the goal.' },
-          { id: 'hauge-oj-tp2', title: 'Outer Journey: Turning Point #2: Change of Plans (~25%)', description: "A new event changes the character's strategy or goal, solidifying their commitment." },
-          { id: 'hauge-oj-progress', title: 'Outer Journey: Progress (25-50%)', description: 'The character actively works toward the goal, experiencing successes and failures. This is the first half of Act II.' },
-          { id: 'hauge-oj-tp3', title: 'Outer Journey: Turning Point #3: Point of No Return (~50%)', description: 'The character crosses a line where they can no longer turn back.' },
-          { id: 'hauge-oj-complications', title: 'Outer Journey: Complications & Higher Stakes (50-75%)', description: 'Obstacles increase and stakes become higher.' },
-          { id: 'hauge-oj-tp4', title: 'Outer Journey: Turning Point #4: Major Setback (~75%)', description: 'A significant failure or loss makes the character question their ability to succeed.' },
-          { id: 'hauge-oj-final-push', title: 'Outer Journey: Final Push (75-90/99%)', description: 'The character makes an all-out effort to achieve their goal.' },
-          { id: 'hauge-oj-tp5', title: 'Outer Journey: Turning Point #5: Climax (~90-99%)', description: "The peak of the story's conflict where the character either succeeds or fails." },
-          { id: 'hauge-oj-aftermath', title: 'Outer Journey: Aftermath (99-100%)', description: "Show the results of the climax and how the character's world has changed." },
-          // Inner Journey
-          { id: 'hauge-ij-s1', title: 'Inner Journey: Stage I: Living Fully Within Identity', description: 'The character begins defined by fear or a "mask," not living authentically.' },
-          { id: 'hauge-ij-s2', title: 'Inner Journey: Stage II: Glimpsing, Longing, or Destiny', description: 'The character glimpses their true self and feels drawn toward their essence.' },
-          { id: 'hauge-ij-s3', title: 'Inner Journey: Stage III: Moving Towards Essence Without Leaving Identity', description: 'They start changing but still cling to old habits and identity.' },
-          { id: 'hauge-ij-s4', title: 'Inner Journey: Stage IV: Fully Committed to Essence but Growing Fear', description: 'They embrace their true self, which brings new fears to the surface.' },
-          { id: 'hauge-ij-s5', title: "Inner Journey: Stage V: Living One's Truth With Everything to Lose", description: 'The character lives authentically and faces the ultimate test.' },
-          { id: 'hauge-ij-s6', title: 'Inner Journey: Stage VI: Journey Complete, Destiny Achieved', description: 'The character has fully transformed and now lives as their true self.' }
+          { id: 'hauge-s1-setup', title: 'Stage I: Setup', description: 'Plot: We meet the character and learn about their everyday life.  Arc: The character is defined by their "Identity”—the fear-based mask they wear to get by.' },
+          { id: 'hauge-tp1-opportunity', title: 'Turning Point #1: Opportunity (Inciting Incident)', description: 'Plot: An external event presents a new opportunity or problem.  Arc: This event forces the character to confront their "Identity" and get a glimpse of their potential or "Essence."' },
+          { id: 'hauge-s2-new-situation', title: 'Stage II: New Situation', description: 'Plot: The character is dealing with the immediate fallout of the opportunity, trying to figure out how to pursue their goal.  Arc: The character is pulled between their old "Identity" and their emerging "Essence." They often attempt their goal using fear-based methods.' },
+          { id: 'hauge-tp2-change-of-plans', title: 'Turning Point #2: Change of Plans', description: 'Plot: A new development or complication forces the character to fully commit to their goal.  Arc: The character makes a firm choice to move forward, symbolically leaving their old "Identity" behind to pursue their goal—and their "Essence."' },
+          { id: 'hauge-s3-progress', title: 'Stage III: Progress (First Half of Act II)', description: 'Plot: The character is actively working toward their goal, experiencing both success and failure.  Arc: The character experiments with their new, more authentic self. They are "moving toward Essence without leaving Identity," meaning moments of doubt or regression remain.' },
+          { id: 'hauge-tp3-point-of-no-return', title: 'Turning Point #3: Point of No Return (Midpoint)', description: 'Plot: The character crosses a line where retreat is no longer an option.  Arc: The character fully commits to their "Essence" and makes decisions based on their true self, not fear-based "Identity."' },
+          { id: 'hauge-s4-complications', title: 'Stage IV: Complications & Higher Stakes (Second Half of Act II)', description: 'Plot: External obstacles become much more difficult, and the stakes are raised.  Arc: The character is "fully committed to Essence," but this authenticity brings new fears. They must confront these fears to succeed.' },
+          { id: 'hauge-tp4-major-setback', title: 'Turning Point #4: Major Setback (End of Act II)', description: 'Plot: A devastating external event makes the goal seem impossible.  Arc: The character confronts their deepest fear, often facing despair and nearly reverting to old "Identity" before finding new strength.' },
+          { id: 'hauge-s5-final-push', title: 'Stage V: Final Push (Beginning of Act III)', description: 'Plot: The character, having learned from the setback, makes one final attempt to achieve their goal.  Arc: The character is "living one\'s truth with everything to lose," fully embodying their "Essence" in the face of the greatest challenge.' },
+          { id: 'hauge-tp5-climax', title: 'Turning Point #5: Climax', description: 'Plot: The final confrontation determines the outcome of the plot.  Arc: The character’s ultimate test. Success in the climax comes directly from their internal choice to live authentically.' },
+          { id: 'hauge-s6-aftermath', title: 'Stage VI: Aftermath', description: 'Plot: The story concludes, showing the new reality the character has created.  Arc: The character has completed their transformation and is "living fully in Essence," having achieved their destiny.' }
         ]
       case 'story-circle':
         return [
@@ -144,6 +136,7 @@ export default function FrameworkPage() {
         return []
     }
   }
+
 
   const handleCreateStory = async () => {
     if (!storyTitle.trim() || !selectedFramework) return
