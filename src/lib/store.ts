@@ -1,5 +1,5 @@
-import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
+import { createStoreWithHistory, type UndoState } from 'zustand-undo'
 
 export interface Character {
   id: string
@@ -14,6 +14,7 @@ export interface StoryBeat {
   description: string
   content: string
   completed: boolean
+  act?: number
 }
 
 export interface Story {
@@ -25,7 +26,7 @@ export interface Story {
   lastEdited: Date
 }
 
-interface StoryStore {
+interface StoryStore extends UndoState {
   stories: Story[]
   currentStory: Story | null
   currentBeatIndex: number
@@ -49,7 +50,7 @@ const heroJourneyBeats: Omit<StoryBeat, 'content' | 'completed'>[] = [
   { id: 'return-with-elixir', title: 'Return with the Elixir', description: 'The hero returns home transformed.' }
 ]
 
-export const useStoryStore = create<StoryStore>()(
+export const useStoryStore = createStoreWithHistory<StoryStore>(
   persist(
     (set, get) => ({
       stories: [],

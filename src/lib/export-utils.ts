@@ -1,5 +1,6 @@
 
 import { Story } from './convex-store'
+import { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType } from "docx";
 
 
 
@@ -76,6 +77,175 @@ export function exportToTxt(story: Story) {
   a.download = `${story.title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_story.txt`
   a.click()
   URL.revokeObjectURL(url)
+}
+
+
+export function exportToDocx(story: Story) {
+  const completedBeats = story.beats.filter(beat => beat.completed).length;
+  const progress = Math.round((completedBeats / story.beats.length) * 100);
+
+  const children = [
+    new Paragraph({
+      children: [
+        new TextRun({
+          text: story.title,
+          bold: true,
+          size: 48,
+        }),
+      ],
+      heading: HeadingLevel.TITLE,
+      alignment: AlignmentType.CENTER,
+    }),
+    new Paragraph({ text: "" }),
+    new Paragraph({
+      children: [
+        new TextRun({ text: "Framework:     ", bold: true }),
+        new TextRun(story.framework.replace('-', ' ').toUpperCase()),
+      ],
+    }),
+    new Paragraph({
+      children: [
+        new TextRun({ text: "Progress:      ", bold: true }),
+        new TextRun(`${completedBeats}/${story.beats.length} beats completed (${progress}%)`),
+      ],
+    }),
+    new Paragraph({
+      children: [
+        new TextRun({ text: "Last Edited:   ", bold: true }),
+        new TextRun(new Date(story.lastEdited).toLocaleDateString('en-US', {
+          weekday: 'long',
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric'
+        })),
+      ],
+    }),
+    new Paragraph({ text: "" }),
+    new Paragraph({
+      children: [new TextRun("STORY STRUCTURE")],
+      heading: HeadingLevel.HEADING_1,
+      alignment: AlignmentType.CENTER,
+    }),
+  ];
+
+  story.beats.forEach((beat, index) => {
+    const status = beat.completed ? '✓' : '○';
+    children.push(new Paragraph({ text: "" }));
+    children.push(new Paragraph({
+      children: [
+        new TextRun({ text: `${index + 1}. ${beat.title.toUpperCase()} ${status}`, bold: true }),
+      ],
+      heading: HeadingLevel.HEADING_2,
+    }));
+    children.push(new Paragraph({
+      children: [
+        new TextRun({ text: beat.description, italics: true }),
+      ],
+    }));
+    children.push(new Paragraph({ text: "" }));
+    if (beat.content) {
+      const lines = beat.content.split('\n');
+      lines.forEach(line => {
+        children.push(new Paragraph({ text: line }));
+      });
+    } else {
+      children.push(new Paragraph({ text: "[This beat has not been written yet]" }));
+    }
+  });
+
+  if (story.characters.length > 0) {
+    children.push(new Paragraph({ text: "" }));
+    children.push(new Paragraph({
+      children: [new TextRun("CHARACTER PROFILES")],
+      heading: HeadingLevel.HEADING_1,
+      alignment: AlignmentType.CENTER,
+    }));
+    story.characters.forEach((char, index) => {
+      children.push(new Paragraph({ text: "" }));
+      children.push(new Paragraph({
+        children: [
+          new TextRun({ text: `${index + 1}. ${char.name.toUpperCase()}`, bold: true }),
+        ],
+        heading: HeadingLevel.HEADING_2,
+      }));
+      children.push(new Paragraph({
+        children: [
+          new TextRun({ text: "Role: ", bold: true }),
+          new TextRun(char.role),
+        ],
+      }));
+      children.push(new Paragraph({
+        children: [
+          new TextRun({ text: "Description: ", bold: true }),
+          new TextRun(char.description),
+        ],
+      }));
+    });
+  }
+
+  const doc = new Document({
+    sections: [{
+      properties: {},
+      children: children,
+    }],
+  });
+
+  Packer.toBlob(doc).then(blob => {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${story.title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_story.docx`;
+    a.click();
+    URL.revokeObjectURL(url);
+  });
+}
+
+
+export function exportToMarkdown(story: Story) {
+  const completedBeats = story.beats.filter(beat => beat.completed).length;
+  const progress = Math.round((completedBeats / story.beats.length) * 100);
+
+  let content = `# ${story.title}\n\n`;
+  content += `**Framework:** ${story.framework.replace('-', ' ').toUpperCase()}\n`;
+  content += `**Progress:** ${completedBeats}/${story.beats.length} beats completed (${progress}%)\n`;
+  content += `**Last Edited:** ${new Date(story.lastEdited).toLocaleDateString('en-US', {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  })}
+
+`;
+
+  content += `## Story Structure\n\n`;
+
+  story.beats.forEach((beat, index) => {
+    const status = beat.completed ? '✓' : '○';
+    content += `### ${index + 1}. ${beat.title} ${status}\n\n`;
+    content += `*${beat.description}*\n\n`;
+    if (beat.content) {
+      content += `${beat.content}\n\n`;
+    } else {
+      content += `[This beat has not been written yet]\n\n`;
+    }
+  });
+
+  if (story.characters.length > 0) {
+    content += `## Character Profiles\n\n`;
+    story.characters.forEach((char, index) => {
+      content += `### ${index + 1}. ${char.name}\n\n`;
+      content += `**Role:** ${char.role}\n\n`;
+      content += `**Description:** ${char.description}\n\n`;
+    });
+  }
+
+  const blob = new Blob([content], { type: 'text/markdown;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `${story.title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_story.md`;
+  a.click();
+  URL.revokeObjectURL(url);
 }
 
 

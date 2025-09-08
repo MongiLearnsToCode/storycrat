@@ -1,4 +1,4 @@
-import { create } from 'zustand'
+import { createStoreWithHistory, type UndoState } from 'zustand-undo'
 import { Id } from '../../convex/_generated/dataModel'
 
 export interface Character {
@@ -16,6 +16,7 @@ export interface StoryBeat {
   description: string
   content: string
   completed: boolean
+  act?: number
 }
 
 export interface Story {
@@ -30,7 +31,7 @@ export interface Story {
   userId?: string
 }
 
-interface ConvexStoryStore {
+interface ConvexStoryStore extends UndoState {
   currentStory: Story | null
   currentBeatIndex: number
   
@@ -42,94 +43,101 @@ interface ConvexStoryStore {
   deleteCharacter: (characterId: string) => void
   updateTitle: (title: string) => void
   clearCurrentStory: () => void
+  undo: () => void
+  redo: () => void
 }
 
-export const useConvexStoryStore = create<ConvexStoryStore>((set, get) => ({
-  currentStory: null,
-  currentBeatIndex: 0,
+export const useConvexStoryStore = createStoreWithHistory<ConvexStoryStore>(
+    (set, get) => ({
+      currentStory: null,
+      currentBeatIndex: 0,
 
-  setCurrentStory: (story: Story) => {
-    set({ currentStory: story, currentBeatIndex: 0 })
-  },
+      setCurrentStory: (story: Story) => {
+        set({ currentStory: story, currentBeatIndex: 0 })
+      },
 
-  setCurrentBeat: (index: number) => {
-    set({ currentBeatIndex: index })
-  },
+      setCurrentBeat: (index: number) => {
+        set({ currentBeatIndex: index })
+      },
 
-  updateBeatContent: (content: string) => {
-    const { currentStory, currentBeatIndex } = get()
-    if (currentStory) {
-      const newBeats = [...currentStory.beats]
-      newBeats[currentBeatIndex] = {
-        ...newBeats[currentBeatIndex],
-        content,
-        completed: content.trim().length > 0,
+      updateBeatContent: (content: string) => {
+        const { currentStory, currentBeatIndex } = get()
+        if (currentStory) {
+          const newBeats = [...currentStory.beats]
+          newBeats[currentBeatIndex] = {
+            ...newBeats[currentBeatIndex],
+            content,
+            completed: content.trim().length > 0,
+          }
+          set({
+            currentStory: {
+              ...currentStory,
+              beats: newBeats,
+              lastEdited: Date.now(),
+            },
+          })
+        }
+      },
+
+      addCharacter: (character: Character) => {
+        const { currentStory } = get()
+        if (currentStory) {
+          set({
+            currentStory: {
+              ...currentStory,
+              characters: [...currentStory.characters, character],
+              lastEdited: Date.now(),
+            },
+          })
+        }
+      },
+
+      updateCharacter: (character: Character) => {
+        const { currentStory } = get()
+        if (currentStory) {
+          const updatedCharacters = currentStory.characters.map(c => c.id === character.id ? character : c)
+          set({
+            currentStory: {
+              ...currentStory,
+              characters: updatedCharacters,
+              lastEdited: Date.now(),
+            },
+          })
+        }
+      },
+
+      deleteCharacter: (characterId: string) => {
+        const { currentStory } = get()
+        if (currentStory) {
+          const updatedCharacters = currentStory.characters.filter(c => c.id !== characterId)
+          set({
+            currentStory: {
+              ...currentStory,
+              characters: updatedCharacters,
+              lastEdited: Date.now(),
+            },
+          })
+        }
+      },
+
+      updateTitle: (title: string) => {
+        const { currentStory } = get()
+        if (currentStory) {
+          set({
+            currentStory: {
+              ...currentStory,
+              title,
+              lastEdited: Date.now(),
+            },
+          })
+        }
+      },
+
+      clearCurrentStory: () => {
+        set({ currentStory: null, currentBeatIndex: 0 })
       }
-      set({
-        currentStory: {
-          ...currentStory,
-          beats: newBeats,
-          lastEdited: Date.now(),
-        },
-      })
+    }),
+    {
+        wrapTemporal: (fn) => fn,
     }
-  },
-
-  addCharacter: (character: Character) => {
-    const { currentStory } = get()
-    if (currentStory) {
-      set({
-        currentStory: {
-          ...currentStory,
-          characters: [...currentStory.characters, character],
-          lastEdited: Date.now(),
-        },
-      })
-    }
-  },
-
-  updateCharacter: (character: Character) => {
-    const { currentStory } = get()
-    if (currentStory) {
-      const updatedCharacters = currentStory.characters.map(c => c.id === character.id ? character : c)
-      set({
-        currentStory: {
-          ...currentStory,
-          characters: updatedCharacters,
-          lastEdited: Date.now(),
-        },
-      })
-    }
-  },
-
-  deleteCharacter: (characterId: string) => {
-    const { currentStory } = get()
-    if (currentStory) {
-      const updatedCharacters = currentStory.characters.filter(c => c.id !== characterId)
-      set({
-        currentStory: {
-          ...currentStory,
-          characters: updatedCharacters,
-          lastEdited: Date.now(),
-        },
-      })
-    }
-  },
-
-  updateTitle: (title: string) => {
-    const { currentStory } = get()
-    if (currentStory) {
-      set({
-        currentStory: {
-          ...currentStory,
-          title,
-          lastEdited: Date.now(),
-        },
-      })
-    }
-  },
-
-  clearCurrentStory: () => {
-    set({ currentStory: null, currentBeatIndex: 0 })
-  }
-}))
+)

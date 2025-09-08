@@ -2,8 +2,8 @@
 
 - [x] **1. Improve the New User Welcome Experience:**
   - [x] Redesign the root page (`/`) as a welcoming landing page for all users.
-  - [x] Move the existing "recent stories" view to a new `/dashboard` route for authenticated users.
-  - [x] Update authentication and routing logic to direct logged-in users to `/dashboard`.
+  - [x] Move the existing "recent stories" view to a new `/projects` route for authenticated users.
+  - [x] Update authentication and routing logic to direct logged-in users to `/projects`.
 
 - [x] **2. Add Onboarding to the Story Editor:**
   - [x] Implement a simple, interactive onboarding tour for the `/story` page.

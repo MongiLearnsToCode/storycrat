@@ -2,22 +2,31 @@
 
 ## Project Overview
 
-This is a Next.js application called StoryCrat that provides writers with a structured, guided environment for story creation using the Hero's Journey framework with AI-assisted suggestions.
+This is a Next.js application called StoryCrat that provides writers with a structured, guided environment for story creation using multiple narrative frameworks. The app supports both local and cloud-based story storage, character management, progress tracking, and export functionality.
 
 **Key Technologies:**
 
-*   **Framework:** Next.js (App Router)
+*   **Framework:** Next.js 15 (App Router)
 *   **Language:** TypeScript
 *   **Styling:** Tailwind CSS with Shadcn UI
-*   **State Management:** Zustand
+*   **State Management:** Zustand (dual stores for local and remote state)
 *   **Authentication:** Clerk
 *   **Backend & Database:** Convex
+*   **UI Components:** Radix UI primitives
+*   **Icons:** Lucide React and Tabler Icons
+*   **Forms:** React Hook Form with Zod validation
+*   **Charts:** Recharts
+*   **PDF Export:** jsPDF
+*   **Date Handling:** date-fns
 
 **Architecture:**
 
-The application uses the Next.js App Router. Client-side state for the active story is managed with Zustand in `src/lib/convex-store.ts`. For unauthenticated users, stories are persisted to local storage. For authenticated users, stories are stored in a real-time database provided by Convex.
+The application uses the Next.js App Router with a dual-state management system:
 
-The database schema is defined in `convex/schema.ts` and consists of a single `stories` table. Server-side logic (e.g., creating, updating stories) is handled by Convex functions defined in `convex/stories.ts`.
+- **Local State (`src/lib/store.ts`)**: Handles unauthenticated users with local storage persistence
+- **Remote State (`src/lib/convex-store.ts`)**: Manages authenticated users with Convex backend
+
+The database schema is defined in `convex/schema.ts` with a single `stories` table containing story metadata, beats, and characters. Server-side logic is handled by Convex functions in `convex/stories.ts`.
 
 ## Building and Running
 
@@ -30,7 +39,7 @@ npm install
 **2. Run the Development Server:**
 
 ```bash
-npm run dev
+npm run dev --turbopack
 ```
 
 The application will be available at [http://localhost:3000](http://localhost:3000).
@@ -38,7 +47,7 @@ The application will be available at [http://localhost:3000](http://localhost:30
 **3. Build for Production:**
 
 ```bash
-npm run build
+npm run build --turbopack
 ```
 
 **4. Lint the Code:**
@@ -50,14 +59,19 @@ npm run lint
 ## Development Conventions
 
 *   **Styling:** The project uses Tailwind CSS with Shadcn UI components. Custom styles are defined in `src/app/globals.css`.
-*   **State Management:** Zustand is used for client-side state management of the *current* story. The main store is defined in `src/lib/convex-store.ts`.
-*   **AI Suggestions:** The AI suggestions are currently hardcoded placeholders in `src/lib/ai-suggestions.ts`. The `getRandomSuggestion` function is used to retrieve a random suggestion for a given story beat.
-*   **Database:** The database schema is defined in `convex/schema.ts`. It defines a single table, `stories`, which stores all the information about a story, linked to a user via `userId`.
-*   **Authentication:** User management is handled by Clerk. UI components like `<SignedIn>` and `<SignedOut>` are used to control what users see.
+*   **State Management:** Dual Zustand stores handle local (`store.ts`) and remote (`convex-store.ts`) state management. Local stories use browser storage, remote stories sync with Convex.
+*   **Database:** The database schema is defined in `convex/schema.ts`. It defines a single table, `stories`, which stores all story information including beats and characters, linked to users via `userId`.
+*   **Authentication:** User management is handled by Clerk. The app supports both authenticated and anonymous users.
 *   **Routing:** The application uses the Next.js App Router. The main pages are:
-    *   `/`: The landing page, showing recent projects for logged-in users.
-    *   `/framework`: The framework selection page (currently only Hero's Journey is available).
-    *   `/story`: The main story builder/editor page.
-    *   `/projects`: A page to view all of a user's stories.
-*   **Components:** Reusable UI components are located in `src/components/ui`. The main application components are in `src/components`.
-*   **Local vs. Remote Stories:** The application supports both local stories (for logged-out users) and remote stories (for logged-in users). Local stories have an ID starting with `local_` and are saved in the browser's local storage. Remote stories are saved in Convex.
+    *   `/`: Landing page with hero section and navigation
+    *   `/projects`: User dashboard with story insights and character management
+    *   `/framework`: Framework selection page (Hero's Journey, Three-Act Structure, etc.)
+    *   `/story`: Main story builder/editor page with beat-by-beat writing
+    *   `/projects`: Project management page (redirects to dashboard)
+    *   `/sign-in`, `/sign-up`: Authentication pages
+*   **Components:** Reusable UI components are located in `src/components/ui`. Application-specific components are in `src/components`.
+*   **Local vs. Remote Stories:** The application supports both local stories (for logged-out users) and remote stories (for logged-in users). Local stories are saved in browser localStorage, remote stories are persisted in Convex.
+*   **Export Functionality:** Stories can be exported as TXT or PDF files using utilities in `src/lib/export-utils.ts` and `src/lib/pdf-export.ts`.
+*   **Character Management:** Detailed character profiles with name, role, description, appearance, and backstory fields.
+*   **Progress Tracking:** Visual progress indicators and completion tracking for story beats.
+*   **Themes:** Support for light/dark themes using next-themes.
