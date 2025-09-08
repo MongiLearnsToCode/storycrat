@@ -12,6 +12,7 @@ export default defineSchema({
       content: v.string(),
       completed: v.boolean(),
       description: v.string(),
+      act: v.number(),
     })),
     characters: v.array(v.object({
       id: v.string(),
