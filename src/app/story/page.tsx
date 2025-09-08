@@ -341,7 +341,7 @@ function StoryPageContent() {
           <div className="flex items-center gap-2 lg:gap-4">
             <Button variant="ghost" size="sm" onClick={() => router.push('/projects')}> 
               <ArrowLeft className="h-4 w-4 mr-2" />
-              Dashboard
+              All Stories
             </Button>
             {isEditingTitle ? (
               <Input
