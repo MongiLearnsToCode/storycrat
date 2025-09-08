@@ -129,6 +129,21 @@ export default function FrameworkPage() {
           { id: 'hauge-ij-s5', title: "Inner Journey: Stage V: Living One's Truth With Everything to Lose", description: 'The character lives authentically and faces the ultimate test.' },
           { id: 'hauge-ij-s6', title: 'Inner Journey: Stage VI: Journey Complete, Destiny Achieved', description: 'The character has fully transformed and now lives as their true self.' }
         ]
+      case 'story-circle':
+        return [
+          { id: 'you', title: 'YOU (Order)', description: 'Character in a zone of comfort.' },
+          { id: 'need', title: 'NEED (Order)', description: 'But they want something.' },
+          { id: 'go', title: 'GO (Order)', description: 'They enter an unfamiliar situation.' },
+          { id: 'search', title: 'SEARCH (Chaos)', description: 'Adapt to that situation.' },
+          { id: 'find', title: 'FIND (Chaos)', description: 'Find what they wanted.' },
+          { id: 'take', title: 'TAKE (Chaos)', description: 'Pay a heavy price for it.' },
+          { id: 'return', title: 'RETURN (Order)', description: 'Then return to their familiar situation.' },
+          { id: 'change', title: 'CHANGE (Order)', description: 'Having changed.' }
+        ]
+      default:
+        return []
+    }
+  }
 
   const handleCreateStory = async () => {
     if (!storyTitle.trim() || !selectedFramework) return
