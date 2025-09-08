@@ -86,7 +86,7 @@ export default function RootLayout({
             <main className="mb-16">{children}</main>
             <Toaster />
             <Footer />
-          </ConveClientProvider>
+          </ConvexClientProvider>
         </body>
       </html>
     </ClerkProvider>
