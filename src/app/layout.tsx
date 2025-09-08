@@ -52,7 +52,7 @@ export default function RootLayout({
                 </div>
               </div>
             </header>
-            {children}
+            <main className="mb-16">{children}</main>
             <Toaster />
             <Footer />
           </ConvexClientProvider>
@@ -83,10 +83,10 @@ export default function RootLayout({
                 </div>
               </div>
             </header>
-            {children}
+            <main className="mb-16">{children}</main>
             <Toaster />
             <Footer />
-          </ConvexClientProvider>
+          </ConveClientProvider>
         </body>
       </html>
     </ClerkProvider>
