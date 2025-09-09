@@ -15,7 +15,7 @@ import { api } from "../../../convex/_generated/api"
 import { saveLocalStory } from "@/lib/local-storage"
 import { useAuth } from "@clerk/nextjs"
 import { Id } from "../../../convex/_generated/dataModel"
-import { useConvexStoryStore, Character, StoryBeat } from "@/lib/convex-store"
+import { useConvexStoryStore, Character, StoryBeat, useTemporalStore } from "@/lib/convex-store"
 import { useRouter } from "next/navigation"
 import { useState, useEffect, useCallback, useRef, useLayoutEffect } from "react"
 import { useDebounce } from "@/hooks/use-debounce"
@@ -68,11 +68,9 @@ function StoryPageContent() {
     updateCharacter: updateLocalCharacter,
     deleteCharacter: deleteLocalCharacter,
     updateTitle: updateLocalTitle,
-    undo,
-    redo,
-    past,
-    future
   } = useConvexStoryStore()
+
+  const { undo, redo, pastStates, futureStates } = useTemporalStore(state => state)
   
   const updateBeatContentMutation = useMutation(api.stories.updateBeatContent)
   const addCharacterMutation = useMutation(api.stories.addCharacter)
@@ -575,11 +573,11 @@ function StoryPageContent() {
       />
 
       <FloatingToolbar
-        onUndo={() => undo()}
-        onRedo={() => redo()}
+        onUndo={undo}
+        onRedo={redo}
         onAiSuggest={handleAiSuggest}
-        canUndo={past && past.length > 0}
-        canRedo={future && future.length > 0}
+        canUndo={pastStates.length > 0}
+        canRedo={futureStates.length > 0}
       />
 
       <ExportDialog

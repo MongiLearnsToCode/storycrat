@@ -1,4 +1,5 @@
-import { createStoreWithHistory, type UndoState } from 'zustand-undo'
+import { create } from 'zustand'
+import { temporal, type TemporalState } from 'zundo'
 import { Id } from '../../convex/_generated/dataModel'
 
 export interface Character {
@@ -31,7 +32,7 @@ export interface Story {
   userId?: string
 }
 
-interface ConvexStoryStore extends UndoState {
+interface ConvexStoryStore {
   currentStory: Story | null
   currentBeatIndex: number
   
@@ -43,12 +44,10 @@ interface ConvexStoryStore extends UndoState {
   deleteCharacter: (characterId: string) => void
   updateTitle: (title: string) => void
   clearCurrentStory: () => void
-  undo: () => void
-  redo: () => void
 }
 
-export const useConvexStoryStore = createStoreWithHistory<ConvexStoryStore>(
-    (set, get) => ({
+export const useConvexStoryStore = create<ConvexStoryStore>()(
+  temporal((set, get) => ({
       currentStory: null,
       currentBeatIndex: 0,
 
@@ -138,6 +137,11 @@ export const useConvexStoryStore = createStoreWithHistory<ConvexStoryStore>(
       }
     }),
     {
-        wrapTemporal: (fn) => fn,
+      partialize: (state) => ({ currentStory: state.currentStory }),
     }
-)
+  )
+
+export const useTemporalStore = <T,>(selector: (state: TemporalState<Pick<ConvexStoryStore, 'currentStory'>>) => T) => {
+    const store = useConvexStoryStore.temporal
+    return store(selector)
+}

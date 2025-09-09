@@ -10,7 +10,9 @@ import { useConvexStoryStore } from "@/lib/convex-store"
 import { useRouter } from "next/navigation"
 import { useState, useEffect, useMemo } from "react"
 import { Story } from "@/lib/convex-store"
-import { ArrowLeft, Plus, BookOpen, Search } from "lucide-react"
+import { ArrowLeft, Plus, BookOpen, Search, Trash2 } from "lucide-react"
+import { DeleteStoryDialog } from "@/components/delete-story-dialog"
+import { Id } from "../../../convex/_generated/dataModel"
 
 export const dynamic = 'force-dynamic'
 
@@ -37,10 +39,19 @@ function ProjectsContent() {
   const stories = useQuery(api.stories.getStories)
   const setCurrentStory = useConvexStoryStore(state => state.setCurrentStory)
   const [searchQuery, setSearchQuery] = useState("")
+  const [storyToDelete, setStoryToDelete] = useState<Story | null>(null)
+  const deleteStoryMutation = useMutation(api.stories.deleteStory)
 
   const handleContinueStory = (story: Story) => {
     setCurrentStory(story)
     router.push('/story')
+  }
+
+  const handleDeleteStory = () => {
+    if (storyToDelete) {
+      deleteStoryMutation({ storyId: storyToDelete._id as Id<"stories"> })
+      setStoryToDelete(null)
+    }
   }
 
   const formatDate = (timestamp: number) => {
@@ -171,13 +182,22 @@ function ProjectsContent() {
                           <div className="text-sm text-muted-foreground">
                             {completedBeats} of {story.beats.length} beats completed
                           </div>
-                          <Button 
-                            onClick={() => handleContinueStory(story)} 
-                            className="w-full"
-                            variant="secondary"
-                          >
-                            Continue Writing
-                          </Button>
+                          <div className="flex gap-2">
+                            <Button 
+                              onClick={() => handleContinueStory(story)} 
+                              className="w-full"
+                              variant="secondary"
+                            >
+                              Continue Writing
+                            </Button>
+                            <Button 
+                              onClick={() => setStoryToDelete(story)}
+                              variant="destructive"
+                              size="icon"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
                         </div>
                       </CardContent>
                     </Card>
@@ -188,6 +208,13 @@ function ProjectsContent() {
           </>
         )}
       </main>
+      <DeleteStoryDialog
+        open={!!storyToDelete}
+        onOpenChange={() => setStoryToDelete(null)}
+        storyTitle={storyToDelete?.title || ""}
+        onConfirm={handleDeleteStory}
+        isDeleting={deleteStoryMutation.isPending}
+      />
     </div>
   )
 }
