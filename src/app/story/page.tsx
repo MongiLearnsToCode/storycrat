@@ -152,16 +152,16 @@ function StoryPageContent() {
   }, [setCurrentBeat])
 
   const handleNextBeat = useCallback(() => {
-    if (currentBeatIndex < currentStory.beats.length - 1) {
+    if (currentStory && currentBeatIndex < currentStory.beats.length - 1) {
       handleBeatChange(currentBeatIndex + 1)
     }
-  }, [currentBeatIndex, currentStory.beats.length, handleBeatChange])
+  }, [currentStory, currentBeatIndex, handleBeatChange])
 
   const handlePreviousBeat = useCallback(() => {
-    if (currentBeatIndex > 0) {
+    if (currentStory && currentBeatIndex > 0) {
       handleBeatChange(currentBeatIndex - 1)
     }
-  }, [currentBeatIndex, handleBeatChange])
+  }, [currentStory, currentBeatIndex, handleBeatChange])
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -367,7 +367,7 @@ function StoryPageContent() {
             <Badge variant="secondary" className="hidden sm:inline-flex">{getFrameworkDisplayName(currentStory.framework)}</Badge>
           </div>
           <div className="flex items-center gap-2 lg:gap-4 w-full sm:w-auto">
-            <ProgressWidget />
+            
             <Button 
               variant="outline" 
               size="sm"
