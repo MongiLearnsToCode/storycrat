@@ -46,8 +46,8 @@ interface ConvexStoryStore {
   clearCurrentStory: () => void
 }
 
-export const useConvexStoryStore = create<ConvexStoryStore>()(
-  temporal((set, get) => ({
+export const useConvexStoryStore = create(
+  temporal<ConvexStoryStore>((set, get) => ({
       currentStory: null,
       currentBeatIndex: 0,
 
@@ -140,6 +140,7 @@ export const useConvexStoryStore = create<ConvexStoryStore>()(
       partialize: (state) => ({ currentStory: state.currentStory }),
     }
   )
+)
 
 export const useTemporalStore = <T,>(selector: (state: TemporalState<Pick<ConvexStoryStore, 'currentStory'>>) => T) => {
     const store = useConvexStoryStore.temporal
