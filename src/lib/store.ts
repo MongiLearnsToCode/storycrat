@@ -1,5 +1,7 @@
+import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import { createStoreWithHistory, type UndoState } from 'zustand-undo'
+import { temporal, type TemporalState } from 'zundo'
+import { useStore } from 'zustand'
 
 export interface Character {
   id: string
@@ -26,7 +28,7 @@ export interface Story {
   lastEdited: Date
 }
 
-interface StoryStore extends UndoState {
+interface StoryStore {
   stories: Story[]
   currentStory: Story | null
   currentBeatIndex: number
@@ -50,87 +52,93 @@ const heroJourneyBeats: Omit<StoryBeat, 'content' | 'completed'>[] = [
   { id: 'return-with-elixir', title: 'Return with the Elixir', description: 'The hero returns home transformed.' }
 ]
 
-export const useStoryStore = createStoreWithHistory<StoryStore>(
-  persist(
-    (set, get) => ({
-      stories: [],
-      currentStory: null,
-      currentBeatIndex: 0,
+export const useStoryStore = create<StoryStore>()(
+  temporal(
+    persist(
+      (set, get) => ({
+        stories: [],
+        currentStory: null,
+        currentBeatIndex: 0,
 
-      createStory: (title: string) => {
-        const newStory: Story = {
-          id: crypto.randomUUID(),
-          title,
-          framework: 'hero-journey',
-          beats: heroJourneyBeats.map(beat => ({
-            ...beat,
-            content: '',
-            completed: false
-          })),
-          characters: [],
-          lastEdited: new Date()
+        createStory: (title: string) => {
+          const newStory: Story = {
+            id: crypto.randomUUID(),
+            title,
+            framework: 'hero-journey',
+            beats: heroJourneyBeats.map(beat => ({
+              ...beat,
+              content: '',
+              completed: false
+            })),
+            characters: [],
+            lastEdited: new Date()
+          }
+          
+          set(state => ({
+            stories: [...state.stories, newStory],
+            currentStory: newStory,
+            currentBeatIndex: 0
+          }))
+        },
+
+        setCurrentStory: (story: Story) => {
+          set({ currentStory: story, currentBeatIndex: 0 })
+        },
+
+        updateBeatContent: (beatId: string, content: string) => {
+          const { currentStory } = get()
+          if (!currentStory) return
+
+          const updatedBeats = currentStory.beats.map(beat =>
+            beat.id === beatId 
+              ? { ...beat, content, completed: content.trim().length > 0 }
+              : beat
+          )
+
+          const updatedStory = {
+            ...currentStory,
+            beats: updatedBeats,
+            lastEdited: new Date()
+          }
+
+          set(state => ({
+            currentStory: updatedStory,
+            stories: state.stories.map(s => s.id === updatedStory.id ? updatedStory : s)
+          }))
+        },
+
+        addCharacter: (character: Omit<Character, 'id'>) => {
+          const { currentStory } = get()
+          if (!currentStory) return
+
+          const newCharacter: Character = {
+            ...character,
+            id: crypto.randomUUID()
+          }
+
+          const updatedStory = {
+            ...currentStory,
+            characters: [...currentStory.characters, newCharacter],
+            lastEdited: new Date()
+          }
+
+          set(state => ({
+            currentStory: updatedStory,
+            stories: state.stories.map(s => s.id === updatedStory.id ? updatedStory : s)
+          }))
+        },
+
+        setCurrentBeat: (index: number) => {
+          set({ currentBeatIndex: index })
         }
-        
-        set(state => ({
-          stories: [...state.stories, newStory],
-          currentStory: newStory,
-          currentBeatIndex: 0
-        }))
-      },
-
-      setCurrentStory: (story: Story) => {
-        set({ currentStory: story, currentBeatIndex: 0 })
-      },
-
-      updateBeatContent: (beatId: string, content: string) => {
-        const { currentStory } = get()
-        if (!currentStory) return
-
-        const updatedBeats = currentStory.beats.map(beat =>
-          beat.id === beatId 
-            ? { ...beat, content, completed: content.trim().length > 0 }
-            : beat
-        )
-
-        const updatedStory = {
-          ...currentStory,
-          beats: updatedBeats,
-          lastEdited: new Date()
-        }
-
-        set(state => ({
-          currentStory: updatedStory,
-          stories: state.stories.map(s => s.id === updatedStory.id ? updatedStory : s)
-        }))
-      },
-
-      addCharacter: (character: Omit<Character, 'id'>) => {
-        const { currentStory } = get()
-        if (!currentStory) return
-
-        const newCharacter: Character = {
-          ...character,
-          id: crypto.randomUUID()
-        }
-
-        const updatedStory = {
-          ...currentStory,
-          characters: [...currentStory.characters, newCharacter],
-          lastEdited: new Date()
-        }
-
-        set(state => ({
-          currentStory: updatedStory,
-          stories: state.stories.map(s => s.id === updatedStory.id ? updatedStory : s)
-        }))
-      },
-
-      setCurrentBeat: (index: number) => {
-        set({ currentBeatIndex: index })
+      }),
+      {
+        name: 'story-storage'
       }
-    }),
-    {
-      name: 'story-storage'
-    }
+    )
   )
 )
+
+export const useTemporalStoryStore = <T,>(selector: (state: TemporalState<Pick<StoryStore, 'currentStory' | 'stories'>>) => T) => {
+  return useStore(useStoryStore.temporal, selector)
+}
