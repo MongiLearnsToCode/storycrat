@@ -182,7 +182,7 @@ function ProjectsContent() {
                           <div className="text-sm text-muted-foreground">
                             {completedBeats} of {story.beats.length} beats completed
                           </div>
-                          <div className="flex gap-2">
+                          <div className="flex items-center gap-2">
                             <Button 
                               onClick={() => handleContinueStory(story)} 
                               className="w-full"

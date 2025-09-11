@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button"
 import { Mockup } from "@/components/ui/mockup"
 import { Glow } from "@/components/ui/glow"
 import Image from "next/image"
+import Link from "next/link"
 
 interface HeroWithMockupProps {
   title: string
@@ -83,7 +84,7 @@ export function HeroWithMockup({
             animate-appear opacity-0 [animation-delay:400ms]"
           >
             <Button
-              asChild={!primaryCta.onClick && !!primaryCta.href}
+              asChild={!!primaryCta.href}
               size="lg"
               onClick={primaryCta.onClick}
               className={cn(
@@ -93,16 +94,16 @@ export function HeroWithMockup({
                 "transition-all duration-300",
               )}
             >
-              {primaryCta.onClick || !primaryCta.href ? (
-                primaryCta.text
+              {primaryCta.href ? (
+                <Link href={primaryCta.href}>{primaryCta.text}</Link>
               ) : (
-                <a href={primaryCta.href}>{primaryCta.text}</a>
+                primaryCta.text
               )}
             </Button>
 
             {secondaryCta && (
               <Button
-                asChild={!secondaryCta.onClick && !!secondaryCta.href}
+                asChild={!!secondaryCta.href}
                 size="lg"
                 variant="ghost"
                 onClick={secondaryCta.onClick}
@@ -111,16 +112,16 @@ export function HeroWithMockup({
                   "transition-all duration-300",
                 )}
               >
-                {secondaryCta.onClick || !secondaryCta.href ? (
+                {secondaryCta.href ? (
+                  <Link href={secondaryCta.href}>
+                    {secondaryCta.icon}
+                    {secondaryCta.text}
+                  </Link>
+                ) : (
                   <>
                     {secondaryCta.icon}
                     {secondaryCta.text}
                   </>
-                ) : (
-                  <a href={secondaryCta.href}>
-                    {secondaryCta.icon}
-                    {secondaryCta.text}
-                  </a>
                 )}
               </Button>
             )}

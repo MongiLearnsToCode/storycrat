@@ -33,11 +33,11 @@ export default function LandingPage() {
           description="Transform your ideas into structured narratives using the Hero's Journey and other time-tested storytelling frameworks. No more writer's block."
           primaryCta={{
             text: "Start Writing",
-            onClick: () => router.push('/framework')
+            href: "/framework"
           }}
           secondaryCta={{
             text: "Sign Up for Free",
-            onClick: () => router.push('/sign-up')
+            href: "/sign-up"
           }}
           
           mockupImage={{
@@ -58,7 +58,7 @@ export default function LandingPage() {
           }}
           secondaryCta={{
             text: "My Projects",
-            onClick: () => router.push('/projects')
+            href: "/projects"
           }}
           
           mockupImage={{
