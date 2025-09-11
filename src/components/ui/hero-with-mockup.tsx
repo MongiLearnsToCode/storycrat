@@ -105,7 +105,7 @@ export function HeroWithMockup({
               <Button
                 asChild={!!secondaryCta.href}
                 size="lg"
-                variant="ghost"
+                variant="outline"
                 onClick={secondaryCta.onClick}
                 className={cn(
                   "text-foreground/80 dark:text-foreground/70",

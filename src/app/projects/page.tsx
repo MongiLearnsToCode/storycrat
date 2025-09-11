@@ -94,13 +94,13 @@ function ProjectsContent() {
       <header className="border-b">
         <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <Button variant="ghost" size="sm" onClick={() => router.push('/')}>
+            <Button variant="ghost" size="sm" onClick={() => router.push('/')} className="hover:-translate-y-px">
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back
             </Button>
             <h1 className="text-2xl font-bold">All Stories</h1>
           </div>
-          <Button onClick={() => router.push('/framework')}>
+          <Button onClick={() => router.push('/framework')} className="hover:-translate-y-px">
             <Plus className="h-4 w-4 mr-2" />
             New Story
           </Button>
@@ -115,7 +115,7 @@ function ProjectsContent() {
             <p className="text-muted-foreground mb-8 max-w-md mx-auto">
               Create your first story to get started with StoryCrat
             </p>
-            <Button size="lg" onClick={() => router.push('/framework')}>
+            <Button size="lg" onClick={() => router.push('/framework')} className="hover:-translate-y-px">
               <Plus className="h-4 w-4 mr-2" />
               Create Your First Story
             </Button>
@@ -155,7 +155,7 @@ function ProjectsContent() {
                   return (
                     <Card 
                       key={story._id} 
-                      className={`transition-all duration-300 ${isConfirmingDelete ? 'border-destructive bg-destructive/5' : 'hover:shadow-md'}`}
+                      className={`transition-all duration-300 ${isConfirmingDelete ? 'border-destructive bg-destructive/5' : 'hover:shadow-lg hover:scale-[1.02]'}`}
                     >
                       <CardHeader>
                         <div className="flex items-start justify-between gap-2">
@@ -174,7 +174,7 @@ function ProjectsContent() {
                             <Button
                               variant="ghost"
                               size="icon"
-                              className="size-7"
+                              className="size-7 hover:-translate-y-px"
                               onClick={() => setConfirmingDelete(story._id)}
                             >
                               <XCircle className="size-4 text-muted-foreground hover:text-destructive transition-colors" />
@@ -193,6 +193,7 @@ function ProjectsContent() {
                                 onClick={() => handleDeleteStory(story._id as Id<"stories">)} 
                                 variant="destructive"
                                 size="sm"
+                                className="hover:-translate-y-px"
                               >
                                 Yes, delete
                               </Button>
@@ -200,6 +201,7 @@ function ProjectsContent() {
                                 onClick={() => setConfirmingDelete(null)} 
                                 variant="outline"
                                 size="sm"
+                                className="hover:-translate-y-px"
                               >
                                 Cancel
                               </Button>
@@ -223,7 +225,7 @@ function ProjectsContent() {
                             </div>
                             <Button 
                               onClick={() => handleContinueStory(story)} 
-                              className="w-full"
+                              className="w-full hover:-translate-y-px"
                               variant="secondary"
                             >
                               Continue Writing
