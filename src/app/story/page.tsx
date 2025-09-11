@@ -269,8 +269,21 @@ function StoryPageContent() {
     const promptTemplate = templates[promptType][Math.floor(Math.random() * templates[promptType].length)];
 
     const characters = currentStory.characters;
-    const character1 = characters.length > 0 ? characters[Math.floor(Math.random() * characters.length)] : { name: "a character" };
-    const character2 = characters.length > 1 ? characters.filter(c => c.id !== character1.id)[Math.floor(Math.random() * (characters.length - 1))] : { name: "another character" };
+    let character1: Character | { name: string } = { name: "a character" };
+    let character2: Character | { name: string } = { name: "another character" };
+
+    if (characters.length > 0) {
+      const randomIndex1 = Math.floor(Math.random() * characters.length);
+      character1 = characters[randomIndex1];
+
+      if (characters.length > 1) {
+        let randomIndex2 = Math.floor(Math.random() * characters.length);
+        while (randomIndex2 === randomIndex1) {
+          randomIndex2 = Math.floor(Math.random() * characters.length);
+        }
+        character2 = characters[randomIndex2];
+      }
+    }
 
     const prompt = promptTemplate
       .replace('{characterName}', character1.name)
