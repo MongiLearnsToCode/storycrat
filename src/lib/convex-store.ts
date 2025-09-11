@@ -1,4 +1,4 @@
-import { create } from 'zustand'
+import { create, useStore } from 'zustand'
 import { temporal, type TemporalState } from 'zundo'
 import { Id } from '../../convex/_generated/dataModel'
 
@@ -46,8 +46,9 @@ interface ConvexStoryStore {
   clearCurrentStory: () => void
 }
 
-export const useConvexStoryStore = create(
-  temporal<ConvexStoryStore>((set, get) => ({
+export const useConvexStoryStore = create<ConvexStoryStore>()(
+  temporal(
+    (set, get) => ({
       currentStory: null,
       currentBeatIndex: 0,
 
@@ -143,6 +144,5 @@ export const useConvexStoryStore = create(
 )
 
 export const useTemporalStore = <T,>(selector: (state: TemporalState<Pick<ConvexStoryStore, 'currentStory'>>) => T) => {
-    const store = useConvexStoryStore.temporal
-    return store(selector)
+    return useStore(useConvexStoryStore.temporal, selector)
 }
