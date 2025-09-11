@@ -188,10 +188,9 @@ function ProjectsContent() {
                             <p className="text-sm text-center font-medium text-destructive mb-3">
                               Delete this story permanently?
                             </p>
-                            <div className="flex gap-2">
+                            <div className="flex gap-2 justify-center">
                               <Button 
                                 onClick={() => handleDeleteStory(story._id as Id<"stories">)} 
-                                className="w-full" 
                                 variant="destructive"
                                 size="sm"
                               >
@@ -199,7 +198,6 @@ function ProjectsContent() {
                               </Button>
                               <Button 
                                 onClick={() => setConfirmingDelete(null)} 
-                                className="w-full" 
                                 variant="outline"
                                 size="sm"
                               >
