@@ -10,8 +10,7 @@ import { useConvexStoryStore } from "@/lib/convex-store"
 import { useRouter } from "next/navigation"
 import { useState, useEffect, useMemo } from "react"
 import { Story } from "@/lib/convex-store"
-import { ArrowLeft, Plus, BookOpen, Search, Trash2 } from "lucide-react"
-import { DeleteStoryDialog } from "@/components/delete-story-dialog"
+import { ArrowLeft, Plus, BookOpen, Search, XCircle } from "lucide-react"
 import { Id } from "../../../convex/_generated/dataModel"
 
 export const dynamic = 'force-dynamic'
@@ -39,7 +38,7 @@ function ProjectsContent() {
   const stories = useQuery(api.stories.getStories)
   const setCurrentStory = useConvexStoryStore(state => state.setCurrentStory)
   const [searchQuery, setSearchQuery] = useState("")
-  const [storyToDelete, setStoryToDelete] = useState<Story | null>(null)
+  const [confirmingDelete, setConfirmingDelete] = useState<string | null>(null)
   const deleteStoryMutation = useMutation(api.stories.deleteStory)
 
   const handleContinueStory = (story: Story) => {
@@ -47,11 +46,9 @@ function ProjectsContent() {
     router.push('/story')
   }
 
-  const handleDeleteStory = () => {
-    if (storyToDelete) {
-      deleteStoryMutation({ storyId: storyToDelete._id as Id<"stories"> })
-      setStoryToDelete(null)
-    }
+  const handleDeleteStory = (storyId: Id<"stories">) => {
+    deleteStoryMutation({ storyId })
+    setConfirmingDelete(null)
   }
 
   const formatDate = (timestamp: number) => {
@@ -63,6 +60,7 @@ function ProjectsContent() {
   }
 
   const getProgress = (story: Story) => {
+    if (story.beats.length === 0) return 0
     const completedBeats = story.beats.filter(beat => beat.completed).length
     return (completedBeats / story.beats.length) * 100
   }
@@ -152,37 +150,79 @@ function ProjectsContent() {
                 {filteredStories.map((story) => {
                   const progress = getProgress(story)
                   const completedBeats = story.beats.filter(beat => beat.completed).length
+                  const isConfirmingDelete = confirmingDelete === story._id
 
                   return (
-                    <Card key={story._id} className="hover:shadow-md transition-shadow">
+                    <Card 
+                      key={story._id} 
+                      className={`transition-all duration-300 ${isConfirmingDelete ? 'border-destructive bg-destructive/5' : 'hover:shadow-md'}`}
+                    >
                       <CardHeader>
-                        <div className="flex items-start justify-between gap-3">
-                          <CardTitle className="text-lg line-clamp-2 flex-1">{story.title}</CardTitle>
-                          <Badge variant="secondary" className="text-xs shrink-0">
-                            {story.framework}
-                          </Badge>
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="flex-1">
+                            <CardTitle className="text-lg line-clamp-2">{story.title}</CardTitle>
+                            {!isConfirmingDelete && (
+                              <CardDescription className="mt-1">
+                                Last edited {formatDate(story.lastEdited)}
+                              </CardDescription>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <Badge variant="secondary" className="text-xs shrink-0">
+                              {story.framework}
+                            </Badge>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="size-7"
+                              onClick={() => setConfirmingDelete(story._id)}
+                            >
+                              <XCircle className="size-4 text-muted-foreground hover:text-destructive transition-colors" />
+                            </Button>
+                          </div>
                         </div>
-                        <CardDescription>
-                          Last edited {formatDate(story.lastEdited)}
-                        </CardDescription>
                       </CardHeader>
                       <CardContent>
-                        <div className="space-y-4">
-                          <div className="flex items-center gap-3">
-                            <div className="flex-1 bg-muted rounded-full h-2">
-                              <div 
-                                className="bg-primary h-2 rounded-full transition-all"
-                                style={{ width: `${progress}%` }}
-                              />
+                        {isConfirmingDelete ? (
+                          <div className="pt-2">
+                            <p className="text-sm text-center font-medium text-destructive mb-3">
+                              Delete this story permanently?
+                            </p>
+                            <div className="flex gap-2">
+                              <Button 
+                                onClick={() => handleDeleteStory(story._id as Id<"stories">)} 
+                                className="w-full" 
+                                variant="destructive"
+                                size="sm"
+                              >
+                                Yes, delete
+                              </Button>
+                              <Button 
+                                onClick={() => setConfirmingDelete(null)} 
+                                className="w-full" 
+                                variant="outline"
+                                size="sm"
+                              >
+                                Cancel
+                              </Button>
                             </div>
-                            <span className="text-sm font-medium text-muted-foreground">
-                              {Math.round(progress)}%
-                            </span>
                           </div>
-                          <div className="text-sm text-muted-foreground">
-                            {completedBeats} of {story.beats.length} beats completed
-                          </div>
-                          <div className="flex items-end gap-2">
+                        ) : (
+                          <div className="space-y-4">
+                            <div className="flex items-center gap-3">
+                              <div className="flex-1 bg-muted rounded-full h-2">
+                                <div 
+                                  className="bg-primary h-2 rounded-full"
+                                  style={{ width: `${progress}%` }}
+                                />
+                              </div>
+                              <span className="text-sm font-medium text-muted-foreground">
+                                {Math.round(progress)}%
+                              </span>
+                            </div>
+                            <div className="text-sm text-muted-foreground">
+                              {completedBeats} of {story.beats.length} beats completed
+                            </div>
                             <Button 
                               onClick={() => handleContinueStory(story)} 
                               className="w-full"
@@ -190,15 +230,8 @@ function ProjectsContent() {
                             >
                               Continue Writing
                             </Button>
-                            <Button 
-                              onClick={() => setStoryToDelete(story)}
-                              variant="destructive"
-                              size="icon"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
                           </div>
-                        </div>
+                        )}
                       </CardContent>
                     </Card>
                   )
@@ -208,13 +241,6 @@ function ProjectsContent() {
           </>
         )}
       </main>
-      <DeleteStoryDialog
-        open={!!storyToDelete}
-        onOpenChange={() => setStoryToDelete(null)}
-        storyTitle={storyToDelete?.title || ""}
-        onConfirm={handleDeleteStory}
-        isDeleting={deleteStoryMutation.isPending}
-      />
     </div>
   )
 }
