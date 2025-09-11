@@ -26,6 +26,7 @@ import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/componen
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { default as dynamicImport } from 'next/dynamic'
+import { Toaster, toast } from "sonner";
 import { promptTemplates } from "@/lib/ai-prompts";
 
 const StoryOnboarding = dynamicImport(() => import('@/components/onboarding').then(mod => mod.StoryOnboarding), { ssr: false })
@@ -85,6 +86,7 @@ function StoryPageContent() {
   const [isSaved, setIsSaved] = useState(false)
   const [isEditingTitle, setIsEditingTitle] = useState(false)
   const [isExportDialogOpen, setIsExportDialogOpen] = useState(false)
+  const [isAiSuggesting, setIsAiSuggesting] = useState(false)
   const [columnHeight, setColumnHeight] = useState('auto');
 
   const middlePanelRef = useRef<HTMLDivElement>(null);
@@ -255,13 +257,18 @@ function StoryPageContent() {
     setCharacterToDelete(null)
   }
 
-  const handleAiSuggest = () => {
+  const handleAiSuggest = async () => {
     if (!currentStory) return;
+
+    setIsAiSuggesting(true);
+    toast.info("Generating AI suggestion...");
 
     const framework = currentStory.framework as keyof typeof promptTemplates;
     const templates = promptTemplates[framework];
     if (!templates) {
       console.log("No templates for this framework");
+      toast.error("No AI prompt templates found for this framework.");
+      setIsAiSuggesting(false);
       return;
     }
 
@@ -289,10 +296,45 @@ function StoryPageContent() {
       .replace('{characterName}', character1.name)
       .replace('{otherCharacterName}', character2.name);
 
-    console.log("AI Suggestion Prompt:", prompt);
-    // In the future, this will make an API call to an AI service
-    // and display the suggestion in a dialog or inline.
-    alert(`AI Suggestion Prompt:\n\n${prompt}`);
+    try {
+      const response = await fetch('/api/ai-suggest', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ prompt }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch AI suggestion');
+      }
+
+      const data = await response.json();
+      const suggestion = data.suggestion;
+
+      toast.success(
+        <div className="flex flex-col gap-2">
+          <span className="font-bold">AI Suggestion</span>
+          <p>{suggestion}</p>
+          <Button
+            size="sm"
+            onClick={() => {
+              navigator.clipboard.writeText(suggestion);
+              toast.success("Suggestion copied to clipboard!");
+            }}
+          >
+            Copy
+          </Button>
+        </div>,
+        { duration: 10000 }
+      );
+
+    } catch (error) {
+      console.error("AI Suggestion Error:", error);
+      toast.error("Failed to get AI suggestion.");
+    } finally {
+      setIsAiSuggesting(false);
+    }
   };
 
 
@@ -346,6 +388,7 @@ function StoryPageContent() {
 
   return (
     <div className="min-h-screen bg-background">
+      <Toaster richColors />
       {showOnboarding && <StoryOnboarding />}
       <div className="border-b p-3 lg:p-4 mb-4">
         <div className="max-w-[1600px] mx-auto flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
@@ -591,6 +634,7 @@ function StoryPageContent() {
         onAiSuggest={handleAiSuggest}
         canUndo={pastStates.length > 0}
         canRedo={futureStates.length > 0}
+        isAiSuggesting={isAiSuggesting}
       />
 
       <ExportDialog
