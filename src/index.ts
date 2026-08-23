@@ -110,7 +110,7 @@ export class Router {
 export function createRouter(): Router {
   const router = new Router()
 
-  router.get('/health', (_ctx) => {
+  const healthHandler = (_ctx: RouteContext) => {
     // Ops visibility without leaking anything: booleans only.
     return jsonResponse({
       status: 'ok',
@@ -124,7 +124,12 @@ export function createRouter(): Router {
         polar: hasSecret(_ctx.env, 'POLAR_ACCESS_TOKEN'),
       },
     })
-  })
+  }
+
+  // Bare /health for infrastructure probes; all application routes live
+  // under /api so the frontend's dev-proxy paths match production exactly.
+  router.get('/health', healthHandler)
+  router.get('/api/health', healthHandler)
 
   return router
 }

@@ -6,9 +6,9 @@ import { compilePath, createRouter, errorResponse, jsonResponse, type Env } from
 const env = {} as Env
 
 describe('health endpoint', () => {
-  it('returns 200 with ok status', async () => {
+  it.each(['/health', '/api/health'])('returns 200 with ok status at %s', async (path) => {
     const router = createRouter()
-    const request = new Request('https://storycrat.example/health')
+    const request = new Request(`https://storycrat.example${path}`)
     const response = await router.handle(request, env)
 
     expect(response.status).toBe(200)

@@ -2,23 +2,25 @@
   "name": "storycrat",
   "version": "0.1.0",
   "private": true,
-  "description": "Voice-first screenwriting companion — dictate, edit, and navigate a screenplay by voice.",
+  "description": "Voice-first screenwriting companion \u2014 dictate, edit, and navigate a screenplay by voice.",
   "type": "module",
   "scripts": {
     "dev": "wrangler dev",
-    "deploy": "wrangler deploy",
+    "dev:all": "concurrently -k -n api,web -c blue,yellow \"wrangler dev --port 8787\" \"npm --prefix frontend run dev\"",
+    "dev:frontend": "npm --prefix frontend run dev",
+    "build:frontend": "npm --prefix frontend run build",
     "db:migrate:local": "wrangler d1 migrations apply DB --local",
     "db:migrate:remote": "wrangler d1 migrations apply DB --remote",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "dev:frontend": "npm --prefix frontend run dev",
-    "build:frontend": "npm --prefix frontend run build",
-    "test:frontend": "npm --prefix frontend run test"
+    "test:frontend": "npm --prefix frontend run test",
+    "deploy": "wrangler deploy"
   },
   "devDependencies": {
     "@cloudflare/vitest-pool-workers": "^0.22.0",
     "@cloudflare/workers-types": "5.20260823.1",
+    "concurrently": "^10.0.5",
     "typescript": "^5.8.3",
     "vitest": "^4.1.0",
     "wrangler": "^4.27.0"
