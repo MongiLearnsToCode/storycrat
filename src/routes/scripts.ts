@@ -3,6 +3,7 @@ import type { RouteContext, Router } from '../index'
 import { errorResponse, jsonResponse } from '../index'
 import { requireUser } from '../lib/auth'
 import { findScript, isOwned, notFound } from '../lib/ownership'
+import { generateScriptPdf } from '../lib/pdf-export'
 
 const ELEMENT_TYPES = ['scene_heading', 'action', 'character', 'dialogue', 'parenthetical', 'transition'] as const
 type ElementType = (typeof ELEMENT_TYPES)[number]
@@ -158,8 +159,38 @@ async function updateElement(ctx: RouteContext): Promise<Response> {
   return jsonResponse({ element })
 }
 
+/** Streams the script as an industry-standard PDF derived from its structured elements (Task 2.7). */
+async function exportPdf(ctx: RouteContext): Promise<Response> {
+  const user = await requireUser(ctx.request, ctx.env)
+  if (!user) return errorResponse('Unauthorized', 401)
+
+  const owned = await findScript(ctx.env, p(ctx, 'scriptId'))
+  if (!isOwned(owned, user.id)) return notFound()
+
+  const { results } = await ctx.env.DB.prepare(
+    'SELECT type, content FROM script_elements WHERE script_id = ? ORDER BY position ASC'
+  )
+    .bind(p(ctx, 'scriptId'))
+    .all<{ type: Parameters<typeof generateScriptPdf>[1][number]['type']; content: string }>()
+
+  try {
+    const { bytes } = await generateScriptPdf('Screenplay', results ?? [])
+    return new Response(bytes as unknown as BodyInit, {
+      status: 200,
+      headers: {
+        'Content-Type': 'application/pdf',
+        'Content-Disposition': 'attachment; filename="screenplay.pdf"',
+      },
+    })
+  } catch (error) {
+    console.error('PDF generation failed', error)
+    return errorResponse('PDF generation failed', 500)
+  }
+}
+
 export function registerScriptRoutes(router: Router): void {
   router.get('/api/scripts/:scriptId', getElements)
   router.put('/api/scripts/:scriptId/elements', replaceElements)
   router.patch('/api/scripts/:scriptId/elements/:elementId', updateElement)
+  router.get('/api/scripts/:scriptId/pdf', exportPdf)
 }

@@ -28,8 +28,44 @@ beforeAll(async () => {
 
 const url = (suffix = '') => `https://api.example/api/scripts/${scriptId}${suffix}`
 
+describe('pdf export', () => {
+  it('streams an owned script as a PDF', async () => {
+    // Seed a couple of elements first.
+    await SELF.fetch(url('/elements'), {
+      method: 'PUT',
+      headers: authHeaders(userA.token),
+      body: JSON.stringify({
+        elements: [
+          { type: 'scene_heading', content: 'INT. TEST - DAY' },
+          { type: 'action', content: 'The export path runs end to end.' },
+        ],
+      }),
+    })
+
+    const response = await SELF.fetch(url('/pdf'), { headers: authHeaders(userA.token) })
+    expect(response.status).toBe(200)
+    expect(response.headers.get('Content-Type')).toBe('application/pdf')
+    expect(response.headers.get('Content-Disposition')).toContain('attachment')
+
+    const bytes = new Uint8Array(await response.arrayBuffer())
+    expect(String.fromCharCode(...bytes.slice(0, 5))).toBe('%PDF-')
+    expect(bytes.length).toBeGreaterThan(1000)
+  })
+
+  it('requires ownership and authentication for exports', async () => {
+    expect((await SELF.fetch(url('/pdf'))).status).toBe(401)
+    expect((await SELF.fetch(url('/pdf'), { headers: authHeaders(userB.token) })).status).toBe(404)
+  })
+})
+
 describe('script element replacement', () => {
   it('starts empty', async () => {
+    // The PDF tests above seed content; reset to a clean slate.
+    await SELF.fetch(url('/elements'), {
+      method: 'PUT',
+      headers: authHeaders(userA.token),
+      body: JSON.stringify({ elements: [] }),
+    })
     const response = await SELF.fetch(url(), { headers: authHeaders(userA.token) })
     expect(response.status).toBe(200)
     const body = (await response.json()) as { elements: unknown[] }
