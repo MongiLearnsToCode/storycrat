@@ -18,6 +18,11 @@ export interface Env {
    * project/season — an unfiltered query is a cross-tenant data leak.
    */
   VECTOR_INDEX: VectorizeIndex
+  /**
+   * Durable Object namespace — per-session live state (PRD §7). Provisioned in task 1.13.
+   * SECURITY: obtain stubs only via `getSessionStateStub` (user-scoped ID derivation).
+   */
+  SESSION_STATE: DurableObjectNamespace
   /** Wrangler secret — Groq API key (security-doc.md § Secrets Management). Set via `wrangler secret put`. */
   GROQ_API_KEY?: string
   /** Optional model overrides, swappable without touching feature code. */

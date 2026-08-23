@@ -1,6 +1,9 @@
 import type { Env } from './types'
 import { hasSecret } from './lib/secrets'
 
+// Durable Object classes must be exported from the entry module.
+export { SessionState } from './durable-objects/SessionState'
+
 export type { Env }
 
 export interface RouteContext {

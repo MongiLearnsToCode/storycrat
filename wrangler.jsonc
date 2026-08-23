@@ -51,5 +51,22 @@
       "binding": "VECTOR_INDEX",
       "index_name": "storycrat-scripts"
     }
+  ],
+  "durable_objects": {
+    "bindings": [
+      {
+        // Live dictation/conversation session state (PRD §7) — WebSocket
+        // Hibernation + Alarms. Stubs are derived from the authenticated
+        // user's ID; never from client-supplied raw IDs.
+        "name": "SESSION_STATE",
+        "class_name": "SessionState"
+      }
+    ]
+  },
+  "migrations": [
+    {
+      "tag": "v1",
+      "new_sqlite_classes": ["SessionState"]
+    }
   ]
 }
