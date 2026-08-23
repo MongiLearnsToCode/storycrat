@@ -68,3 +68,42 @@ export async function updateScriptElement(
   })
   await parseOrThrow(response)
 }
+
+export interface Season {
+  id: string
+  project_id: string
+  season_number: number
+  title: string
+}
+
+export interface Episode {
+  id: string
+  season_id: string
+  episode_number: number
+  title: string
+  script_id: string | null
+}
+
+export interface Project {
+  id: string
+  title: string
+  type: 'feature' | 'series'
+}
+
+export async function fetchProject(projectId: string, init?: RequestInit): Promise<{ project: Project }> {
+  const response = await fetch(`/api/projects/${encodeURIComponent(projectId)}`, init)
+  return (await parseOrThrow(response)) as { project: Project }
+}
+
+export async function fetchSeasons(projectId: string, init?: RequestInit): Promise<{ seasons: Season[] }> {
+  const response = await fetch(`/api/projects/${encodeURIComponent(projectId)}/seasons`, init)
+  return (await parseOrThrow(response)) as { seasons: Season[] }
+}
+
+export async function fetchEpisodes(projectId: string, seasonId: string, init?: RequestInit): Promise<{ episodes: Episode[] }> {
+  const response = await fetch(
+    `/api/projects/${encodeURIComponent(projectId)}/seasons/${encodeURIComponent(seasonId)}/episodes`,
+    init
+  )
+  return (await parseOrThrow(response)) as { episodes: Episode[] }
+}
