@@ -84,7 +84,7 @@
   - [x] 2.1 Define D1 schema for Project (feature|series), Season, Episode, Script, ScriptElement, StoryBible
   - [x] 2.2 Build CRUD API endpoints for Project, Season, Episode, Script
   - [x] 2.3 Build the screenplay editor UI rendering ScriptElements in industry-standard format (Courier, per-element margins)
-  - [ ] 2.4 Implement manual keyboard editing (add/edit/delete/re-tag element type) with persistence
+  - [x] 2.4 Implement manual keyboard editing (add/edit/delete/re-tag element type) with persistence
   - [ ] 2.5 Build Story Bible UI + API for season-level documents
   - [ ] 2.6 Build episode/season navigation UI for Series projects
   - [ ] 2.7 Implement PDF export using Courier Prime (bundle/reference the font file explicitly); verify the chosen PDF library works under the Workers runtime (`nodejs_compat`) before committing to it — confirm this early, it's a build-blocking risk if the library doesn't run in Workers. If it doesn't, implement the defined fallback: client-side generation (react-pdf/jsPDF) uploading the result to the Worker for R2 storage, not an open-ended search for a Workers-compatible library

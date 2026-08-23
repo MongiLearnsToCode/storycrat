@@ -1,5 +1,6 @@
 import { cn } from '@/lib/utils'
 import type { ElementType } from '@/lib/api'
+import { ELEMENT_TYPE_LABELS, ELEMENT_STYLES } from './elementStyles'
 
 /**
  * Renders one typed screenplay element with industry-standard formatting
@@ -8,28 +9,9 @@ import type { ElementType } from '@/lib/api'
  *
  * The margin "type label" on hover (e.g. "ACT") makes the AI's classification
  * legible to the writer (DESIGN.md → Components → The Editor) without
- * cluttering the page at rest.
+ * cluttering the page at rest. Used by read-only contexts; the editor
+ * renders editable inputs styled identically via elementStyles.ts.
  */
-export const ELEMENT_TYPE_LABELS: Record<ElementType, string> = {
-  scene_heading: 'SCENE',
-  action: 'ACT',
-  character: 'CHAR',
-  dialogue: 'DIAL',
-  parenthetical: 'PAR',
-  transition: 'TRANS',
-}
-
-const ELEMENT_STYLES: Record<ElementType, string> = {
-  // Uppercase bold anchor when scrolling (DESIGN.md typography rules).
-  scene_heading: 'font-bold uppercase mt-6',
-  action: 'mt-4',
-  character: 'ml-[2in] uppercase mt-4',
-  dialogue: 'ml-[1in] mr-[1.5in]',
-  parenthetical: 'ml-[1.5in] mr-[2in] italic',
-  // Transitions sit flush-right per industry convention.
-  transition: 'text-right font-bold uppercase mt-4',
-}
-
 export interface ElementRendererProps {
   type: ElementType
   content: string
