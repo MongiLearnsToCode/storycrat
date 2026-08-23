@@ -158,3 +158,67 @@ describe('series structure', () => {
     expect(episodeResponse.status).toBe(404)
   })
 })
+
+describe('story bible', () => {
+  it('materializes an empty bible on first read', async () => {
+    const response = await SELF.fetch(
+      `https://api.example/api/projects/${seriesId}/seasons/${seasonId}/story-bible`,
+      { headers: authHeaders(userA.token) }
+    )
+    expect(response.status).toBe(200)
+    const body = (await response.json()) as { storyBible: { content: string; season_id: string } }
+    expect(body.storyBible.content).toBe('')
+    expect(body.storyBible.season_id).toBe(seasonId)
+  })
+
+  it('saves and returns updated content', async () => {
+    const putResponse = await SELF.fetch(
+      `https://api.example/api/projects/${seriesId}/seasons/${seasonId}/story-bible`,
+      {
+        method: 'PUT',
+        headers: authHeaders(userA.token),
+        body: JSON.stringify({ content: "Mara never explains the scar. It pays off in EP.6." }),
+      }
+    )
+    expect(putResponse.status).toBe(200)
+    const body = (await putResponse.json()) as { storyBible: { content: string } }
+    expect(body.storyBible.content).toContain('EP.6')
+
+    // Upsert, not duplicate: still exactly one row for the season.
+    const rows = await testEnv.DB.prepare('SELECT COUNT(*) AS n FROM story_bibles WHERE season_id = ?')
+      .bind(seasonId)
+      .first<{ n: number }>()
+    expect(rows?.n).toBe(1)
+  })
+
+  it('rejects non-string and oversized content', async () => {
+    expect(
+      (
+        await SELF.fetch(`https://api.example/api/projects/${seriesId}/seasons/${seasonId}/story-bible`, {
+          method: 'PUT',
+          headers: authHeaders(userA.token),
+          body: JSON.stringify({ content: 42 }),
+        })
+      ).status
+    ).toBe(400)
+
+    expect(
+      (
+        await SELF.fetch(`https://api.example/api/projects/${seriesId}/seasons/${seasonId}/story-bible`, {
+          method: 'PUT',
+          headers: authHeaders(userA.token),
+          body: JSON.stringify({ content: 'x'.repeat(200_001) }),
+        })
+      ).status
+    ).toBe(400)
+  })
+
+  it("hides another user's story bible behind 404", async () => {
+    const response = await SELF.fetch(
+      `https://api.example/api/projects/${seriesId}/seasons/${seasonId}/story-bible`,
+      { headers: authHeaders(userB.token) }
+    )
+    expect(response.status).toBe(404)
+  })
+})
+

@@ -373,6 +373,70 @@ export async function findFeatureScript(env: Env, projectId: string, userId: str
   return row?.id ?? null
 }
 
+interface BibleRow {
+  id: string
+  season_id: string
+  content: string
+  updated_at: string
+}
+
+async function getStoryBible(ctx: RouteContext): Promise<Response> {
+  const user = await requireUser(ctx.request, ctx.env)
+  if (!user) return errorResponse('Unauthorized', 401)
+
+  const owned = await findSeason(ctx.env, p(ctx, 'seasonId'))
+  if (!isOwned(owned, user.id)) return notFound()
+
+  // Every season has exactly one bible row conceptually; materialize lazily on first read.
+  const existing = await ctx.env.DB.prepare('SELECT id, season_id, content, updated_at FROM story_bibles WHERE season_id = ?')
+    .bind(p(ctx, 'seasonId'))
+    .first<BibleRow>()
+  if (existing) return jsonResponse({ storyBible: existing })
+
+  const id = newId()
+  await ctx.env.DB.prepare('INSERT INTO story_bibles (id, season_id) VALUES (?, ?)').bind(id, p(ctx, 'seasonId')).run()
+  const created = await ctx.env.DB.prepare('SELECT id, season_id, content, updated_at FROM story_bibles WHERE id = ?')
+    .bind(id)
+    .first<BibleRow>()
+  return jsonResponse({ storyBible: created })
+}
+
+const BIBLE_MAX_CHARS = 200_000
+
+async function putStoryBible(ctx: RouteContext): Promise<Response> {
+  const user = await requireUser(ctx.request, ctx.env)
+  if (!user) return errorResponse('Unauthorized', 401)
+
+  const owned = await findSeason(ctx.env, p(ctx, 'seasonId'))
+  if (!isOwned(owned, user.id)) return notFound()
+
+  let body: { content?: unknown }
+  try {
+    body = (await ctx.request.json()) as typeof body
+  } catch {
+    return errorResponse('Invalid JSON body', 400)
+  }
+  if (typeof body.content !== 'string') {
+    return errorResponse('content must be a string', 400)
+  }
+  if (body.content.length > BIBLE_MAX_CHARS) {
+    return errorResponse(`content exceeds maximum of ${BIBLE_MAX_CHARS} characters`, 400)
+  }
+
+  // Upsert by unique season_id.
+  await ctx.env.DB.prepare(
+    `INSERT INTO story_bibles (id, season_id, content) VALUES (?, ?, ?)
+     ON CONFLICT(season_id) DO UPDATE SET content = excluded.content, updated_at = datetime('now')`
+  )
+    .bind(newId(), p(ctx, 'seasonId'), body.content)
+    .run()
+
+  const row = await ctx.env.DB.prepare('SELECT id, season_id, content, updated_at FROM story_bibles WHERE season_id = ?')
+    .bind(p(ctx, 'seasonId'))
+    .first<BibleRow>()
+  return jsonResponse({ storyBible: row })
+}
+
 export function registerProjectRoutes(router: Router): void {
   router.get('/api/projects', listProjects)
   router.post('/api/projects', createProject)
@@ -389,4 +453,11 @@ export function registerProjectRoutes(router: Router): void {
   router.post('/api/projects/:projectId/seasons/:seasonId/episodes', createEpisode)
   router.patch('/api/projects/:projectId/seasons/:seasonId/episodes/:episodeId', updateEpisode)
   router.delete('/api/projects/:projectId/seasons/:seasonId/episodes/:episodeId', deleteEpisode)
+
+  router.get('/api/projects/:projectId/seasons/:seasonId/story-bible', getStoryBible)
+  router.put('/api/projects/:projectId/seasons/:seasonId/story-bible', putStoryBible)
+  // Bible access is scoped by the season itself (ownership chains
+  // season → project → owner), so no project ID is required in the path.
+  router.get('/api/seasons/:seasonId/story-bible', getStoryBible)
+  router.put('/api/seasons/:seasonId/story-bible', putStoryBible)
 }
