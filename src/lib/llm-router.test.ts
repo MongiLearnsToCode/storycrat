@@ -1,5 +1,13 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { LlmError, LlmRateLimitError, resolveModelConfig, runLlm, type ChatMessage } from './llm-router'
+import {
+  GroqZdrNotConfirmedError,
+  LlmError,
+  LlmRateLimitError,
+  resolveModelConfig,
+  runLlm,
+  zdrConfirmed,
+  type ChatMessage,
+} from './llm-router'
 import type { Env } from '../index'
 
 const env = {
@@ -7,6 +15,7 @@ const env = {
   SESSIONS: {} as KVNamespace,
   PDFS: {} as R2Bucket,
   GROQ_API_KEY: 'test-key',
+  GROQ_ZDR_CONFIRMED: 'true',
   LLM_STRUCTURING_MODEL: 'struct-model-x',
   LLM_CRITIQUE_MODEL: 'critique-model-y',
 } as Env
@@ -44,7 +53,27 @@ describe('resolveModelConfig', () => {
   })
 })
 
+describe('zdrConfirmed', () => {
+  it('accepts only the exact string "true"', () => {
+    expect(zdrConfirmed({ ...env, GROQ_ZDR_CONFIRMED: 'true' } as Env)).toBe(true)
+    for (const falsy of [undefined, '', 'false', 'True', '1', 'yes']) {
+      expect(zdrConfirmed({ ...env, GROQ_ZDR_CONFIRMED: falsy } as Env)).toBe(false)
+    }
+  })
+})
+
 describe('runLlm', () => {
+  it('refuses every call while ZDR is not confirmed — no request is made at all', async () => {
+    vi.stubGlobal('fetch', fetchMock)
+    const unattested = { ...env, GROQ_ZDR_CONFIRMED: undefined } as Env
+
+    const error = await runLlm(unattested, 'structuring', messages).catch((e) => e)
+
+    expect(error).toBeInstanceOf(GroqZdrNotConfirmedError)
+    expect(error.message).toMatch(/Zero Data Retention/)
+    expect(fetchMock).not.toHaveBeenCalled()
+  })
+
   it('sends the task-type model and auth header to the provider endpoint', async () => {
     fetchMock.mockResolvedValue(okResponse('done'))
     vi.stubGlobal('fetch', fetchMock)

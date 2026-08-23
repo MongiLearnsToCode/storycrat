@@ -73,7 +73,7 @@
   - [x] 1.5 Scaffold React + Tailwind + shadcn/ui frontend with baseline PWA manifest/service worker
   - [x] 1.6 Build the LLM routing layer (`llm-router.ts`): provider-agnostic interface, currently pointing both task types (structuring, critique) at Groq
   - [ ] 1.7 Set up environment/secrets management for API keys (Deepgram/AssemblyAI, Groq, Resend, Polar)
-  - [ ] 1.8 Enable Zero Data Retention in Groq's Data Controls settings before any real script content is processed — verify and document as a launch checklist item, not just a code change
+  - [x] 1.8 Enable Zero Data Retention in Groq's Data Controls settings before any real script content is processed — verify and document as a launch checklist item, not just a code change
   - [ ] 1.9 Set up local dev scripts (`wrangler dev`)
   - [ ] 1.10 Connect the repo via Workers Builds (native Cloudflare git integration) for automatic build + deploy on push — no separate CI YAML needed
   - [ ] 1.11 Confirm Workers Logs/Observability is enabled (on by default) and verify STT/LLM call failures are visible in the dashboard; note the OpenTelemetry-to-Sentry export path as a documented future option, not a v1 build item

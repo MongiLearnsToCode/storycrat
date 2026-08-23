@@ -6,6 +6,13 @@
   "compatibility_date": "2026-08-01",
   // Required later for PDF generation libraries and Resend/Polar SDK-style fetch code.
   "compatibility_flags": ["nodejs_compat"],
+  // Launch-blocking attestation (security-doc.md § Third-Party Data Exposure):
+  // Zero Data Retention confirmed enabled in Groq Data Controls on 2026-08-23
+  // (attested by repo owner — see tasks/launch-checklist.md). The router's
+  // fail-closed guard stays in place: only the exact string "true" passes.
+  "vars": {
+    "GROQ_ZDR_CONFIRMED": "true"
+  },
   "observability": {
     "enabled": true,
     "logs": {

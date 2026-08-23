@@ -16,6 +16,13 @@ export interface Env {
   LLM_STRUCTURING_MODEL?: string
   LLM_CRITIQUE_MODEL?: string
   /**
+   * Launch-blocking attestation (security-doc.md § Third-Party Data Exposure):
+   * set to "true" ONLY after Zero Data Retention has been enabled in Groq's
+   * Data Controls settings. While falsy, the LLM router refuses every call —
+   * no real user script content may reach Groq unattested (PRD §7).
+   */
+  GROQ_ZDR_CONFIRMED?: string
+  /**
    * Wrangler secrets — speech-to-text. One of these becomes required when the
    * STT provider is picked in Task 3.1; both declared so either can be wired.
    * Never committed; never exposed to the frontend.

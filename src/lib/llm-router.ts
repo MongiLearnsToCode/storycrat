@@ -61,7 +61,32 @@ export class LlmRateLimitError extends LlmError {
   }
 }
 
+/**
+ * Launch-blocking guard (security-doc.md § Third-Party Data Exposure):
+ * thrown when an LLM call is attempted before Zero Data Retention has been
+ * confirmed in Groq's Data Controls. Failing closed here is deliberate —
+ * Storycrat handles unpublished creative IP, so an unattested call is a
+ * privacy incident waiting to happen, not a config inconvenience.
+ */
+export class GroqZdrNotConfirmedError extends LlmError {
+  constructor() {
+    super(
+      'Zero Data Retention is not confirmed for Groq. Enable it in Groq Data Controls, then set GROQ_ZDR_CONFIRMED=true before processing any user content.'
+    )
+    this.name = 'GroqZdrNotConfirmedError'
+  }
+}
+
 const DEFAULT_TIMEOUT_MS = 30_000
+
+/**
+ * ZDR attestation check — every outbound LLM call passes through this.
+ * Only the exact string "true" counts; anything else (unset, "false",
+ * "1", "yes") fails closed.
+ */
+export function zdrConfirmed(env: Env): boolean {
+  return env.GROQ_ZDR_CONFIRMED === 'true'
+}
 
 /**
  * Resolves the model configuration for a task type.
@@ -147,6 +172,10 @@ export async function runLlm(
   messages: ChatMessage[],
   options: LlmRequestOptions = {}
 ): Promise<string> {
+  if (!zdrConfirmed(env)) {
+    throw new GroqZdrNotConfirmedError()
+  }
+
   const config = resolveModelConfig(env, taskType)
   const response = await postChatCompletion(
     config,
