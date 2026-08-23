@@ -82,7 +82,7 @@
 
 - [ ] 2.0 Screenplay Data Model, Editor & Export
   - [x] 2.1 Define D1 schema for Project (feature|series), Season, Episode, Script, ScriptElement, StoryBible
-  - [ ] 2.2 Build CRUD API endpoints for Project, Season, Episode, Script
+  - [x] 2.2 Build CRUD API endpoints for Project, Season, Episode, Script
   - [ ] 2.3 Build the screenplay editor UI rendering ScriptElements in industry-standard format (Courier, per-element margins)
   - [ ] 2.4 Implement manual keyboard editing (add/edit/delete/re-tag element type) with persistence
   - [ ] 2.5 Build Story Bible UI + API for season-level documents

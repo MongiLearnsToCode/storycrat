@@ -4,6 +4,9 @@ import { hasSecret } from './lib/secrets'
 // Durable Object classes must be exported from the entry module.
 export { SessionState } from './durable-objects/SessionState'
 
+import { registerProjectRoutes } from './routes/projects'
+import { registerScriptRoutes } from './routes/scripts'
+
 export type { Env }
 
 export interface RouteContext {
@@ -133,6 +136,9 @@ export function createRouter(): Router {
   // under /api so the frontend's dev-proxy paths match production exactly.
   router.get('/health', healthHandler)
   router.get('/api/health', healthHandler)
+
+  registerProjectRoutes(router)
+  registerScriptRoutes(router)
 
   return router
 }
