@@ -80,7 +80,7 @@
   - [x] 1.12 Provision a Vectorize index for cross-episode semantic retrieval and a Workers AI binding for embedding generation; confirm queries can be filtered by account/season metadata before any application code depends on it
   - [x] 1.13 Define and provision the Durable Object class for active dictation/conversation session state (WebSocket Hibernation API + Alarms API), bound and ready before Task 3.3 depends on it
 
-- [ ] 2.0 Screenplay Data Model, Editor & Export
+- [x] 2.0 Screenplay Data Model, Editor & Export
   - [x] 2.1 Define D1 schema for Project (feature|series), Season, Episode, Script, ScriptElement, StoryBible
   - [x] 2.2 Build CRUD API endpoints for Project, Season, Episode, Script
   - [x] 2.3 Build the screenplay editor UI rendering ScriptElements in industry-standard format (Courier, per-element margins)
