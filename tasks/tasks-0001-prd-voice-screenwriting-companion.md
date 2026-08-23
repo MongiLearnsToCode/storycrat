@@ -88,7 +88,7 @@
   - [x] 2.5 Build Story Bible UI + API for season-level documents
   - [x] 2.6 Build episode/season navigation UI for Series projects
   - [x] 2.7 Implement PDF export using Courier Prime (bundle/reference the font file explicitly); verify the chosen PDF library works under the Workers runtime (`nodejs_compat`) before committing to it — confirm this early, it's a build-blocking risk if the library doesn't run in Workers. If it doesn't, implement the defined fallback: client-side generation (react-pdf/jsPDF) uploading the result to the Worker for R2 storage, not an open-ended search for a Workers-compatible library
-  - [ ] 2.8 Store exported PDFs in R2 and serve download links via short-lived signed URLs
+  - [x] 2.8 Store exported PDFs in R2 and serve download links via short-lived signed URLs
 
 - [ ] 3.0 Writing Mode (Voice Dictation, Commands & Voice Editing)
   - [ ] 3.1 Integrate streaming STT provider (Deepgram or AssemblyAI)

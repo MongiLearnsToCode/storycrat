@@ -4,6 +4,7 @@ import { errorResponse, jsonResponse } from '../index'
 import { requireUser } from '../lib/auth'
 import { findScript, isOwned, notFound } from '../lib/ownership'
 import { generateScriptPdf } from '../lib/pdf-export'
+import { createSignedDownloadLink, verifySignedDownload } from '../lib/signed-urls'
 
 const ELEMENT_TYPES = ['scene_heading', 'action', 'character', 'dialogue', 'parenthetical', 'transition'] as const
 type ElementType = (typeof ELEMENT_TYPES)[number]
@@ -188,9 +189,72 @@ async function exportPdf(ctx: RouteContext): Promise<Response> {
   }
 }
 
+/**
+ * Generates the PDF, persists it to R2 (PDFs ONLY — never audio or
+ * transcripts, PRD §7), and returns a short-lived signed download link.
+ */
+async function exportToStorage(ctx: RouteContext): Promise<Response> {
+  const user = await requireUser(ctx.request, ctx.env)
+  if (!user) return errorResponse('Unauthorized', 401)
+
+  const scriptId = p(ctx, 'scriptId')
+  const owned = await findScript(ctx.env, scriptId)
+  if (!isOwned(owned, user.id)) return notFound()
+
+  const { results } = await ctx.env.DB.prepare(
+    'SELECT type, content FROM script_elements WHERE script_id = ? ORDER BY position ASC'
+  )
+    .bind(scriptId)
+    .all<{ type: Parameters<typeof generateScriptPdf>[1][number]['type']; content: string }>()
+
+  let bytes: Uint8Array
+  try {
+    ;({ bytes } = await generateScriptPdf('Screenplay', results ?? []))
+  } catch (error) {
+    console.error('PDF generation failed', error)
+    return errorResponse('PDF generation failed', 500)
+  }
+
+  const objectKey = `pdfs/${scriptId}/${crypto.randomUUID()}.pdf`
+  await ctx.env.PDFS.put(objectKey, bytes as unknown as ArrayBuffer, {
+    httpMetadata: { contentType: 'application/pdf' },
+  })
+
+  const link = await createSignedDownloadLink(ctx.env, objectKey, 300)
+
+  return jsonResponse(
+    {
+      objectKey,
+      downloadUrl: link.path,
+      expiresAt: new Date(link.expiresAt).toISOString(),
+    },
+    201
+  )
+}
+
+/** Streams an exported PDF for a valid, unexpired signed link. */
+async function downloadExport(ctx: RouteContext): Promise<Response> {
+  const verified = await verifySignedDownload(ctx.request, ctx.env)
+  if (!verified) return errorResponse('Invalid or expired download link', 403)
+
+  const object = await ctx.env.PDFS.get(verified.objectKey)
+  if (!object) return notFound()
+
+  return new Response(object.body, {
+    status: 200,
+    headers: {
+      'Content-Type': object.httpMetadata?.contentType ?? 'application/pdf',
+      'Content-Disposition': 'attachment',
+      'Cache-Control': 'private, no-store',
+    },
+  })
+}
+
 export function registerScriptRoutes(router: Router): void {
   router.get('/api/scripts/:scriptId', getElements)
   router.put('/api/scripts/:scriptId/elements', replaceElements)
   router.patch('/api/scripts/:scriptId/elements/:elementId', updateElement)
   router.get('/api/scripts/:scriptId/pdf', exportPdf)
+  router.post('/api/scripts/:scriptId/exports', exportToStorage)
+  router.get('/api/exports/*', downloadExport)
 }

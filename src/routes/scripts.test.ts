@@ -58,6 +58,41 @@ describe('pdf export', () => {
   })
 })
 
+describe('export to R2 with signed download links', () => {
+  it('stores the export and serves it via a short-lived signed link', async () => {
+    await SELF.fetch(url('/elements'), {
+      method: 'PUT',
+      headers: authHeaders(userA.token),
+      body: JSON.stringify({ elements: [{ type: 'scene_heading', content: 'INT. R2 - DAY' }] }),
+    })
+
+    const exportResponse = await SELF.fetch(url('/exports'), { method: 'POST', headers: authHeaders(userA.token) })
+    expect(exportResponse.status).toBe(201)
+    const body = (await exportResponse.json()) as { objectKey: string; downloadUrl: string; expiresAt: string }
+    expect(body.objectKey).toMatch(/^pdfs\//)
+    expect(body.expiresAt).toBeTruthy()
+
+    // Signed link works without credentials (capability semantics).
+    const download = await SELF.fetch(new URL(body.downloadUrl, 'https://api.example').href)
+    expect(download.status).toBe(200)
+    const bytes = new Uint8Array(await download.arrayBuffer())
+    expect(String.fromCharCode(...bytes.slice(0, 5))).toBe('%PDF-')
+
+    // Tampered link is rejected.
+    const tampered = new URL(body.downloadUrl, 'https://api.example')
+    tampered.searchParams.set('signature', 'deadbeef'.repeat(6))
+    expect((await SELF.fetch(tampered.href)).status).toBe(403)
+
+    // Unknown object key under a valid-looking path → 403 without signature.
+    expect((await SELF.fetch('https://api.example/api/exports/pdfs/sc1/nope.pdf')).status).toBe(403)
+  })
+
+  it('requires ownership and authentication for exports to storage', async () => {
+    expect((await SELF.fetch(url('/exports'), { method: 'POST' })).status).toBe(401)
+    expect((await SELF.fetch(url('/exports'), { method: 'POST', headers: authHeaders(userB.token) })).status).toBe(404)
+  })
+})
+
 describe('script element replacement', () => {
   it('starts empty', async () => {
     // The PDF tests above seed content; reset to a clean slate.

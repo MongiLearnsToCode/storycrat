@@ -36,23 +36,28 @@ export function errorResponse(message: string, status: number): Response {
 }
 
 /**
- * Minimal path-to-regexp style compiler supporting `:param` segments.
- * Deliberately dependency-free so routing stays swappable later.
+ * Minimal path compiler: `:param` captures one segment; a trailing `*name`
+ * captures the rest of the path (slashes included) for object-key routes.
  */
 export function compilePath(pattern: string): { regex: RegExp; paramNames: string[] } {
   const paramNames: string[] = []
-  const regexSource = pattern
-    .split('/')
-    .map((segment) => {
-      if (segment.startsWith(':')) {
-        paramNames.push(segment.slice(1))
-        return '([^/]+)'
-      }
-      return segment.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-    })
-    .join('/')
+  const segments = pattern.split('/').filter((s) => s.length > 0)
+  let regexSource = ''
 
-  return { regex: new RegExp(`^${regexSource}/?$`), paramNames }
+  segments.forEach((segment, i) => {
+    if (segment.startsWith(':')) {
+      paramNames.push(segment.slice(1))
+      regexSource += '([^/]+)'
+    } else if (segment === '*' && i === segments.length - 1) {
+      paramNames.push('wildcard')
+      regexSource += '(.*)'
+    } else {
+      regexSource += segment.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+    }
+    if (i < segments.length - 1) regexSource += '/'
+  })
+
+  return { regex: new RegExp(`^/${regexSource}/?$`), paramNames }
 }
 
 export class Router {

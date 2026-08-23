@@ -47,7 +47,9 @@ export interface Env {
   /** Wrangler secrets — Polar subscription management + webhook verification (Tasks 5.4). */
   POLAR_ACCESS_TOKEN?: string
   POLAR_WEBHOOK_SECRET?: string
+  /** Wrangler secret — HMAC key for short-lived PDF download links (Task 2.8). */
+  PDF_SIGNING_SECRET?: string
 }
 
 /** Secret names known to the app; keeps requireSecret calls typo-proof. */
-export type SecretName = 'GROQ_API_KEY' | 'DEEPGRAM_API_KEY' | 'ASSEMBLYAI_API_KEY' | 'RESEND_API_KEY' | 'POLAR_ACCESS_TOKEN' | 'POLAR_WEBHOOK_SECRET'
+export type SecretName = 'GROQ_API_KEY' | 'DEEPGRAM_API_KEY' | 'ASSEMBLYAI_API_KEY' | 'RESEND_API_KEY' | 'POLAR_ACCESS_TOKEN' | 'POLAR_WEBHOOK_SECRET' | 'PDF_SIGNING_SECRET'
