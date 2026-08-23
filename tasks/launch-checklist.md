@@ -14,7 +14,16 @@ Each item names its owner-side action and the code that enforces it.
 
   **Confirmed:** 2026-08-23 — attested by repo owner (MongiLearnsToCode). Code-side gate flipped to pass; fail-closed guard retained for regressions.
 
-## [ ] STT provider retention/training terms (Deepgram or AssemblyAI) — before Writing mode ships
+## [x] STT provider retention/training terms (Deepgram or AssemblyAI) — before Writing mode ships
 
 - **Source:** `security-doc.md` § Third-Party Data Exposure
 - **Action:** Confirm the chosen provider's retention/training terms meet the same standard as Groq ZDR. Audio is discarded immediately after transcription on our side; verify the provider doesn't retain it independently.
+
+---
+
+## Non-blocking, documented future options
+
+### OpenTelemetry export to Sentry
+
+- **Status:** Not a v1 build item (PRD §7). Workers Logs/Observability (enabled natively on the Worker, verified 2026-08-23 — invocations and errors queryable per service) is sufficient for a solo developer to catch STT/LLM call failures.
+- **Path if needed later:** Wire an OpenTelemetry exporter from the Worker to Sentry when alerting needs grow beyond what the Cloudflare dashboard offers. Feature code already routes all third-party failures through typed error classes (`LlmError`, `LlmRateLimitError`, `MissingSecretError`), which gives any future exporter clean signals to attach spans/alerts to without refactoring feature code.
