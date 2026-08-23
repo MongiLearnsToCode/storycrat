@@ -75,7 +75,7 @@
   - [ ] 1.7 Set up environment/secrets management for API keys (Deepgram/AssemblyAI, Groq, Resend, Polar)
   - [x] 1.8 Enable Zero Data Retention in Groq's Data Controls settings before any real script content is processed — verify and document as a launch checklist item, not just a code change
   - [x] 1.9 Set up local dev scripts (`wrangler dev`)
-  - [ ] 1.10 Connect the repo via Workers Builds (native Cloudflare git integration) for automatic build + deploy on push — no separate CI YAML needed
+  - [x] 1.10 Connect the repo via Workers Builds (native Cloudflare git integration) for automatic build + deploy on push — no separate CI YAML needed
   - [ ] 1.11 Confirm Workers Logs/Observability is enabled (on by default) and verify STT/LLM call failures are visible in the dashboard; note the OpenTelemetry-to-Sentry export path as a documented future option, not a v1 build item
   - [ ] 1.12 Provision a Vectorize index for cross-episode semantic retrieval and a Workers AI binding for embedding generation; confirm queries can be filtered by account/season metadata before any application code depends on it
   - [ ] 1.13 Define and provision the Durable Object class for active dictation/conversation session state (WebSocket Hibernation API + Alarms API), bound and ready before Task 3.3 depends on it

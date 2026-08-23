@@ -57,4 +57,16 @@ Append-only. Newest entries at the bottom. Never delete entries.
 **Files Affected:** `src/index.ts`, `src/lib/llm-router.ts`, `src/types.ts`
 **Prevention Note:** Read a file immediately before restructuring writes to it; never assume prior content from memory mid-refactor.
 
+## Issue #6 — Workers Builds failed with "unable to verify Worker" immediately after initial connection
+**Date:** 2026-08-23
+**Task:** 1.10 Workers Builds git integration
+**Severity:** Medium
+
+**Problem:** The first automated build (push event) and a manual retry both failed at initialization: "unable to verify Worker". A build triggered ~9 minutes later through the dashboard-created production trigger succeeded end-to-end.
+**Root Cause:** Propagation lag — the push landed seconds after the GitHub App connection, repo connection, and build configuration were first created. Not a config error; no documentation exists for this transient message.
+**Resolution:** Retry after propagation. Also cleaned up redundant API-created triggers: the dashboard connect flow already creates both a production trigger (branch `main`) and a non-production preview trigger — API trigger creation is unnecessary and hit the per-Worker trigger limit until the duplicate was deleted.
+**Files Affected:** Cloudflare account config only (no repo files).
+**Prevention Note:** When setting up CI integrations via API, allow propagation time before judging failures, and check what the dashboard flow already created before creating resources yourself.
+
+
 
