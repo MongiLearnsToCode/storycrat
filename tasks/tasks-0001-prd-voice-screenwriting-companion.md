@@ -65,7 +65,7 @@
 
 ## Tasks
 
-- [ ] 1.0 Project & Infrastructure Setup
+- [x] 1.0 Project & Infrastructure Setup
   - [x] 1.1 Initialize Cloudflare Workers project (TypeScript) with Wrangler config
   - [x] 1.2 Provision D1 database and write initial schema migration
   - [x] 1.3 Provision KV namespace for sessions/cache
@@ -81,7 +81,7 @@
   - [x] 1.13 Define and provision the Durable Object class for active dictation/conversation session state (WebSocket Hibernation API + Alarms API), bound and ready before Task 3.3 depends on it
 
 - [ ] 2.0 Screenplay Data Model, Editor & Export
-  - [ ] 2.1 Define D1 schema for Project (feature|series), Season, Episode, Script, ScriptElement, StoryBible
+  - [x] 2.1 Define D1 schema for Project (feature|series), Season, Episode, Script, ScriptElement, StoryBible
   - [ ] 2.2 Build CRUD API endpoints for Project, Season, Episode, Script
   - [ ] 2.3 Build the screenplay editor UI rendering ScriptElements in industry-standard format (Courier, per-element margins)
   - [ ] 2.4 Implement manual keyboard editing (add/edit/delete/re-tag element type) with persistence
