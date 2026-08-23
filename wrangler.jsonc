@@ -1,0 +1,35 @@
+// Storycrat Worker configuration.
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "storycrat",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-08-01",
+  // Required later for PDF generation libraries and Resend/Polar SDK-style fetch code.
+  "compatibility_flags": ["nodejs_compat"],
+  "observability": {
+    "enabled": true,
+    "logs": {
+      "enabled": true
+    }
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "storycrat-db",
+      "database_id": "db33e2f3-c5ee-42cf-a39a-9bb33f3ae34f",
+      "migrations_dir": "src/db/migrations"
+    }
+  ],
+  "kv_namespaces": [
+    {
+      "binding": "SESSIONS",
+      "id": "4e97c8c3304743a080902eb545cac364"
+    }
+  ],
+  "r2_buckets": [
+    {
+      "binding": "PDFS",
+      "bucket_name": "storycrat-exported-pdfs"
+    }
+  ]
+}

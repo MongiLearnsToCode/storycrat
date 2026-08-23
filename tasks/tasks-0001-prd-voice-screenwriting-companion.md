@@ -1,0 +1,139 @@
+## Relevant Files
+
+- `src/index.ts` - Worker entry point and router.
+- `src/db/migrations/0001_init.sql` - D1 schema: users, projects, seasons, episodes, scripts, script_elements, story_bibles, conversations, messages, subscriptions.
+- `src/routes/projects.ts` - CRUD API for Projects, Seasons, Episodes.
+- `src/routes/projects.test.ts` - Unit tests for `projects.ts`.
+- `src/routes/scripts.ts` - CRUD API for Scripts/ScriptElements, triggers PDF export.
+- `src/routes/scripts.test.ts` - Unit tests for `scripts.ts`.
+- `src/routes/dictation.ts` - Streaming STT session handling for Writing mode.
+- `src/routes/dictation.test.ts` - Unit tests for `dictation.ts`.
+- `src/routes/conversation.ts` - Conversation mode chat endpoint (context assembly, RAG retrieval + LLM call).
+- `src/routes/conversation.test.ts` - Unit tests for `conversation.ts`.
+- `src/routes/auth.ts` - Magic-link auth endpoints.
+- `src/routes/auth.test.ts` - Unit tests for `auth.ts`.
+- `src/routes/billing.ts` - Polar checkout + webhook handling, subscription state.
+- `src/routes/billing.test.ts` - Unit tests for `billing.ts`.
+- `src/lib/llm-router.ts` - Provider-agnostic LLM routing layer (Groq now, swappable per task type).
+- `src/lib/llm-router.test.ts` - Unit tests for `llm-router.ts`.
+- `src/lib/pdf-export.ts` - Script → industry-standard formatted PDF generation (Courier Prime), server-side.
+- `src/lib/pdf-export.test.ts` - Unit tests for `pdf-export.ts`.
+- `frontend/src/lib/pdf-export-client.ts` - Client-side PDF fallback (react-pdf/jsPDF) used if the server-side library proves incompatible with the Workers runtime; uploads the result to the Worker for R2 storage.
+- `src/lib/stt-client.ts` - Deepgram/AssemblyAI streaming client wrapper.
+- `src/lib/element-classifier.ts` - Classifies buffered dictated text into screenplay element types.
+- `src/lib/element-classifier.test.ts` - Unit tests for `element-classifier.ts`.
+- `src/lib/wake-phrase-detector.ts` - Detects the "Partner" wake-phrase in the live transcript stream, before any Durable Object commit, splitting the buffer at the phrase if needed.
+- `src/lib/wake-phrase-detector.test.ts` - Unit tests for `wake-phrase-detector.ts`, including the "cut to the chase" false-positive case and the mid-buffer split case.
+- `src/lib/voice-command-parser.ts` - Parses recognized commands into formatting actions (new scene, cut to, character enters) and editing actions (select, delete, retag, change heading).
+- `src/lib/voice-command-parser.test.ts` - Unit tests for `voice-command-parser.ts`.
+- `src/lib/embeddings.ts` - Generates embeddings via Workers AI and upserts them into Vectorize on scene create/edit, scoped by account + project + season (Feature and TV alike); removes deleted scenes from the index.
+- `src/lib/embeddings.test.ts` - Unit tests for `embeddings.ts`, including tenant-scoping and delete-path assertions.
+- `src/lib/rag-retrieval.ts` - Embeds a Conversation-mode/Get Notes query and retrieves top-K relevant passages — from elsewhere in the current script for Features, and from other episodes in the season for TV — via Vectorize.
+- `src/lib/rag-retrieval.test.ts` - Unit tests for `rag-retrieval.ts`, including cross-tenant isolation assertions.
+- `src/durable-objects/SessionState.ts` - Per-session Durable Object holding live transcript buffer over a WebSocket (Hibernation API); runs wake-phrase detection on each incoming chunk before its own Alarms API commits a buffer to D1, splitting the buffer if a wake-phrase lands mid-buffer.
+- `src/durable-objects/SessionState.test.ts` - Unit tests for `SessionState.ts`, including the wake-phrase-mid-buffer sequencing case.
+- `src/lib/free-tier.ts` - Lifetime script-count tracking and free-tier gating logic.
+- `src/lib/free-tier.test.ts` - Unit tests for `free-tier.ts`.
+- `wrangler.jsonc` - Worker config, including `observability: { enabled: true, logs: { enabled: true } }` for native Workers Logs.
+- `frontend/src/components/Editor/ScreenplayEditor.tsx` - Main structured screenplay editor.
+- `frontend/src/components/Editor/ScreenplayEditor.test.tsx` - Tests for the editor component.
+- `frontend/src/components/Editor/ElementRenderer.tsx` - Renders each element type with correct formatting.
+- `frontend/src/components/WritingMode/DictationControls.tsx` - Mic capture, start/pause/resume/stop, correction UI; also owns the clean-stop behavior when the writer switches modes mid-dictation.
+- `frontend/src/components/WritingMode/CommandModeIndicator.tsx` - Active Recording Bar's Dictation vs. Command Mode visual states.
+- `frontend/src/components/SystemStatus/StatusBanner.tsx` - Mic-denied, reconnecting, rate-limit, and command-not-recognized states.
+- `frontend/src/components/SystemStatus/StatusBanner.test.tsx` - Tests for `StatusBanner.tsx`.
+- `frontend/src/components/ConversationMode/ChatPanel.tsx` - Chat UI (text + voice), grounded-response indicator.
+- `frontend/src/components/ConversationMode/ChatPanel.test.tsx` - Tests for `ChatPanel.tsx`.
+- `frontend/src/components/ConversationMode/ScriptChip.tsx` - Citation chip, including cross-episode source tagging (e.g. "EP.2").
+- `frontend/src/components/ConversationMode/QuickNotesPanel.tsx` - "Get Notes" trigger and static result panel, usable from either editor without opening the full Conversation mode view.
+- `frontend/src/components/ConversationMode/QuickNotesPanel.test.tsx` - Tests for `QuickNotesPanel.tsx`.
+- `frontend/src/components/Navigation/EpisodeSidebar.tsx` - Season/episode navigation for TV Series projects.
+- `frontend/src/components/StoryBible/StoryBibleEditor.tsx` - Season-level story bible editor.
+- `frontend/src/components/Billing/SubscriptionPanel.tsx` - Upgrade/cancel subscription UI.
+- `frontend/src/components/Billing/TVFreeTierNotice.tsx` - Warns a free-tier user, at TV Series creation time, that the one-script allowance covers exactly one episode.
+- `frontend/src/components/ModeToggle.tsx` - Persistent Writing ↔ Conversation mode switcher; stops any active STT session cleanly on switch rather than rerouting it.
+- `frontend/public/manifest.json` - PWA manifest (icons, install config).
+- `frontend/src/service-worker.ts` - PWA service worker.
+
+### Notes
+
+- Unit tests should typically be placed alongside the code files they are testing (e.g., `scripts.ts` and `scripts.test.ts` in the same directory).
+- Backend tests: run with your configured test runner against `src/` (e.g. `npx vitest run src`). Frontend tests: `npx vitest run frontend/src` or the project's configured runner.
+- No existing codebase — this is a greenfield build, so task order matters: infrastructure (1.0) and the data model (2.0) should land before Writing mode, Conversation mode, or billing depend on them. RAG (4.8–4.10, 4.12) depends on episodes existing (2.0) and on the Vectorize/Workers AI provisioning in 1.12. Streaming dictation (3.3, 3.5) depends on the Durable Object class provisioned in 1.13, and wake-phrase detection (3.5) must land before or alongside 3.3 since the two are sequenced together, not independent. Vectorize sync (4.13) depends on both the embedding pipeline (4.8) and the edit paths it hooks into (2.4, 3.7).
+- Before any UI task (2.3, 2.5, 2.6, 3.2, 3.6–3.9, 3.12, 4.1, 4.7, 4.10–4.11, 5.7, 6.x), read `tasks/DESIGN.md`, and check `tasks/inspo-screens/` for a matching reference screen if that folder has been provisioned — it's optional, so skip this check rather than blocking if it's absent. See `tasks/app-flow.md` for how that screen fits into the overall navigation and `tasks/user-flows.md` for the step-by-step behavior it needs to support. For the design/UI generation itself, use the `paper.design` plugin/MCP if and when it's available; fall back to other available design skills if it isn't.
+- Before any auth, billing, data-access, or AI context-assembly task (1.6–1.8, 1.12–1.13, 4.2, 4.8–4.9, 4.11–4.13, 5.x), read the relevant section of `tasks/security-doc.md` — the Vectorize tenant-isolation rule (1.12, 4.8–4.9, now also 4.12–4.13 since deletes are a new path into the same rule), the per-session Durable Object scoping rule (1.13), the Groq Zero Data Retention checklist item (1.8), and the Get Notes ownership-check/rate-limit rules (4.11) are easy to skip since none of them look like "security" work at a glance.
+
+## Tasks
+
+- [ ] 1.0 Project & Infrastructure Setup
+  - [x] 1.1 Initialize Cloudflare Workers project (TypeScript) with Wrangler config
+  - [x] 1.2 Provision D1 database and write initial schema migration
+  - [x] 1.3 Provision KV namespace for sessions/cache
+  - [x] 1.4 Provision R2 bucket for PDF export storage
+  - [x] 1.5 Scaffold React + Tailwind + shadcn/ui frontend with baseline PWA manifest/service worker
+  - [x] 1.6 Build the LLM routing layer (`llm-router.ts`): provider-agnostic interface, currently pointing both task types (structuring, critique) at Groq
+  - [ ] 1.7 Set up environment/secrets management for API keys (Deepgram/AssemblyAI, Groq, Resend, Polar)
+  - [ ] 1.8 Enable Zero Data Retention in Groq's Data Controls settings before any real script content is processed — verify and document as a launch checklist item, not just a code change
+  - [ ] 1.9 Set up local dev scripts (`wrangler dev`)
+  - [ ] 1.10 Connect the repo via Workers Builds (native Cloudflare git integration) for automatic build + deploy on push — no separate CI YAML needed
+  - [ ] 1.11 Confirm Workers Logs/Observability is enabled (on by default) and verify STT/LLM call failures are visible in the dashboard; note the OpenTelemetry-to-Sentry export path as a documented future option, not a v1 build item
+  - [ ] 1.12 Provision a Vectorize index for cross-episode semantic retrieval and a Workers AI binding for embedding generation; confirm queries can be filtered by account/season metadata before any application code depends on it
+  - [ ] 1.13 Define and provision the Durable Object class for active dictation/conversation session state (WebSocket Hibernation API + Alarms API), bound and ready before Task 3.3 depends on it
+
+- [ ] 2.0 Screenplay Data Model, Editor & Export
+  - [ ] 2.1 Define D1 schema for Project (feature|series), Season, Episode, Script, ScriptElement, StoryBible
+  - [ ] 2.2 Build CRUD API endpoints for Project, Season, Episode, Script
+  - [ ] 2.3 Build the screenplay editor UI rendering ScriptElements in industry-standard format (Courier, per-element margins)
+  - [ ] 2.4 Implement manual keyboard editing (add/edit/delete/re-tag element type) with persistence
+  - [ ] 2.5 Build Story Bible UI + API for season-level documents
+  - [ ] 2.6 Build episode/season navigation UI for Series projects
+  - [ ] 2.7 Implement PDF export using Courier Prime (bundle/reference the font file explicitly); verify the chosen PDF library works under the Workers runtime (`nodejs_compat`) before committing to it — confirm this early, it's a build-blocking risk if the library doesn't run in Workers. If it doesn't, implement the defined fallback: client-side generation (react-pdf/jsPDF) uploading the result to the Worker for R2 storage, not an open-ended search for a Workers-compatible library
+  - [ ] 2.8 Store exported PDFs in R2 and serve download links via short-lived signed URLs
+
+- [ ] 3.0 Writing Mode (Voice Dictation, Commands & Voice Editing)
+  - [ ] 3.1 Integrate streaming STT provider (Deepgram or AssemblyAI)
+  - [ ] 3.2 Build microphone capture UI (start/pause/resume/stop)
+  - [ ] 3.3 Stream partial transcripts into the editor in near-real-time, buffering the live transcript in the session's Durable Object and committing to D1 `script_elements` only at a sentence boundary, pause, or stop — never per word
+  - [ ] 3.4 Implement element-type classification logic for dictated text, calling the LLM router in buffered batches (not per word) to protect against rate limits
+  - [ ] 3.5 Implement wake-phrase ("Partner") detection in the streaming transcript layer — must run on every incoming chunk *before* the Durable Object's Alarms API commits a buffer to D1; if the wake-phrase lands mid-buffer, split it: commit the pre-phrase text as content, route only the post-phrase text to command parsing
+  - [ ] 3.6 Implement formatting voice commands ("Partner, new scene," "Partner, cut to," character-enters patterns)
+  - [ ] 3.7 Implement voice-driven editing commands (select last line/scene, delete selected element, change element type, replace scene heading text)
+  - [ ] 3.8 Implement the destructive-command safeguard: instant one-action Undo or a brief confirmation before applying a voice delete
+  - [ ] 3.9 Implement the "command not recognized" feedback state — non-blocking, tells the writer to repeat or rephrase
+  - [ ] 3.10 Build single-action correction/re-tag UI for misclassified elements (manual/keyboard path, complements the voice path in 3.7)
+  - [ ] 3.11 Implement inline AI suggestions that require explicit acceptance before insertion
+  - [ ] 3.12 Build the System Status UI states: mic access denied, network reconnecting, AI rate limit reached
+  - [ ] 3.13 Verify raw dictation audio is never persisted (streamed and discarded post-transcription only)
+
+- [ ] 4.0 Conversation Mode & Retrieval-Augmented Grounding (AI Critique + RAG)
+  - [ ] 4.1 Build chat-style UI (text + voice) scoped to the current project/episode
+  - [ ] 4.2 Build context-assembly endpoint (script + story bible + conversation history + RAG-retrieved passages) feeding the LLM router
+  - [ ] 4.3 Write the critique system prompt to produce substantive disagreement and cinema references, not generic praise
+  - [ ] 4.4 Persist conversation history per project/episode; build scroll-back UI
+  - [ ] 4.5 Implement scene/character/page-range referencing when starting a topic
+  - [ ] 4.6 Enforce that Conversation mode has no code path that writes into the script document
+  - [ ] 4.7 Integrate TTS (browser `speechSynthesis`) with a text-only toggle
+  - [ ] 4.8 Build the embedding pipeline: on script/story-bible save, generate embeddings via Workers AI and upsert into Vectorize, scoped by account + season
+  - [ ] 4.9 Build retrieval logic: on a Conversation-mode query, embed the topic and query Vectorize (filtered by account + season) for the top-K relevant passages from other episodes, then merge them into the LLM context
+  - [ ] 4.10 Tag Script Chips with the source episode whenever a citation comes from outside the currently open episode
+  - [ ] 4.11 Implement the "Get Notes" action: reuse the context assembly and critique prompt from 4.2–4.3, but trigger it directly from either editor (no chat interface required), return a single response, and render it as a static panel rather than a chat thread
+  - [ ] 4.12 Extend the embedding/retrieval pipeline (4.8–4.9) to Feature Film scripts, not just TV episodes — chunk by scene regardless of project type, so a 120-page script is grounded the same retrieval-backed way a TV season is
+  - [ ] 4.13 Wire scene-level re-embedding into the element mutation path (voice edits 3.7, manual edits 2.4) so the Vectorize index updates on edit/delete — debounced per scene, not fired per keystroke, and not dependent on an explicit "save" action that doesn't otherwise exist in this editor
+
+- [ ] 5.0 Accounts, Billing & Free-Tier Enforcement
+  - [ ] 5.1 Implement email/magic-link auth (Resend), sessions in KV
+  - [ ] 5.2 Add `lifetime_script_count` to the user data model
+  - [ ] 5.3 Implement free-tier gating: block a 2nd script/episode once the lifetime count is spent, unless subscribed
+  - [ ] 5.4 Integrate Polar (checkout + webhooks) for subscription state
+  - [ ] 5.5 Build subscription management UI (upgrade/cancel)
+  - [ ] 5.6 Gate Writing mode and Conversation mode behind free-tier/subscription checks
+  - [ ] 5.7 Add a UI warning shown at TV Series creation time (not only when the block hits) telling a free-tier user the one-script allowance covers exactly one episode, not a full season
+
+- [ ] 6.0 Mode Switching, TV/Episode Navigation & PWA Polish
+  - [ ] 6.1 Build the persistent Writing ↔ Conversation mode toggle, preserving state on both sides
+  - [ ] 6.2 Wire up season/episode navigation accessible from within any episode
+  - [ ] 6.3 Configure PWA manifest, icons, and service worker for installability
+  - [ ] 6.4 Apply the writer-focused design direction from `tasks/DESIGN.md`
+  - [ ] 6.5 Visually distinguish script-grounded responses from general chat in Conversation mode
+  - [ ] 6.6 Cross-browser QA pass (especially Safari) for STT/TTS, wake-phrase detection, and PWA install behavior
+  - [ ] 6.7 Implement clean mic handoff on mode switch: if dictation or a Conversation-mode voice interaction is active when the writer toggles modes, stop that STT session cleanly (committing any buffered transcript per the normal boundary rules) rather than rerouting the live stream — the writer starts voice input again explicitly in the new mode

@@ -1,0 +1,22 @@
+# Storycrat — local development secrets
+#
+# Copy to `.dev.vars` (gitignored, never commit it) and fill in values for
+# whatever you're working on locally. In production each of these is set with:
+#   wrangler secret put <NAME>
+#
+# None of these may ever ship in the frontend bundle — all third-party calls
+# run in the Worker (security-doc.md § Secrets Management).
+
+# LLM routing (Task 1.6). Required for Writing/Conversation mode work.
+GROQ_API_KEY=
+
+# Speech-to-text (Task 3.1 picks the provider; set whichever is in use).
+DEEPGRAM_API_KEY=
+ASSEMBLYAI_API_KEY=
+
+# Magic-link email delivery via Resend (Task 5.1).
+RESEND_API_KEY=
+
+# Polar subscription management + webhook signature verification (Task 5.4).
+POLAR_ACCESS_TOKEN=
+POLAR_WEBHOOK_SECRET=
