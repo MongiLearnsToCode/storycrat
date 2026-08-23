@@ -74,7 +74,7 @@
   - [x] 1.6 Build the LLM routing layer (`llm-router.ts`): provider-agnostic interface, currently pointing both task types (structuring, critique) at Groq
   - [ ] 1.7 Set up environment/secrets management for API keys (Deepgram/AssemblyAI, Groq, Resend, Polar)
   - [x] 1.8 Enable Zero Data Retention in Groq's Data Controls settings before any real script content is processed — verify and document as a launch checklist item, not just a code change
-  - [ ] 1.9 Set up local dev scripts (`wrangler dev`)
+  - [x] 1.9 Set up local dev scripts (`wrangler dev`)
   - [ ] 1.10 Connect the repo via Workers Builds (native Cloudflare git integration) for automatic build + deploy on push — no separate CI YAML needed
   - [ ] 1.11 Confirm Workers Logs/Observability is enabled (on by default) and verify STT/LLM call failures are visible in the dashboard; note the OpenTelemetry-to-Sentry export path as a documented future option, not a v1 build item
   - [ ] 1.12 Provision a Vectorize index for cross-episode semantic retrieval and a Workers AI binding for embedding generation; confirm queries can be filtered by account/season metadata before any application code depends on it
