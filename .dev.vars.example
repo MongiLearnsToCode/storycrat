@@ -20,3 +20,7 @@ RESEND_API_KEY=
 # Polar subscription management + webhook signature verification (Task 5.4).
 POLAR_ACCESS_TOKEN=
 POLAR_WEBHOOK_SECRET=
+
+# HMAC key for short-lived PDF download links (Task 2.8). Generate with e.g.:
+#   openssl rand -hex 32
+PDF_SIGNING_SECRET=
