@@ -68,5 +68,17 @@ Append-only. Newest entries at the bottom. Never delete entries.
 **Files Affected:** Cloudflare account config only (no repo files).
 **Prevention Note:** When setting up CI integrations via API, allow propagation time before judging failures, and check what the dashboard flow already created before creating resources yourself.
 
+## Issue #7 — Vectorize metadata filters silently return empty unless a metadata index exists AND vectors are (re)written after its creation
+**Date:** 2026-08-23
+**Task:** 1.12 Provision Vectorize index + Workers AI binding
+**Severity:** High
+
+**Problem:** Filtered queries (`filter: { accountId }`) returned zero results while unfiltered queries returned both tenants' test vectors. Two causes stacked: (1) Vectorize only filters on properties registered as metadata indexes — arbitrary metadata keys are returnable but not filterable; (2) vectors inserted *before* a metadata index is created are not retroactively indexed, so even after creating the indexes the old test vectors stayed invisible to filters.
+**Root Cause:** Undocumented-in-summary platform behavior discovered during verification; both failure modes are silent (empty results, no error), which would have looked like "no relevant context found" in production RAG.
+**Resolution:** Created string metadata indexes on `accountId`, `projectId`, `seasonId`, `episodeId` via `/metadata_index/create`; re-upserted vectors post-creation; verified tenant isolation (per-account queries exact-match, cross-tenant probe returns empty). Test vectors deleted after verification.
+**Files Affected:** Cloudflare account config only (`storycrat-scripts` index); noted for `src/lib/embeddings.ts` (Task 4.8).
+**Prevention Note:** Task 4.8's embedding pipeline must only ever write vectors with these four indexed properties, any new filterable metadata field needs a metadata index created first, and RAG retrieval must treat "zero results" with suspicion rather than as a neutral signal.
+
+
 
 

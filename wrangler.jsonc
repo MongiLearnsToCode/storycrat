@@ -38,5 +38,18 @@
       "binding": "PDFS",
       "bucket_name": "storycrat-exported-pdfs"
     }
+  ],
+  // Workers AI — embedding generation for the RAG pipeline (Task 4.8).
+  "ai": {
+    "binding": "AI"
+  },
+  "vectorize": [
+    {
+      // Semantic index over every script/story bible, chunked by scene.
+      // Every upsert/delete/query MUST carry account + project + season
+      // metadata filters (security-doc.md § Authorization & Data Isolation).
+      "binding": "VECTOR_INDEX",
+      "index_name": "storycrat-scripts"
+    }
   ]
 }

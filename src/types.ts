@@ -10,6 +10,14 @@ export interface Env {
   SESSIONS: KVNamespace
   /** R2 — exported PDFs ONLY; never audio or transcripts (PRD §7). Provisioned in task 1.4. */
   PDFS: R2Bucket
+  /** Workers AI — embedding generation for RAG (PRD §7). Provisioned in task 1.12. */
+  AI: Ai
+  /**
+   * Vectorize — semantic index over scripts/story bibles (PRD §7). Provisioned in task 1.12.
+   * SECURITY: every insert/query/delete must be metadata-filtered by account +
+   * project/season — an unfiltered query is a cross-tenant data leak.
+   */
+  VECTOR_INDEX: VectorizeIndex
   /** Wrangler secret — Groq API key (security-doc.md § Secrets Management). Set via `wrangler secret put`. */
   GROQ_API_KEY?: string
   /** Optional model overrides, swappable without touching feature code. */
