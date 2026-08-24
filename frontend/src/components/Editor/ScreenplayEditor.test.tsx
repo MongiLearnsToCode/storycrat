@@ -14,7 +14,7 @@ const elements: ScriptElement[] = [
   { id: 'e6', position: 5, type: 'transition', content: 'CUT TO:' },
 ]
 
-const okLoader = vi.fn(async () => ({
+const okLoader = vi.fn(async (): Promise<{ script: { id: string; project_id: string; episode_id: null }; elements: ScriptElement[] }> => ({
   script: { id: 's1', project_id: 'p1', episode_id: null },
   elements,
 }))
@@ -69,7 +69,7 @@ describe('ScreenplayEditor keyboard editing', () => {
     Array.from(container.querySelectorAll<HTMLTextAreaElement>('textarea[data-key]'))
 
   const renderReady = async (props: { scriptId: string; elements?: ScriptElement[]; saveElements?: typeof saveScriptElements }) => {
-    const save = props.saveElements ?? (async () => {})
+    const save = props.saveElements ?? (async (): Promise<{ elements: ScriptElement[] }> => ({ elements: [] }))
     const utils = render(
       <ScreenplayEditor
         scriptId={props.scriptId}
@@ -110,7 +110,7 @@ describe('ScreenplayEditor keyboard editing', () => {
 
   it('persists edited content via debounced full-replace with normalized order', async () => {
     vi.useFakeTimers()
-    const save = vi.fn(async () => {})
+    const save = vi.fn(async (): Promise<{ elements: ScriptElement[] }> => ({ elements: [] }))
     const { container } = render(
       <ScreenplayEditor
         scriptId="s9"
@@ -142,7 +142,7 @@ describe('ScreenplayEditor keyboard editing', () => {
 
   it('Backspace on an empty element removes it and refocuses the previous one', async () => {
     vi.useFakeTimers()
-    const save = vi.fn(async () => {})
+    const save = vi.fn(async (): Promise<{ elements: ScriptElement[] }> => ({ elements: [] }))
     const { container } = render(
       <ScreenplayEditor
         scriptId="s10"
@@ -172,7 +172,7 @@ describe('ScreenplayEditor keyboard editing', () => {
 
   it('re-tags an element via the hover menu and persists the new type', async () => {
     vi.useFakeTimers()
-    const save = vi.fn(async () => {})
+    const save = vi.fn(async (): Promise<{ elements: ScriptElement[] }> => ({ elements: [] }))
     const { container } = render(
       <ScreenplayEditor
         scriptId="s11"
@@ -202,8 +202,9 @@ describe('ScreenplayEditor keyboard editing', () => {
   it('surfaces save failures without losing local edits', async () => {
     vi.useFakeTimers()
     let shouldFail = true
-    const save = vi.fn(async () => {
+    const save = vi.fn(async (): Promise<{ elements: ScriptElement[] }> => {
       if (shouldFail) throw new Error('offline')
+      return { elements: [] }
     })
     const { container } = render(
       <ScreenplayEditor
@@ -237,7 +238,7 @@ describe('ScreenplayEditor', () => {
 
     const sheet = screen.getByLabelText('Screenplay')
     expect(sheet.className).toContain('bg-paper-white')
-    expect(sheet.className).toContain('max-w-[850px]')
+    expect(sheet.parentElement?.className).toContain('max-w-[850px]')
     // Soft large-radius shadow for the editor sheet; corners stay sharp.
     expect(sheet.className).toContain('shadow-[0_10px_30px_rgba(0,0,0,0.2)]')
 

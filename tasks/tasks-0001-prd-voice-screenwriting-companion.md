@@ -90,20 +90,20 @@
   - [x] 2.7 Implement PDF export using Courier Prime (bundle/reference the font file explicitly); verify the chosen PDF library works under the Workers runtime (`nodejs_compat`) before committing to it — confirm this early, it's a build-blocking risk if the library doesn't run in Workers. If it doesn't, implement the defined fallback: client-side generation (react-pdf/jsPDF) uploading the result to the Worker for R2 storage, not an open-ended search for a Workers-compatible library
   - [x] 2.8 Store exported PDFs in R2 and serve download links via short-lived signed URLs
 
-- [ ] 3.0 Writing Mode (Voice Dictation, Commands & Voice Editing)
-  - [ ] 3.1 Integrate streaming STT provider (Deepgram or AssemblyAI)
-  - [ ] 3.2 Build microphone capture UI (start/pause/resume/stop)
-  - [ ] 3.3 Stream partial transcripts into the editor in near-real-time, buffering the live transcript in the session's Durable Object and committing to D1 `script_elements` only at a sentence boundary, pause, or stop — never per word
-  - [ ] 3.4 Implement element-type classification logic for dictated text, calling the LLM router in buffered batches (not per word) to protect against rate limits
-  - [ ] 3.5 Implement wake-phrase ("Partner") detection in the streaming transcript layer — must run on every incoming chunk *before* the Durable Object's Alarms API commits a buffer to D1; if the wake-phrase lands mid-buffer, split it: commit the pre-phrase text as content, route only the post-phrase text to command parsing
-  - [ ] 3.6 Implement formatting voice commands ("Partner, new scene," "Partner, cut to," character-enters patterns)
-  - [ ] 3.7 Implement voice-driven editing commands (select last line/scene, delete selected element, change element type, replace scene heading text)
-  - [ ] 3.8 Implement the destructive-command safeguard: instant one-action Undo or a brief confirmation before applying a voice delete
-  - [ ] 3.9 Implement the "command not recognized" feedback state — non-blocking, tells the writer to repeat or rephrase
-  - [ ] 3.10 Build single-action correction/re-tag UI for misclassified elements (manual/keyboard path, complements the voice path in 3.7)
-  - [ ] 3.11 Implement inline AI suggestions that require explicit acceptance before insertion
-  - [ ] 3.12 Build the System Status UI states: mic access denied, network reconnecting, AI rate limit reached
-  - [ ] 3.13 Verify raw dictation audio is never persisted (streamed and discarded post-transcription only)
+- [x] 3.0 Writing Mode (Voice Dictation, Commands & Voice Editing)
+  - [x] 3.1 Integrate streaming STT provider (Deepgram or AssemblyAI)
+  - [x] 3.2 Build microphone capture UI (start/pause/resume/stop)
+  - [x] 3.3 Stream partial transcripts into the editor in near-real-time, buffering the live transcript in the session's Durable Object and committing to D1 `script_elements` only at a sentence boundary, pause, or stop — never per word
+  - [x] 3.4 Implement element-type classification logic for dictated text, calling the LLM router in buffered batches (not per word) to protect against rate limits
+  - [x] 3.5 Implement wake-phrase ("Partner") detection in the streaming transcript layer — must run on every incoming chunk *before* the Durable Object's Alarms API commits a buffer to D1; if the wake-phrase lands mid-buffer, split it: commit the pre-phrase text as content, route only the post-phrase text to command parsing
+  - [x] 3.6 Implement formatting voice commands ("Partner, new scene," "Partner, cut to," character-enters patterns)
+  - [x] 3.7 Implement voice-driven editing commands (select last line/scene, delete selected element, change element type, replace scene heading text)
+  - [x] 3.8 Implement the destructive-command safeguard: instant one-action Undo or a brief confirmation before applying a voice delete
+  - [x] 3.9 Implement the "command not recognized" feedback state — non-blocking, tells the writer to repeat or rephrase
+  - [x] 3.10 Build single-action correction/re-tag UI for misclassified elements (manual/keyboard path, complements the voice path in 3.7)
+  - [x] 3.11 Implement inline AI suggestions that require explicit acceptance before insertion
+  - [x] 3.12 Build the System Status UI states: mic access denied, network reconnecting, AI rate limit reached
+  - [x] 3.13 Verify raw dictation audio is never persisted (streamed and discarded post-transcription only)
 
 - [ ] 4.0 Conversation Mode & Retrieval-Augmented Grounding (AI Critique + RAG)
   - [ ] 4.1 Build chat-style UI (text + voice) scoped to the current project/episode

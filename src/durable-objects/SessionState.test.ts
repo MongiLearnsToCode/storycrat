@@ -37,16 +37,6 @@ describe('parseClientMessage', () => {
     expect(parseClientMessage(validArm).delayMs).toBe(500)
   })
 
-  it('rejects binary payloads', () => {
-    expect(() => parseClientMessage(new ArrayBuffer(8))).toThrow(ProtocolError)
-    try {
-      parseClientMessage(new ArrayBuffer(8))
-      expect.unreachable()
-    } catch (e) {
-      expect((e as ProtocolError).code).toBe('binary_unsupported')
-    }
-  })
-
   it.each(['not json', '{"type":', '[]', '{"noType":true}'])('rejects malformed payload %j', (raw) => {
     try {
       parseClientMessage(raw)
@@ -86,16 +76,26 @@ describe('SessionState object runtime', () => {
 
   it('answers pings over a hibernating WebSocket', async () => {
     const stub = testEnv.SESSION_STATE.get(getSessionStateId(testEnv, 'runtime-user', 'res-b'))
-    const upgrade = await stub.fetch('https://session.internal/', { headers: { Upgrade: 'websocket' } })
+    const upgrade = await stub.fetch('https://session.internal/?scriptId=sc-test', { headers: { Upgrade: 'websocket' } })
     expect(upgrade.status).toBe(101)
 
     const client = upgrade.webSocket
     if (!client) throw new Error('No WebSocket returned from upgrade')
     client.accept()
 
-    const pong = new Promise<Record<string, unknown>>((resolve) => {
-      client.addEventListener('message', (event) => resolve(JSON.parse(String(event.data))))
-    })
+    const waitForType = (type: string) =>
+      new Promise<Record<string, unknown>>((resolve) => {
+        client.addEventListener('message', function listener(event) {
+          const data = JSON.parse(String(event.data)) as Record<string, unknown>
+          if (data.type === type || data.type === 'error') {
+            client.removeEventListener('message', listener)
+            resolve(data)
+          }
+        })
+      })
+
+    // session.ready may arrive first; wait for the pong itself.
+    const pong = waitForType('pong')
     client.send('{"type":"ping"}')
 
     await expect(pong).resolves.toMatchObject({ type: 'pong' })
@@ -104,16 +104,22 @@ describe('SessionState object runtime', () => {
 
   it('rejects malformed messages with typed errors instead of crashing the session', async () => {
     const stub = testEnv.SESSION_STATE.get(getSessionStateId(testEnv, 'runtime-user', 'res-c'))
-    const upgrade = await stub.fetch('https://session.internal/', { headers: { Upgrade: 'websocket' } })
+    const upgrade = await stub.fetch('https://session.internal/?scriptId=sc-test', { headers: { Upgrade: 'websocket' } })
     const client = upgrade.webSocket
     if (!client) throw new Error('No WebSocket returned from upgrade')
     client.accept()
 
-    const nextMessage = new Promise<Record<string, unknown>>((resolve) => {
-      client.addEventListener('message', (event) => resolve(JSON.parse(String(event.data))))
+    const waitForError = new Promise<Record<string, unknown>>((resolve) => {
+      client.addEventListener('message', function listener(event) {
+        const data = JSON.parse(String(event.data)) as Record<string, unknown>
+        if (data.type === 'error') {
+          client.removeEventListener('message', listener)
+          resolve(data)
+        }
+      })
     })
     client.send('{oops')
-    await expect(nextMessage).resolves.toMatchObject({ type: 'error', code: 'bad_json' })
+    await expect(waitForError).resolves.toMatchObject({ type: 'error', code: 'bad_json' })
     client.close()
   })
 

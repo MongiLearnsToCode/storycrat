@@ -28,7 +28,7 @@ const SAVE_DEBOUNCE_MS = 800
  * persistence (Task 2.4). All mutations produce a normalized order — the
  * array is always the source of truth for positions.
  */
-export function useScriptElements(scriptId: string, initial: ScriptElement[], save: (scriptId: string, elements: Array<{ type: ElementType; content: string }>) => Promise<void>) {
+export function useScriptElements(scriptId: string, initial: ScriptElement[], save: (scriptId: string, elements: Array<{ type: ElementType; content: string }>) => Promise<{ elements: ScriptElement[] }>) {
   const [elements, setElements] = useState<LocalElement[]>(() => toLocal(initial))
   const [saveState, setSaveState] = useState<SaveState>('idle')
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -39,10 +39,18 @@ export function useScriptElements(scriptId: string, initial: ScriptElement[], sa
   const persist = useCallback(async () => {
     setSaveState('saving')
     try {
-      await save(
+      const result = await save(
         scriptId,
         latest.current.map((el) => ({ type: el.type, content: el.content }))
       )
+      // Re-key local elements with fresh server IDs so per-element features
+      // (e.g. suggestions) keep addressing real rows after each save.
+      const stored = result?.elements ?? []
+      if (stored.length === latest.current.length) {
+        setElements((prev) =>
+          prev.map((el, i) => (stored[i] ? { ...el, key: stored[i].id } : el))
+        )
+      }
       setSaveState('saved')
     } catch {
       setSaveState('error')

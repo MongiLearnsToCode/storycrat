@@ -43,15 +43,15 @@ export async function fetchScript(scriptId: string, init?: RequestInit): Promise
   return parsed
 }
 
-/** Full ordered replacement — positions normalize server-side. */
-export async function saveScriptElements(scriptId: string, elements: Array<Pick<ScriptElement, 'type' | 'content'>>, init?: RequestInit): Promise<void> {
+/** Full ordered replacement — positions normalize server-side. Returns the canonical stored elements (fresh IDs). */
+export async function saveScriptElements(scriptId: string, elements: Array<Pick<ScriptElement, 'type' | 'content'>>, init?: RequestInit): Promise<{ elements: ScriptElement[] }> {
   const response = await fetch(`/api/scripts/${encodeURIComponent(scriptId)}/elements`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ elements }),
     ...init,
   })
-  await parseOrThrow(response)
+  return (await parseOrThrow(response)) as { elements: ScriptElement[] }
 }
 
 export async function updateScriptElement(
@@ -93,6 +93,17 @@ export interface Project {
 export async function fetchProject(projectId: string, init?: RequestInit): Promise<{ project: Project }> {
   const response = await fetch(`/api/projects/${encodeURIComponent(projectId)}`, init)
   return (await parseOrThrow(response)) as { project: Project }
+}
+
+/** One-line improvement proposal — inserted ONLY on explicit user acceptance (Task 3.11). */
+export async function requestSuggestion(scriptId: string, elementId: string, init?: RequestInit): Promise<{ suggestion: string }> {
+  const response = await fetch(`/api/scripts/${encodeURIComponent(scriptId)}/suggest`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ elementId }),
+    ...init,
+  })
+  return (await parseOrThrow(response)) as { suggestion: string }
 }
 
 export async function fetchSeasons(projectId: string, init?: RequestInit): Promise<{ seasons: Season[] }> {

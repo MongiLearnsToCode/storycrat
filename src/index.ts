@@ -6,6 +6,7 @@ export { SessionState } from './durable-objects/SessionState'
 
 import { registerProjectRoutes } from './routes/projects'
 import { registerScriptRoutes } from './routes/scripts'
+import { registerDictationRoutes } from './routes/dictation'
 
 export type { Env }
 
@@ -144,6 +145,7 @@ export function createRouter(): Router {
 
   registerProjectRoutes(router)
   registerScriptRoutes(router)
+  registerDictationRoutes(router)
 
   return router
 }

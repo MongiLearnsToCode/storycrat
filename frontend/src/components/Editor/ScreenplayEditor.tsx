@@ -1,20 +1,25 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { ELEMENT_STYLES, ELEMENT_TYPE_LABELS } from './elementStyles'
 import { useScriptElements, type SaveState } from './useScriptElements'
-import { fetchScript, saveScriptElements, type ScriptElement } from '@/lib/api'
+import DictationControls from '../WritingMode/DictationControls'
+import SuggestionChip from '../WritingMode/SuggestionChip'
+import { CommandNotRecognized, RecordingBar, StatusBanner, type StatusState } from '../SystemStatus/StatusBanner'
+import { DictationClient } from '@/lib/stt-client'
+import { fetchScript, requestSuggestion, saveScriptElements, type ScriptElement } from '@/lib/api'
 import { cn } from '@/lib/utils'
 
 /**
- * The screenplay editor (Tasks 2.3 + 2.4): renders structured elements on
- * the "paper" sheet and provides keyboard editing — inline content edits,
- * Enter to continue in screenplay flow, Backspace on an empty element to
- * remove it, and hover re-tagging. Persistence is debounced full-replace.
+ * The screenplay editor with Writing mode (Tasks 2.3–2.4 + 3.x):
+ * structured elements on the "paper" sheet, keyboard editing, streaming
+ * dictation with wake-phrase commands, system-status surfaces, and
+ * accept-to-apply AI line suggestions.
  */
 
 export interface ScreenplayEditorProps {
   scriptId: string
   loadScript?: (scriptId: string) => Promise<{ script: unknown; elements: ScriptElement[] }>
   saveElements?: typeof saveScriptElements
+  suggest?: typeof requestSuggestion
 }
 
 export type EditorStatus = 'loading' | 'ready' | 'error' | 'unauthorized'
@@ -34,10 +39,9 @@ interface AutosizeTextareaProps {
   ariaLabel?: string
   onKeyDown?: (event: React.KeyboardEvent<HTMLTextAreaElement>) => void
   dataKey: string
-  focusRef?: React.RefObject<HTMLTextAreaElement | null>
 }
 
-function AutosizeTextarea({ value, onChange, className, ariaLabel, onKeyDown, dataKey, focusRef }: AutosizeTextareaProps) {
+function AutosizeTextarea({ value, onChange, className, ariaLabel, onKeyDown, dataKey }: AutosizeTextareaProps) {
   const ref = useRef<HTMLTextAreaElement | null>(null)
 
   const resize = useCallback((el: HTMLTextAreaElement) => {
@@ -51,7 +55,6 @@ function AutosizeTextarea({ value, onChange, className, ariaLabel, onKeyDown, da
 
   const setRefs = (el: HTMLTextAreaElement | null) => {
     ref.current = el
-    if (focusRef) focusRef.current = el
     if (el) resize(el)
   }
 
@@ -73,11 +76,21 @@ function AutosizeTextarea({ value, onChange, className, ariaLabel, onKeyDown, da
   )
 }
 
-export default function ScreenplayEditor({ scriptId, loadScript, saveElements }: ScreenplayEditorProps) {
+export default function ScreenplayEditor({ scriptId, loadScript, saveElements, suggest }: ScreenplayEditorProps) {
   const loader = loadScript ?? fetchScript
   const saver = saveElements ?? saveScriptElements
+  const suggester = suggest ?? requestSuggestion
+
   const [status, setStatus] = useState<EditorStatus>('loading')
   const [initialElements, setInitialElements] = useState<ScriptElement[]>([])
+  const [reloadToken, setReloadToken] = useState(0)
+
+  // Dictation state surfaces (Tasks 3.2/3.9/3.12).
+  const [client, setClient] = useState<DictationClient | null>(null)
+  const [interimText, setInterimText] = useState('')
+  const [statusState, setStatusState] = useState<StatusState>(null)
+  const [undoAvailable, setUndoAvailable] = useState(false)
+  const [notRecognized, setNotRecognized] = useState<string | null>(null)
 
   useEffect(() => {
     let cancelled = false
@@ -99,35 +112,89 @@ export default function ScreenplayEditor({ scriptId, loadScript, saveElements }:
     return () => {
       cancelled = true
     }
-  }, [scriptId, loader])
+  }, [scriptId, loader, reloadToken])
+
+  const startDictation = () => {
+    const dc = new DictationClient(scriptId, {
+      onSegment: (text) => setInterimText((prev) => `${prev} ${text}`.trim()),
+      onElementsUpdated: () => setReloadToken((n) => n + 1),
+      onCommandExecuted: () => {
+        setUndoAvailable(false)
+        setReloadToken((n) => n + 1)
+      },
+      onCommandNotRecognized: (heard) => setNotRecognized(heard),
+      onUndoAvailable: () => setUndoAvailable(true),
+      onUndoRestored: () => {
+        setUndoAvailable(false)
+        setReloadToken((n) => n + 1)
+      },
+      onError: (code) => {
+        if (code === 'mic_denied') setStatusState({ kind: 'mic_denied' })
+        else if (code === 'reconnecting') setStatusState({ kind: 'reconnecting' })
+        else if (code === 'rate_limited') setStatusState({ kind: 'rate_limited' })
+      },
+      onStatus: (state) => {
+        if (state === 'listening') {
+          setInterimText('')
+          setStatusState(null)
+        }
+        setClient((current) => current) // trigger rerender for button swap
+      },
+    })
+    void dc.start()
+  }
+
+  const refreshAfterCommit = () => setReloadToken((n) => n + 1)
 
   return (
-    <div className="flex justify-center px-4 py-8">
-      {status === 'loading' && (
-        <article aria-label="Screenplay" className="w-full max-w-[850px] rounded-sm bg-paper-white px-12 py-16 shadow-[0_10px_30px_rgba(0,0,0,0.2)]">
-          <p role="status" className="font-ui text-sm text-neutral-500">
-            Loading screenplay…
-          </p>
-        </article>
-      )}
-      {status === 'error' && (
-        <article aria-label="Screenplay" className="w-full max-w-[850px] rounded-sm bg-paper-white px-12 py-16 shadow-[0_10px_30px_rgba(0,0,0,0.2)]">
-          <p role="alert" className="font-ui text-sm text-red-700">
-            Couldn’t load this screenplay. Check your connection and try again.
-          </p>
-        </article>
-      )}
-      {status === 'unauthorized' && (
-        <article aria-label="Screenplay" className="w-full max-w-[850px] rounded-sm bg-paper-white px-12 py-16 shadow-[0_10px_30px_rgba(0,0,0,0.2)]">
-          <p role="alert" className="font-ui text-sm text-red-700">
-            You’re signed out. Sign in to open this screenplay.
-          </p>
-        </article>
-      )}
-      {/* Keyed by scriptId: switching scripts remounts the sheet with fresh state. */}
-      {status === 'ready' && (
-        <EditableSheet key={scriptId} scriptId={scriptId} initialElements={initialElements} save={saver} />
-      )}
+    <div className="flex flex-col items-center px-4 py-8">
+      {statusState && <div className="mb-4 w-full max-w-[850px]"><StatusBanner status={statusState} /></div>}
+
+      <div className="mb-3 w-full max-w-[850px]">
+        {status === 'ready' && (
+          <>
+            <DictationControls scriptId={scriptId} client={client ?? ({ state: 'idle' } as unknown as DictationClient)} setClient={(c) => setClient(c)} onStart={startDictation} undoAvailable={undoAvailable} />
+            {notRecognized && (
+              <button type="button" onClick={() => setNotRecognized(null)} className="mt-1 block cursor-pointer bg-transparent text-left" title="Dismiss">
+                <CommandNotRecognized heard={notRecognized} />
+              </button>
+            )}
+          </>
+        )}
+      </div>
+
+      <div className="relative flex w-full max-w-[850px] justify-center">
+        {status === 'loading' && (
+          <article aria-label="Screenplay" className="w-full rounded-sm bg-paper-white px-12 py-16 shadow-[0_10px_30px_rgba(0,0,0,0.2)]">
+            <p role="status" className="font-ui text-sm text-neutral-500">Loading screenplay…</p>
+          </article>
+        )}
+        {status === 'error' && (
+          <article aria-label="Screenplay" className="w-full rounded-sm bg-paper-white px-12 py-16 shadow-[0_10px_30px_rgba(0,0,0,0.2)]">
+            <p role="alert" className="font-ui text-sm text-red-700">Couldn’t load this screenplay. Check your connection and try again.</p>
+          </article>
+        )}
+        {status === 'unauthorized' && (
+          <article aria-label="Screenplay" className="w-full rounded-sm bg-paper-white px-12 py-16 shadow-[0_10px_30px_rgba(0,0,0,0.2)]">
+            <p role="alert" className="font-ui text-sm text-red-700">You’re signed out. Sign in to open this screenplay.</p>
+          </article>
+        )}
+        {status === 'ready' && (
+          <EditableSheet
+            key={`${scriptId}:${reloadToken}`}
+            scriptId={scriptId}
+            initialElements={initialElements}
+            save={saver}
+            suggester={suggester}
+            onCommittedExternally={refreshAfterCommit}
+          />
+        )}
+      </div>
+
+      {/* Active Recording Bar — red pulse while dictating (DESIGN.md). */}
+      <div className="w-full max-w-[850px]">
+        <RecordingBar state={client?.state ?? 'idle'} interimText={interimText} />
+      </div>
     </div>
   )
 }
@@ -136,10 +203,13 @@ function EditableSheet({
   scriptId,
   initialElements,
   save,
+  suggester,
 }: {
   scriptId: string
   initialElements: ScriptElement[]
   save: typeof saveScriptElements
+  suggester: typeof requestSuggestion
+  onCommittedExternally?: () => void
 }) {
   const editor = useScriptElements(scriptId, initialElements, save)
   const pendingFocus = useRef<string | null>(null)
@@ -171,7 +241,7 @@ function EditableSheet({
   return (
     <article
       aria-label="Screenplay"
-      className="relative w-full max-w-[850px] rounded-sm bg-paper-white px-12 py-16 shadow-[0_10px_30px_rgba(0,0,0,0.2)] sm:px-[1.5in]"
+      className="relative w-full rounded-sm bg-paper-white px-12 py-16 shadow-[0_10px_30px_rgba(0,0,0,0.2)] sm:px-[1.5in]"
     >
       <p aria-live="polite" className="absolute top-3 right-4 font-ui text-xs text-neutral-400">
         {SAVE_LABEL[editor.saveState]}
@@ -190,40 +260,44 @@ function EditableSheet({
         </div>
       ) : (
         editor.elements.map((element) => (
-          <div key={element.key} data-element-type={element.type} className="group relative">
-            <span
-              aria-hidden="true"
-              className="pointer-events-none absolute top-1/2 -left-16 -translate-y-1/2 text-xs font-ui text-neutral-400 opacity-0 transition-opacity group-hover:opacity-100"
-            >
-              {ELEMENT_TYPE_LABELS[element.type]}
-            </span>
-            {/* Re-tag menu — single-action correction path for misclassified elements. */}
-            <menu className="absolute top-1/2 right-0 hidden -translate-y-1/2 gap-1 group-hover:flex" aria-label={`Change element type (${ELEMENT_TYPE_LABELS[element.type]})`}>
-              {(Object.keys(ELEMENT_STYLES) as Array<keyof typeof ELEMENT_STYLES>).map((type) => (
-                <button
-                  key={type}
-                  type="button"
-                  title={ELEMENT_TYPE_LABELS[type]}
-                  disabled={type === element.type}
-                  onClick={() => editor.retag(element.key, type)}
-                  className={cn(
-                    'rounded px-1.5 py-0.5 font-ui text-[11px]',
-                    type === element.type ? 'text-neutral-300' : 'text-neutral-500 hover:bg-neutral-100 hover:text-creative-spark-blue'
-                  )}
-                >
-                  {ELEMENT_TYPE_LABELS[type]}
-                </button>
-              ))}
-            </menu>
-            <AutosizeTextarea
-              value={element.content}
-              onChange={(value) => editor.updateContent(element.key, value)}
-              onKeyDown={(event) => handleKeyDown(event, element.key)}
-              ariaLabel={`${ELEMENT_TYPE_LABELS[element.type]} element`}
-              dataKey={element.key}
-              className={cn('font-script text-base leading-relaxed text-neutral-900', ELEMENT_STYLES[element.type])}
-            />
-          </div>
+        <div key={element.key} data-element-type={element.type} className="group relative">
+          <span
+            aria-hidden="true"
+            className="pointer-events-none absolute top-1/2 -left-16 -translate-y-1/2 text-xs font-ui text-neutral-400 opacity-0 transition-opacity group-hover:opacity-100"
+          >
+            {ELEMENT_TYPE_LABELS[element.type]}
+          </span>
+          {/* Re-tag menu (Task 3.10 manual correction path) + inline suggestion (Task 3.11). */}
+          <menu className="absolute top-1/2 right-0 hidden -translate-y-1/2 gap-1 group-hover:flex" aria-label={`Change element type (${ELEMENT_TYPE_LABELS[element.type]})`}>
+            {(Object.keys(ELEMENT_STYLES) as Array<keyof typeof ELEMENT_STYLES>).map((type) => (
+              <button
+                key={type}
+                type="button"
+                title={ELEMENT_TYPE_LABELS[type]}
+                disabled={type === element.type}
+                onClick={() => editor.retag(element.key, type)}
+                className={cn(
+                  'rounded px-1.5 py-0.5 font-ui text-[11px]',
+                  type === element.type ? 'text-neutral-300' : 'text-neutral-500 hover:bg-neutral-100 hover:text-creative-spark-blue'
+                )}
+              >
+                {ELEMENT_TYPE_LABELS[type]}
+              </button>
+            ))}
+          </menu>
+          <AutosizeTextarea
+            value={element.content}
+            onChange={(value) => editor.updateContent(element.key, value)}
+            onKeyDown={(event) => handleKeyDown(event, element.key)}
+            ariaLabel={`${ELEMENT_TYPE_LABELS[element.type]} element`}
+            dataKey={element.key}
+            className={cn('font-script text-base leading-relaxed text-neutral-900', ELEMENT_STYLES[element.type])}
+          />
+          <SuggestionChip
+            onRequest={async () => (await suggester(scriptId, element.key)).suggestion}
+            onAccept={(suggestion) => editor.updateContent(element.key, suggestion)}
+          />
+        </div>
         ))
       )}
     </article>

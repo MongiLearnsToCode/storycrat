@@ -5,6 +5,56 @@ import { requireUser } from '../lib/auth'
 import { findScript, isOwned, notFound } from '../lib/ownership'
 import { generateScriptPdf } from '../lib/pdf-export'
 import { createSignedDownloadLink, verifySignedDownload } from '../lib/signed-urls'
+import { runLlmSingleTurn } from '../lib/llm-router'
+
+/**
+ * Inline AI suggestion (Task 3.11, PRD Req 19).
+ *
+ * STRICTLY user-initiated (writer clicks ✦ on one element) and strictly
+ * scoped to ONE line — never a scene, page, or draft (PRD §5 Non-Goals).
+ * The response is a proposal only; insertion requires the writer's explicit
+ * acceptance in the UI. There is no code path here that writes to the script.
+ */
+const SUGGEST_SYSTEM_PROMPT = `You are a sharp, economical screenwriting partner. The writer selects ONE line and asks for a stronger alternative.
+Rules:
+- Reply with ONLY the rewritten line — no quotes, no explanation, no preamble.
+- Improve specificity, economy, or subtext. Never lengthen dialogue padding.
+- Never add new scenes, directions beyond the line's own scope, or content the writer did not write.
+- If the line is already tight, return it unchanged.`
+
+async function suggest(ctx: RouteContext): Promise<Response> {
+  const user = await requireUser(ctx.request, ctx.env)
+  if (!user) return errorResponse('Unauthorized', 401)
+
+  const owned = await findScript(ctx.env, p(ctx, 'scriptId'))
+  if (!isOwned(owned, user.id)) return notFound()
+
+  let body: { elementId?: unknown }
+  try {
+    body = (await ctx.request.json()) as typeof body
+  } catch {
+    return errorResponse('Invalid JSON body', 400)
+  }
+  if (typeof body.elementId !== 'string') return errorResponse('elementId required', 400)
+
+  const element = await ctx.env.DB.prepare('SELECT id, type, content FROM script_elements WHERE id = ? AND script_id = ?')
+    .bind(body.elementId, p(ctx, 'scriptId'))
+    .first<{ id: string; type: string; content: string }>()
+  if (!element || !element.content.trim()) return notFound()
+
+  try {
+    const suggestion = await runLlmSingleTurn(
+      ctx.env,
+      'critique',
+      SUGGEST_SYSTEM_PROMPT,
+      `Line type: ${element.type}\nLine: ${element.content}`
+    )
+    return jsonResponse({ suggestion: suggestion.trim() })
+  } catch (error) {
+    console.error('Suggestion failed', error)
+    return errorResponse('Suggestion unavailable right now', 503)
+  }
+}
 
 const ELEMENT_TYPES = ['scene_heading', 'action', 'character', 'dialogue', 'parenthetical', 'transition'] as const
 type ElementType = (typeof ELEMENT_TYPES)[number]
@@ -255,6 +305,7 @@ export function registerScriptRoutes(router: Router): void {
   router.put('/api/scripts/:scriptId/elements', replaceElements)
   router.patch('/api/scripts/:scriptId/elements/:elementId', updateElement)
   router.get('/api/scripts/:scriptId/pdf', exportPdf)
+  router.post('/api/scripts/:scriptId/suggest', suggest)
   router.post('/api/scripts/:scriptId/exports', exportToStorage)
   router.get('/api/exports/*', downloadExport)
 }
