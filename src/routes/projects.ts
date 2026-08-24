@@ -2,6 +2,8 @@ import type { Env } from '../types'
 import type { RouteContext, Router } from '../index'
 import { errorResponse, jsonResponse } from '../index'
 import { requireUser } from '../lib/auth'
+import { resyncScriptSafely } from '../lib/embed-sync'
+import { deleteScriptEmbeddings } from '../lib/embeddings'
 import { findEpisode, findProject, findSeason, isOwned, notFound } from '../lib/ownership'
 
 const TITLE_MAX = 200
@@ -139,6 +141,13 @@ async function deleteProject(ctx: RouteContext): Promise<Response> {
 
   const owned = await findProject(ctx.env, p(ctx, 'projectId'))
   if (!isOwned(owned, user.id)) return notFound()
+
+  const projectScripts = await ctx.env.DB.prepare('SELECT id FROM scripts WHERE project_id = ?')
+    .bind(p(ctx, 'projectId'))
+    .all<{ id: string }>()
+  for (const script of projectScripts.results ?? []) {
+    ctx.waitUntil?.(deleteScriptEmbeddings(ctx.env, script.id))
+  }
 
   await ctx.env.DB.prepare('DELETE FROM projects WHERE id = ?').bind(p(ctx, 'projectId')).run()
   return jsonResponse({ ok: true })
@@ -357,6 +366,14 @@ async function deleteEpisode(ctx: RouteContext): Promise<Response> {
 
   const owned = await findEpisode(ctx.env, p(ctx, 'episodeId'))
   if (!isOwned(owned, user.id)) return notFound()
+
+  // Purge vectors for the episode's script before the cascade removes it.
+  const episodeScript = await ctx.env.DB.prepare('SELECT id FROM scripts WHERE episode_id = ?')
+    .bind(p(ctx, 'episodeId'))
+    .first<{ id: string }>()
+  if (episodeScript) {
+    ctx.waitUntil?.(deleteScriptEmbeddings(ctx.env, episodeScript.id))
+  }
 
   await ctx.env.DB.prepare('DELETE FROM episodes WHERE id = ?').bind(p(ctx, 'episodeId')).run()
   return jsonResponse({ ok: true })

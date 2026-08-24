@@ -7,6 +7,7 @@ export { SessionState } from './durable-objects/SessionState'
 import { registerProjectRoutes } from './routes/projects'
 import { registerScriptRoutes } from './routes/scripts'
 import { registerDictationRoutes } from './routes/dictation'
+import { registerConversationRoutes } from './routes/conversation'
 
 export type { Env }
 
@@ -15,6 +16,8 @@ export interface RouteContext {
   env: Env
   params: Record<string, string>
   url: URL
+  /** Present in production; lets handlers defer background work past the response. */
+  waitUntil?: (promise: Promise<unknown>) => void
 }
 
 export type Handler = (ctx: RouteContext) => Response | Promise<Response>
@@ -90,7 +93,7 @@ export class Router {
     return this.add('DELETE', path, handler)
   }
 
-  async handle(request: Request, env: Env): Promise<Response> {
+  async handle(request: Request, env: Env, executionCtx?: ExecutionContext): Promise<Response> {
     const url = new URL(request.url)
 
     for (const route of this.routes) {
@@ -108,7 +111,7 @@ export class Router {
       })
 
       try {
-        return await route.handler({ request, env, params, url })
+        return await route.handler({ request, env, params, url, waitUntil: executionCtx ? (p) => executionCtx.waitUntil(p) : undefined })
       } catch (error) {
         console.error(`Handler failed: ${request.method} ${url.pathname}`, error)
         return errorResponse('Internal server error', 500)
@@ -146,12 +149,13 @@ export function createRouter(): Router {
   registerProjectRoutes(router)
   registerScriptRoutes(router)
   registerDictationRoutes(router)
+  registerConversationRoutes(router)
 
   return router
 }
 
 export default {
-  fetch(request: Request, env: Env): Promise<Response> {
-    return createRouter().handle(request, env)
+  fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
+    return createRouter().handle(request, env, ctx)
   },
 } satisfies ExportedHandler<Env>

@@ -105,20 +105,20 @@
   - [x] 3.12 Build the System Status UI states: mic access denied, network reconnecting, AI rate limit reached
   - [x] 3.13 Verify raw dictation audio is never persisted (streamed and discarded post-transcription only)
 
-- [ ] 4.0 Conversation Mode & Retrieval-Augmented Grounding (AI Critique + RAG)
-  - [ ] 4.1 Build chat-style UI (text + voice) scoped to the current project/episode
-  - [ ] 4.2 Build context-assembly endpoint (script + story bible + conversation history + RAG-retrieved passages) feeding the LLM router
-  - [ ] 4.3 Write the critique system prompt to produce substantive disagreement and cinema references, not generic praise
-  - [ ] 4.4 Persist conversation history per project/episode; build scroll-back UI
-  - [ ] 4.5 Implement scene/character/page-range referencing when starting a topic
-  - [ ] 4.6 Enforce that Conversation mode has no code path that writes into the script document
-  - [ ] 4.7 Integrate TTS (browser `speechSynthesis`) with a text-only toggle
-  - [ ] 4.8 Build the embedding pipeline: on script/story-bible save, generate embeddings via Workers AI and upsert into Vectorize, scoped by account + season
-  - [ ] 4.9 Build retrieval logic: on a Conversation-mode query, embed the topic and query Vectorize (filtered by account + season) for the top-K relevant passages from other episodes, then merge them into the LLM context
-  - [ ] 4.10 Tag Script Chips with the source episode whenever a citation comes from outside the currently open episode
-  - [ ] 4.11 Implement the "Get Notes" action: reuse the context assembly and critique prompt from 4.2–4.3, but trigger it directly from either editor (no chat interface required), return a single response, and render it as a static panel rather than a chat thread
-  - [ ] 4.12 Extend the embedding/retrieval pipeline (4.8–4.9) to Feature Film scripts, not just TV episodes — chunk by scene regardless of project type, so a 120-page script is grounded the same retrieval-backed way a TV season is
-  - [ ] 4.13 Wire scene-level re-embedding into the element mutation path (voice edits 3.7, manual edits 2.4) so the Vectorize index updates on edit/delete — debounced per scene, not fired per keystroke, and not dependent on an explicit "save" action that doesn't otherwise exist in this editor
+- [x] 4.0 Conversation Mode & Retrieval-Augmented Grounding (AI Critique + RAG)
+  - [x] 4.1 Build chat-style UI (text + voice) scoped to the current project/episode
+  - [x] 4.2 Build context-assembly endpoint (script + story bible + conversation history + RAG-retrieved passages) feeding the LLM router
+  - [x] 4.3 Write the critique system prompt to produce substantive disagreement and cinema references, not generic praise
+  - [x] 4.4 Persist conversation history per project/episode; build scroll-back UI
+  - [x] 4.5 Implement scene/character/page-range referencing when starting a topic
+  - [x] 4.6 Enforce that Conversation mode has no code path that writes into the script document
+  - [x] 4.7 Integrate TTS (browser `speechSynthesis`) with a text-only toggle
+  - [x] 4.8 Build the embedding pipeline: on script/story-bible save, generate embeddings via Workers AI and upsert into Vectorize, scoped by account + season
+  - [x] 4.9 Build retrieval logic: on a Conversation-mode query, embed the topic and query Vectorize (filtered by account + season) for the top-K relevant passages from other episodes, then merge them into the LLM context
+  - [x] 4.10 Tag Script Chips with the source episode whenever a citation comes from outside the currently open episode
+  - [x] 4.11 Implement the "Get Notes" action: reuse the context assembly and critique prompt from 4.2–4.3, but trigger it directly from either editor (no chat interface required), return a single response, and render it as a static panel rather than a chat thread
+  - [x] 4.12 Extend the embedding/retrieval pipeline (4.8–4.9) to Feature Film scripts, not just TV episodes — chunk by scene regardless of project type, so a 120-page script is grounded the same retrieval-backed way a TV season is
+  - [x] 4.13 Wire scene-level re-embedding into the element mutation path (voice edits 3.7, manual edits 2.4) so the Vectorize index updates on edit/delete — debounced per scene, not fired per keystroke, and not dependent on an explicit "save" action that doesn't otherwise exist in this editor
 
 - [ ] 5.0 Accounts, Billing & Free-Tier Enforcement
   - [ ] 5.1 Implement email/magic-link auth (Resend), sessions in KV

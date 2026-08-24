@@ -1,6 +1,7 @@
 import type { Env } from '../types'
 import initSql from '../db/migrations/0001_init.sql?raw'
 import domainSql from '../db/migrations/0002_domain_schema.sql?raw'
+import convSql from '../db/migrations/0003_conversations_vector_sync.sql?raw'
 
 /**
  * Applies all D1 migrations (in order) to the isolated per-test-file
@@ -11,6 +12,7 @@ import domainSql from '../db/migrations/0002_domain_schema.sql?raw'
 const MIGRATIONS: Array<{ name: string; sql: string }> = [
   { name: '0001_init', sql: initSql },
   { name: '0002_domain_schema', sql: domainSql },
+  { name: '0003_conversations_vector_sync', sql: convSql },
 ]
 
 export async function applyMigrations(env: Env): Promise<void> {

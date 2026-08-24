@@ -6,6 +6,8 @@ import { findScript, isOwned, notFound } from '../lib/ownership'
 import { generateScriptPdf } from '../lib/pdf-export'
 import { createSignedDownloadLink, verifySignedDownload } from '../lib/signed-urls'
 import { runLlmSingleTurn } from '../lib/llm-router'
+import { resyncScriptSafely } from '../lib/embed-sync'
+import { deleteScriptEmbeddings } from '../lib/embeddings'
 
 /**
  * Inline AI suggestion (Task 3.11, PRD Req 19).
@@ -131,6 +133,7 @@ async function replaceElements(ctx: RouteContext): Promise<Response> {
     ),
   ]
   await ctx.env.DB.batch(statements)
+  ctx.waitUntil?.(resyncScriptSafely(ctx.env, scriptId))
 
   return getElements(ctx)
 }

@@ -6,6 +6,7 @@ export { parseClientMessage, ProtocolError }
 import { splitAtWakePhrase } from '../lib/wake-phrase-detector'
 import { parseCommand, describeCommand } from '../lib/voice-command-parser'
 import { classifyBufferedText, type ClassifiedElement } from '../lib/element-classifier'
+import { resyncScriptSafely } from '../lib/embed-sync'
 
 /**
  * Per-session Durable Object for active dictation state (PRD §7).
@@ -161,10 +162,36 @@ export class SessionState {
     await this.flushBuffer()
   }
 
-  /** Alarms tick: the pause-boundary commit. Wake sequencing still applies. */
+  /**
+   * Alarms tick, in priority order:
+   * 1. Pause-boundary commit of buffered dictation (wake sequencing applies).
+   * 2. Debounced embedding sync for mutated scripts (Task 4.13) — batched
+   *    here so voice edits don't fire per keystroke.
+   */
   async alarm(): Promise<void> {
     await this.hydrate()
     await this.flushBuffer()
+
+    const pending = (await this.state.storage.get<string[]>('embedPending')) ?? []
+    if (pending.length > 0) {
+      await this.state.storage.delete('embedPending')
+      for (const scriptId of pending.slice(0, 5)) {
+        await resyncScriptSafely(this.env, scriptId)
+      }
+    }
+  }
+
+  /** Arms the next alarm (≥30s out) to run a debounced embedding sync. */
+  private async markEmbeddingDirty(scriptId: string): Promise<void> {
+    const pending = new Set((await this.state.storage.get<string[]>('embedPending')) ?? [])
+    pending.add(scriptId)
+    await this.state.storage.put('embedPending', Array.from(pending))
+
+    const existing = await this.state.storage.getAlarm()
+    if (existing === null) {
+      // Don't disturb an imminent pause-commit; just make sure a sync lands.
+      await this.state.storage.setAlarm(Date.now() + 30_000)
+    }
   }
 
   // ---- Deepgram bridge -----------------------------------------------------------
@@ -286,6 +313,7 @@ export class SessionState {
     if (elements.length === 0) return
     const scriptId = await this.currentScriptId()
     if (!scriptId) return
+    await this.markEmbeddingDirty(scriptId)
 
     const maxRow = await this.env.DB.prepare('SELECT COALESCE(MAX(position), -1) AS p FROM script_elements WHERE script_id = ?')
       .bind(scriptId)
@@ -389,6 +417,7 @@ export class SessionState {
         ).bind(row.id, scriptId, row.position, row.type, row.content)
       ),
     ])
+    await this.markEmbeddingDirty(scriptId)
 
     await this.state.storage.delete('undoSnapshot')
     this.sendToAll({ type: 'undo.restored' })
@@ -408,6 +437,7 @@ export class SessionState {
     const rows = await this.listElements(scriptId)
     const last = rows[rows.length - 1]
     if (!last) return false
+    await this.markEmbeddingDirty(scriptId)
     await this.env.DB.prepare('DELETE FROM script_elements WHERE id = ?').bind(last.id).run()
     return true
   }
@@ -423,6 +453,7 @@ export class SessionState {
     }
     if (lastHeadingIdx === -1) return false
     const doomed = rows.slice(lastHeadingIdx)
+    await this.markEmbeddingDirty(scriptId)
     await this.env.DB.batch(doomed.map((row) => this.env.DB.prepare('DELETE FROM script_elements WHERE id = ?').bind(row.id)))
     return true
   }
@@ -431,6 +462,7 @@ export class SessionState {
     const rows = await this.listElements(scriptId)
     const last = rows[rows.length - 1]
     if (!last) return
+    await this.markEmbeddingDirty(scriptId)
     await this.env.DB.prepare("UPDATE script_elements SET type = ?, updated_at = datetime('now') WHERE id = ?")
       .bind(to, last.id)
       .run()
@@ -441,6 +473,7 @@ export class SessionState {
     for (let i = rows.length - 1; i >= 0; i--) {
       const row = rows[i]
       if (row?.type === 'scene_heading') {
+        await this.markEmbeddingDirty(scriptId)
         await this.env.DB.prepare("UPDATE script_elements SET content = ?, updated_at = datetime('now') WHERE id = ?")
           .bind(heading, row.id)
           .run()

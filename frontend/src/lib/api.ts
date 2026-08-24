@@ -118,3 +118,52 @@ export async function fetchEpisodes(projectId: string, seasonId: string, init?: 
   )
   return (await parseOrThrow(response)) as { episodes: Episode[] }
 }
+
+export interface Citation {
+  label: string
+  episodeId: string | null
+  scriptId: string
+  sceneIndex: number
+}
+
+export interface ChatMessageView {
+  role: 'user' | 'assistant'
+  content: string
+  citations: Citation[]
+}
+
+export async function sendChatMessage(
+  projectId: string,
+  body: { question: string; episodeId?: string; conversationId?: string },
+  init?: RequestInit
+): Promise<{ conversationId: string; reply: ChatMessageView }> {
+  const response = await fetch(`/api/projects/${encodeURIComponent(projectId)}/chat`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+    ...init,
+  })
+  return (await parseOrThrow(response)) as { conversationId: string; reply: ChatMessageView }
+}
+
+export async function fetchConversationMessages(
+  projectId: string,
+  conversationId: string,
+  init?: RequestInit
+): Promise<{ messages: Array<ChatMessageView & { createdAt: string }> }> {
+  const response = await fetch(
+    `/api/projects/${encodeURIComponent(projectId)}/conversations/${encodeURIComponent(conversationId)}/messages`,
+    init
+  )
+  return (await parseOrThrow(response)) as { messages: Array<ChatMessageView & { createdAt: string }> }
+}
+
+export async function requestNotes(projectId: string, episodeId?: string, init?: RequestInit): Promise<{ notes: string; citations: Citation[] }> {
+  const response = await fetch(`/api/projects/${encodeURIComponent(projectId)}/notes`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ episodeId }),
+    ...init,
+  })
+  return (await parseOrThrow(response)) as { notes: string; citations: Citation[] }
+}
