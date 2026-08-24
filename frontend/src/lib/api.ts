@@ -167,3 +167,33 @@ export async function requestNotes(projectId: string, episodeId?: string, init?:
   })
   return (await parseOrThrow(response)) as { notes: string; citations: Citation[] }
 }
+
+export interface SessionUser {
+  id: string
+}
+
+export async function fetchMe(init?: RequestInit): Promise<SessionUser | null> {
+  const response = await fetch('/api/auth/me', init)
+  if (response.status === 401) return null
+  if (!response.ok) throw new ApiError(`me failed: ${response.status}`, response.status)
+  return ((await response.json()) as { user: SessionUser }).user
+}
+
+export async function requestMagicLink(email: string, init?: RequestInit): Promise<{ ok: boolean; devLink?: string }> {
+  const response = await fetch('/api/auth/request-link', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email }),
+    ...init,
+  })
+  return (await parseOrThrow(response)) as { ok: boolean; devLink?: string }
+}
+
+export async function logout(): Promise<void> {
+  await fetch('/api/auth/logout', { method: 'POST' })
+}
+
+export async function fetchFeatureScript(projectId: string, init?: RequestInit): Promise<{ scriptId: string | null }> {
+  const response = await fetch(`/api/projects/${encodeURIComponent(projectId)}/feature-script`, init)
+  return (await parseOrThrow(response)) as { scriptId: string | null }
+}

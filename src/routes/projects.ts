@@ -108,7 +108,11 @@ async function getProject(ctx: RouteContext): Promise<Response> {
     .first<ProjectRow>()
   if (!project) return notFound()
 
-  return jsonResponse({ project })
+  const featureScript = await ctx.env.DB.prepare('SELECT id FROM scripts WHERE project_id = ? AND episode_id IS NULL')
+    .bind(p(ctx, 'projectId'))
+    .first<{ id: string }>()
+
+  return jsonResponse({ project, featureScriptId: featureScript?.id ?? null })
 }
 
 async function updateProject(ctx: RouteContext): Promise<Response> {

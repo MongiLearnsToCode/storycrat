@@ -14,7 +14,12 @@ export default defineConfig({
           PDF_SIGNING_SECRET: 'test-pdf-signing-secret',
           GROQ_API_KEY: 'test-groq-key',
           GROQ_ZDR_CONFIRMED: 'true',
+          RESEND_API_KEY: 'test-resend-key',
         },
+        // Third-party outbound calls (Resend, Groq, Deepgram) succeed in
+        // tests without touching the real network. Tests assert against our
+        // own state (KV/D1) rather than provider payloads.
+        outboundService: () => Promise.resolve(new Response('{}', { status: 200 })),
       },
     }),
   ],

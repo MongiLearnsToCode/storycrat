@@ -49,6 +49,10 @@ export interface Env {
   POLAR_WEBHOOK_SECRET?: string
   /** Wrangler secret — HMAC key for short-lived PDF download links (Task 2.8). */
   PDF_SIGNING_SECRET?: string
+  /** Resend sender identity, e.g. "Storycrat <signin@yourdomain.com>". */
+  MAIL_FROM?: string
+  /** Dev-only: return magic links in the API response when email delivery is unavailable. NEVER set in production. */
+  AUTH_DEV_LINK_RETURN?: string
 }
 
 /** Secret names known to the app; keeps requireSecret calls typo-proof. */

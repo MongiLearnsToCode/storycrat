@@ -121,7 +121,7 @@
   - [x] 4.13 Wire scene-level re-embedding into the element mutation path (voice edits 3.7, manual edits 2.4) so the Vectorize index updates on edit/delete — debounced per scene, not fired per keystroke, and not dependent on an explicit "save" action that doesn't otherwise exist in this editor
 
 - [ ] 5.0 Accounts, Billing & Free-Tier Enforcement
-  - [ ] 5.1 Implement email/magic-link auth (Resend), sessions in KV
+  - [x] 5.1 Implement email/magic-link auth (Resend), sessions in KV
   - [ ] 5.2 Add `lifetime_script_count` to the user data model
   - [ ] 5.3 Implement free-tier gating: block a 2nd script/episode once the lifetime count is spent, unless subscribed
   - [ ] 5.4 Integrate Polar (checkout + webhooks) for subscription state

@@ -8,6 +8,7 @@ import { registerProjectRoutes } from './routes/projects'
 import { registerScriptRoutes } from './routes/scripts'
 import { registerDictationRoutes } from './routes/dictation'
 import { registerConversationRoutes } from './routes/conversation'
+import { registerAuthRoutes } from './routes/auth'
 
 export type { Env }
 
@@ -150,6 +151,7 @@ export function createRouter(): Router {
   registerScriptRoutes(router)
   registerDictationRoutes(router)
   registerConversationRoutes(router)
+  registerAuthRoutes(router)
 
   return router
 }
