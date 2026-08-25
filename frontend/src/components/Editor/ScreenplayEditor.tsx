@@ -87,6 +87,23 @@ export default function ScreenplayEditor({ scriptId, loadScript, saveElements, s
 
   // Dictation state surfaces (Tasks 3.2/3.9/3.12).
   const [client, setClient] = useState<DictationClient | null>(null)
+
+  // Task 6.7: when the writer switches modes (opens Conversation), any live
+  // dictation STOPS cleanly — the DO flushes buffered text per normal
+  // boundary rules — rather than the stream being rerouted into chat.
+  useEffect(() => {
+    const stopDictation = () => {
+      setInterimText('')
+      setClient((current) => {
+        if (current && (current.state === 'listening' || current.state === 'paused')) {
+          current.stop()
+        }
+        return current
+      })
+    }
+    window.addEventListener('storycrat:stop-dictation', stopDictation)
+    return () => window.removeEventListener('storycrat:stop-dictation', stopDictation)
+  }, [])
   const [interimText, setInterimText] = useState('')
   const [statusState, setStatusState] = useState<StatusState>(null)
   const [undoAvailable, setUndoAvailable] = useState(false)

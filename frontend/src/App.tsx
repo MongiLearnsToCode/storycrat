@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
+import { cn } from './lib/utils'
 import SignInScreen from './components/Auth/SignInScreen'
 import EpisodeSidebar from './components/Navigation/EpisodeSidebar'
 import ChatPanel from './components/ConversationMode/ChatPanel'
@@ -227,6 +228,16 @@ function EditorWorkspace({
 }) {
   const [chatOpen, setChatOpen] = useState(false)
 
+  // Task 6.7: opening Conversation stops any live dictation session cleanly
+  // (buffered text commits per normal boundary rules server-side).
+  const toggleConversation = () => {
+    const opening = !chatOpen
+    if (opening) {
+      window.dispatchEvent(new CustomEvent('storycrat:stop-dictation'))
+    }
+    setChatOpen(opening)
+  }
+
   return (
     <div className="flex min-h-full">
       {view.project.type === 'series' && (
@@ -238,30 +249,70 @@ function EditorWorkspace({
           <button type="button" onClick={onBack} className="font-ui text-xs text-on-surface-variant hover:text-on-surface">
             ← Projects
           </button>
+          {/* Desktop persistent toggle (Task 6.1). Mobile uses the bottom bar. */}
           <button
             type="button"
-            onClick={() => setChatOpen((v) => !v)}
+            onClick={toggleConversation}
             aria-pressed={chatOpen}
-            className="rounded-md border border-creative-spark-blue bg-midnight-charcoal px-3 py-1.5 font-ui text-xs font-medium text-on-surface"
+            className="hidden rounded-md border border-creative-spark-blue bg-midnight-charcoal px-3 py-1.5 font-ui text-xs font-medium text-on-surface md:block"
           >
             {chatOpen ? 'Hide conversation' : '✦ Conversation'}
           </button>
         </div>
 
         <div className="flex flex-1 items-start">
-          <div className="min-w-0 flex-1">
+          <div className={cn('min-w-0 flex-1', chatOpen && 'hidden md:block')}>
             <ScreenplayEditor scriptId={view.scriptId} />
           </div>
 
           {chatOpen && (
-            <aside className="sticky top-0 h-screen w-full max-w-md shrink-0 border-l border-slate-800">
+            <aside
+              className={cn(
+                'border-l border-slate-800',
+                // Mobile: full-screen overlay toggled by the bottom bar (DESIGN.md layout).
+                'fixed inset-0 z-20 bg-midnight-slate md:sticky md:top-0 md:inset-auto md:z-auto md:h-screen md:w-full md:max-w-md md:shrink-0 md:bg-transparent'
+              )}
+            >
+              <button
+                type="button"
+                onClick={toggleConversation}
+                className="px-4 pt-3 font-ui text-xs text-on-surface-variant md:hidden"
+              >
+                ← Back to script
+              </button>
               <ChatPanel projectId={view.project.id} episodeId={view.episodeId ?? undefined} currentEpisodeId={view.episodeId} />
-              <div className="p-4">
+              <div className="hidden p-4 md:block">
                 <QuickNotesPanel projectId={view.project.id} episodeId={view.episodeId ?? undefined} currentEpisodeId={view.episodeId} />
               </div>
             </aside>
           )}
         </div>
+
+        {/* Mobile persistent bottom bar (DESIGN.md → Layout: bottom bar toggles editor/conversation). */}
+        <nav
+          aria-label="Mode"
+          className={cn(
+            'sticky bottom-0 z-30 flex border-t border-slate-800 bg-container-lowest md:hidden',
+            chatOpen && 'hidden'
+          )}
+        >
+          <button
+            type="button"
+            onClick={() => setChatOpen(false)}
+            aria-pressed={!chatOpen}
+            className={cn('flex-1 py-3 font-ui text-xs font-medium', !chatOpen ? 'border-t-2 border-creative-spark-blue text-on-surface' : 'text-on-surface-variant')}
+          >
+            ✍ Editor
+          </button>
+          <button
+            type="button"
+            onClick={toggleConversation}
+            aria-pressed={chatOpen}
+            className={cn('flex-1 py-3 font-ui text-xs font-medium', chatOpen ? 'border-t-2 border-creative-spark-blue text-on-surface' : 'text-on-surface-variant')}
+          >
+            ✦ Conversation
+          </button>
+        </nav>
       </div>
     </div>
   )

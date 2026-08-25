@@ -28,7 +28,8 @@ interface SocketMessage extends Record<string, unknown> {
   heard?: string
 }
 
-const MIME_TYPES = ['audio/webm;codecs=opus', 'audio/webm', 'audio/ogg;codecs=opus'] as const
+// Safari MediaRecorder emits audio/mp4 (no webm); Chrome/Firefox prefer opus/webm.
+const MIME_TYPES = ['audio/webm;codecs=opus', 'audio/webm', 'audio/mp4;codecs=opus', 'audio/mp4', 'audio/ogg;codecs=opus'] as const
 
 function pickMimeType(): string | undefined {
   if (typeof MediaRecorder === 'undefined') return undefined

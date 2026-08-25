@@ -56,7 +56,10 @@ describe('ChatPanel (Tasks 4.1/4.4/4.7)', () => {
 
     // Both turns remain visible (scroll-back).
     expect(screen.getByText('Are my stakes working?')).toBeInTheDocument()
-    // Grounded reply is visually distinct + chip present.
+    // Grounded reply is visually distinct (6.5) + chip present (4.10).
+    const grounded = screen.getByText(/stakes in SC\.2 never escalate/i).closest('[data-grounded]')
+    expect(grounded?.getAttribute('data-grounded')).toBe('true')
+    expect(grounded?.textContent).toContain('Grounded in your script')
     const chip = screen.getByTestId('script-chip')
     expect(chip.textContent).toContain('EP.2')
   })

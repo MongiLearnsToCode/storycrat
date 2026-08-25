@@ -88,9 +88,20 @@ export default function ChatPanel({ projectId, episodeId, currentEpisodeId = nul
           </p>
         )}
         {messages.map((message, i) => (
-          <div key={i} className={cn('max-w-[90%] rounded-lg px-3 py-2 font-ui text-[15px] leading-relaxed', message.role === 'user'
-            ? 'ml-auto bg-container-high text-on-surface'
-            : 'mr-auto bg-container text-on-surface border border-outline-variant/50')}>
+          <div
+            key={i}
+            data-grounded={message.role === 'assistant' && message.citations.length > 0 ? 'true' : undefined}
+            className={cn('max-w-[90%] rounded-lg px-3 py-2 font-ui text-[15px] leading-relaxed', message.role === 'user'
+              ? 'ml-auto bg-container-high text-on-surface'
+              : message.citations.length > 0
+                ? 'mr-auto border border-creative-spark-blue/40 border-l-2 border-l-creative-spark-blue bg-creative-spark-blue/5 text-on-surface'
+                : 'mr-auto bg-container text-on-surface border border-outline-variant/50')}
+          >
+            {message.role === 'assistant' && message.citations.length > 0 && (
+              <p className="mb-1 font-ui text-[11px] uppercase tracking-wide text-creative-spark-blue">
+                Grounded in your script
+              </p>
+            )}
             <p className="whitespace-pre-wrap">{message.content}</p>
             {message.citations.length > 0 && (
               <span className="mt-2 flex flex-wrap gap-1">

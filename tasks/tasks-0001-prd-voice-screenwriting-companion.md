@@ -129,11 +129,11 @@
   - [x] 5.6 Gate Writing mode and Conversation mode behind free-tier/subscription checks
   - [x] 5.7 Add a UI warning shown at TV Series creation time (not only when the block hits) telling a free-tier user the one-script allowance covers exactly one episode, not a full season
 
-- [ ] 6.0 Mode Switching, TV/Episode Navigation & PWA Polish
-  - [ ] 6.1 Build the persistent Writing ↔ Conversation mode toggle, preserving state on both sides
-  - [ ] 6.2 Wire up season/episode navigation accessible from within any episode
-  - [ ] 6.3 Configure PWA manifest, icons, and service worker for installability
-  - [ ] 6.4 Apply the writer-focused design direction from `tasks/DESIGN.md`
-  - [ ] 6.5 Visually distinguish script-grounded responses from general chat in Conversation mode
-  - [ ] 6.6 Cross-browser QA pass (especially Safari) for STT/TTS, wake-phrase detection, and PWA install behavior
-  - [ ] 6.7 Implement clean mic handoff on mode switch: if dictation or a Conversation-mode voice interaction is active when the writer toggles modes, stop that STT session cleanly (committing any buffered transcript per the normal boundary rules) rather than rerouting the live stream — the writer starts voice input again explicitly in the new mode
+- [x] 6.0 Mode Switching, TV/Episode Navigation & PWA Polish
+  - [x] 6.1 Build the persistent Writing ↔ Conversation mode toggle, preserving state on both sides
+  - [x] 6.2 Wire up season/episode navigation accessible from within any episode
+  - [x] 6.3 Configure PWA manifest, icons, and service worker for installability
+  - [x] 6.4 Apply the writer-focused design direction from `tasks/DESIGN.md`
+  - [x] 6.5 Visually distinguish script-grounded responses from general chat in Conversation mode
+  - [x] 6.6 Cross-browser QA pass (especially Safari) for STT/TTS, wake-phrase detection, and PWA install behavior
+  - [x] 6.7 Implement clean mic handoff on mode switch: if dictation or a Conversation-mode voice interaction is active when the writer toggles modes, stop that STT session cleanly (committing any buffered transcript per the normal boundary rules) rather than rerouting the live stream — the writer starts voice input again explicitly in the new mode
