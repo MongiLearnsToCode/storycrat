@@ -93,3 +93,7 @@ Append-only. Newest entries at the bottom. Never delete entries.
 **Resolution:** `DEEPGRAM_API_KEY` synced from `.dev.vars` to production via `wrangler secret put` and verified through `/api/health`. `GROQ_API_KEY` remains unset — no key exists yet (user action pending). The health endpoint's per-provider booleans are now the standing post-deploy check.
 **Files Affected:** Cloudflare Worker secret store only.
 **Prevention Note:** After every deploy, assert `/api/health` secret booleans match the features expected to work; a green build says nothing about configured secrets.
+
+## Issue #8 — Resolution addendum
+**Date:** 2026-08-24
+`GROQ_API_KEY` synced to production and verified: `/api/health` reports `groq: true`, and the key itself validates against Groq's API (models endpoint → 200). All AI features are now live in production. Remaining unset secrets (AssemblyAI, Polar) correspond to intentionally unchosen providers/features.
