@@ -97,3 +97,14 @@ Append-only. Newest entries at the bottom. Never delete entries.
 ## Issue #8 — Resolution addendum
 **Date:** 2026-08-24
 `GROQ_API_KEY` synced to production and verified: `/api/health` reports `groq: true`, and the key itself validates against Groq's API (models endpoint → 200). All AI features are now live in production. Remaining unset secrets (AssemblyAI, Polar) correspond to intentionally unchosen providers/features.
+
+## Issue #9 — App integration test broke the frontend verification gate
+**Date:** 2026-08-25
+**Task:** 6.6 Cross-browser QA pass
+**Severity:** Medium
+
+**Problem:** Frontend typecheck and production build failed on an `await` nested inside a synchronous `waitFor` callback; after fixing that syntax, the integration test still failed because its fetch mock treated string requests as POSTs and omitted results for module-mocked script APIs.
+**Root Cause:** The new project-to-editor integration test mixed global fetch stubs with module-level API mocks and did not model the browser fetch method default (`GET`).
+**Resolution:** Replaced the invalid nested `await`, derived the mocked HTTP method from `Request`/`RequestInit`, and supplied typed `fetchFeatureScript` and `fetchScript` mock results. Targeted tests, all 58 frontend tests, frontend typecheck, and the production PWA build now pass.
+**Files Affected:** `frontend/src/App.test.tsx`, `tasks/tasks-0001-prd-voice-screenwriting-companion.md`
+**Prevention Note:** Integration fetch mocks must model real method defaults and explicitly satisfy every module-mocked API boundary before the task ledger is marked complete.

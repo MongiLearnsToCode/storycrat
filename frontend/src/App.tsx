@@ -25,7 +25,7 @@ import {
  */
 type View =
   | { name: 'projects' }
-  | { name: 'editor'; project: Project; scriptId: string; episodeId: string | null }
+  | { name: 'editor'; project: Project; scriptId: string | null; episodeId: string | null; seasonId?: string | null }
 
 export default function App() {
   const [session, setSession] = useState<SessionUser | null | 'loading'>('loading')
@@ -78,20 +78,20 @@ function Workspace({ onSignOut }: { onSignOut: () => void }) {
         {view.name === 'projects' ? (
           <ProjectList onOpenProject={(project, scriptId) => setView({ name: 'editor', project, scriptId, episodeId: null })} />
         ) : (
-          <EditorWorkspace view={view} onOpenEpisode={(project, scriptId, episodeId) => setView({ name: 'editor', project, scriptId, episodeId })} onBack={() => setView({ name: 'projects' })} />
+          <EditorWorkspace view={view} onOpenEpisode={(project, scriptId, episodeId, seasonId) => setView({ name: 'editor', project, scriptId, episodeId, seasonId })} onBack={() => setView({ name: 'projects' })} />
         )}
       </div>
     </div>
   )
 }
 
-function ProjectList({ onOpenProject }: { onOpenProject: (project: Project, scriptId: string) => void }) {
+function ProjectList({ onOpenProject }: { onOpenProject: (project: Project, scriptId: string | null) => void }) {
   const [projects, setProjects] = useState<Project[] | null>(null)
   const [error, setError] = useState(false)
   const [newTitle, setNewTitle] = useState('')
   const [newType, setNewType] = useState<'feature' | 'series'>('feature')
   const [creating, setCreating] = useState(false)
-  const [notice, setNotice] = useState<string | null>(null)
+  const [createError, setCreateError] = useState<string | null>(null)
   const [subscribed, setSubscribed] = useState<boolean | null>(null)
 
   useEffect(() => {
@@ -103,11 +103,11 @@ function ProjectList({ onOpenProject }: { onOpenProject: (project: Project, scri
 
   const load = useCallback(async () => {
     try {
-      const result = await fetchSeasons('') // replaced below
-      void result
       const listResponse = await fetch('/api/projects')
+      if (!listResponse.ok) throw new Error(String(listResponse.status))
       const listBody = (await listResponse.json()) as { projects: Project[] }
       setProjects(listBody.projects)
+      setError(false)
     } catch {
       setError(true)
     }
@@ -121,16 +121,25 @@ function ProjectList({ onOpenProject }: { onOpenProject: (project: Project, scri
     event.preventDefault()
     if (!newTitle.trim() || creating) return
     setCreating(true)
+    setCreateError(null)
     try {
       const response = await fetch('/api/projects', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ title: newTitle.trim(), type: newType }),
       })
-      if (response.ok) {
-        setNewTitle('')
-        await load()
+      if (response.status === 402) {
+        setCreateError('Your free script is already used — upgrade for unlimited scripts and episodes.')
+        return
       }
+      if (!response.ok) {
+        setCreateError('Couldn\'t create the project — try again.')
+        return
+      }
+      const body = (await response.json()) as { project: Project }
+      setNewTitle('')
+      // Route straight into the new project — creation should land you at the page.
+      await open(body.project)
     } finally {
       setCreating(false)
     }
@@ -142,7 +151,8 @@ function ProjectList({ onOpenProject }: { onOpenProject: (project: Project, scri
       if (result.scriptId) onOpenProject(project, result.scriptId)
       return
     }
-    // Series: open the first episode's script when one exists.
+    // Series: open the first episode's script; with none yet, open the
+    // workspace so the writer can create Episode 1 from inside it.
     const seasons = await fetchSeasons(project.id)
     const firstSeason = seasons.seasons[0]
     if (firstSeason) {
@@ -153,13 +163,13 @@ function ProjectList({ onOpenProject }: { onOpenProject: (project: Project, scri
         return
       }
     }
-    setNotice('This series has no episodes yet — open it, then create one from the episode list.')
+    onOpenProject(project, null)
   }
 
   return (
     <main className="mx-auto w-full max-w-2xl px-6 py-10">
       <h1 className="font-ui text-lg font-semibold text-on-surface">Your projects</h1>
-      {notice && <p className="mt-3 font-ui text-sm text-on-surface-variant">{notice}</p>}
+      {createError && <p role="alert" className="mt-3 font-ui text-sm text-error">{createError}</p>}
 
       {error && <p role="alert" className="mt-3 font-ui text-sm text-error">Couldn&rsquo;t load projects.</p>}
 
@@ -223,10 +233,40 @@ function EditorWorkspace({
   onBack,
 }: {
   view: Extract<View, { name: 'editor' }>
-  onOpenEpisode: (project: Project, scriptId: string, episodeId: string) => void
+  onOpenEpisode: (project: Project, scriptId: string, episodeId: string, seasonId: string | null) => void
   onBack: () => void
 }) {
   const [chatOpen, setChatOpen] = useState(false)
+  const [creatingEpisode, setCreatingEpisode] = useState(false)
+  const [episodeError, setEpisodeError] = useState(false)
+
+  // Series with no episode yet: create Season 1 / Episode 1 and open its script.
+  const createFirstEpisode = async () => {
+    if (creatingEpisode) return
+    setCreatingEpisode(true)
+    setEpisodeError(false)
+    try {
+      const seasonResponse = await fetch(`/api/projects/${view.project.id}/seasons`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: '{}',
+      })
+      if (!seasonResponse.ok) throw new Error('season')
+      const season = ((await seasonResponse.json()) as { season: { id: string } }).season
+      const episodeResponse = await fetch(`/api/projects/${view.project.id}/seasons/${season.id}/episodes`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title: 'Episode 1' }),
+      })
+      if (!episodeResponse.ok) throw new Error('episode')
+      const episode = ((await episodeResponse.json()) as { episode: { id: string; script_id: string } }).episode
+      onOpenEpisode(view.project, episode.script_id, episode.id, season.id)
+    } catch {
+      setEpisodeError(true)
+    } finally {
+      setCreatingEpisode(false)
+    }
+  }
 
   // Task 6.7: opening Conversation stops any live dictation session cleanly
   // (buffered text commits per normal boundary rules server-side).
@@ -262,7 +302,29 @@ function EditorWorkspace({
 
         <div className="flex flex-1 items-start">
           <div className={cn('min-w-0 flex-1', chatOpen && 'hidden md:block')}>
-            <ScreenplayEditor scriptId={view.scriptId} />
+            {view.scriptId ? (
+              <ScreenplayEditor scriptId={view.scriptId} />
+            ) : (
+              <main className="mx-auto flex w-full max-w-2xl flex-col items-center justify-center px-6 py-24 text-center">
+                <h1 className="font-ui text-lg font-semibold text-on-surface">{view.project.title}</h1>
+                <p className="mt-2 max-w-md font-ui text-sm leading-relaxed text-on-surface-variant">
+                  This series doesn&rsquo;t have an episode yet. Create Episode 1 to open the page — it uses your one-script allowance.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => void createFirstEpisode()}
+                  disabled={creatingEpisode}
+                  className="mt-6 rounded-md border border-creative-spark-blue bg-midnight-charcoal px-4 py-2 font-ui text-sm font-medium text-on-surface disabled:opacity-40"
+                >
+                  {creatingEpisode ? 'Creating…' : 'Create Episode 1'}
+                </button>
+                {episodeError && (
+                  <p role="alert" className="mt-3 font-ui text-sm text-error">
+                    Couldn&rsquo;t create the episode — it may exceed your free allowance.
+                  </p>
+                )}
+              </main>
+            )}
           </div>
 
           {chatOpen && (
@@ -326,7 +388,7 @@ function SeriesSidebar({
 }: {
   projectId: string
   activeEpisodeId: string | null
-  onOpenEpisode: (project: Project, scriptId: string, episodeId: string) => void
+  onOpenEpisode: (project: Project, scriptId: string, episodeId: string, seasonId: string | null) => void
   onBack: () => void
 }) {
   const [project, setProject] = useState<Project | null>(null)
@@ -338,7 +400,7 @@ function SeriesSidebar({
   const handleOpen = useCallback(
     (episode: Episode) => {
       if (episode.script_id) {
-        onOpenEpisode({ id: projectId, title: project?.title ?? '', type: 'series' }, episode.script_id, episode.id)
+        onOpenEpisode({ id: projectId, title: project?.title ?? '', type: 'series' }, episode.script_id, episode.id, episode.season_id)
       }
     },
     [projectId, project?.title, onOpenEpisode]
