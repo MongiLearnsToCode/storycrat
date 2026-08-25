@@ -120,14 +120,14 @@
   - [x] 4.12 Extend the embedding/retrieval pipeline (4.8–4.9) to Feature Film scripts, not just TV episodes — chunk by scene regardless of project type, so a 120-page script is grounded the same retrieval-backed way a TV season is
   - [x] 4.13 Wire scene-level re-embedding into the element mutation path (voice edits 3.7, manual edits 2.4) so the Vectorize index updates on edit/delete — debounced per scene, not fired per keystroke, and not dependent on an explicit "save" action that doesn't otherwise exist in this editor
 
-- [ ] 5.0 Accounts, Billing & Free-Tier Enforcement
+- [x] 5.0 Accounts, Billing & Free-Tier Enforcement
   - [x] 5.1 Implement email/magic-link auth (Resend), sessions in KV
-  - [ ] 5.2 Add `lifetime_script_count` to the user data model
-  - [ ] 5.3 Implement free-tier gating: block a 2nd script/episode once the lifetime count is spent, unless subscribed
-  - [ ] 5.4 Integrate Polar (checkout + webhooks) for subscription state
-  - [ ] 5.5 Build subscription management UI (upgrade/cancel)
-  - [ ] 5.6 Gate Writing mode and Conversation mode behind free-tier/subscription checks
-  - [ ] 5.7 Add a UI warning shown at TV Series creation time (not only when the block hits) telling a free-tier user the one-script allowance covers exactly one episode, not a full season
+  - [x] 5.2 Add `lifetime_script_count` to the user data model
+  - [x] 5.3 Implement free-tier gating: block a 2nd script/episode once the lifetime count is spent, unless subscribed
+  - [x] 5.4 Integrate Polar (checkout + webhooks) for subscription state
+  - [x] 5.5 Build subscription management UI (upgrade/cancel)
+  - [x] 5.6 Gate Writing mode and Conversation mode behind free-tier/subscription checks
+  - [x] 5.7 Add a UI warning shown at TV Series creation time (not only when the block hits) telling a free-tier user the one-script allowance covers exactly one episode, not a full season
 
 - [ ] 6.0 Mode Switching, TV/Episode Navigation & PWA Polish
   - [ ] 6.1 Build the persistent Writing ↔ Conversation mode toggle, preserving state on both sides

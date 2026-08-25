@@ -4,6 +4,7 @@ import { errorResponse, jsonResponse } from '../index'
 import { requireUser } from '../lib/auth'
 import { resyncScriptSafely } from '../lib/embed-sync'
 import { deleteScriptEmbeddings } from '../lib/embeddings'
+import { getTierStatus, incrementLifetimeScriptCount, tierLimitResponse } from '../lib/free-tier'
 import { findEpisode, findProject, findSeason, isOwned, notFound } from '../lib/ownership'
 
 const TITLE_MAX = 200
@@ -62,6 +63,13 @@ async function createProject(ctx: RouteContext): Promise<Response> {
     return errorResponse("type must be 'feature' or 'series'", 400)
   }
 
+  // Free-tier gate: a feature project provisions its script immediately, so
+  // it consumes the allowance at creation time (PRD Req 33–34, 45).
+  const tier = await getTierStatus(ctx.env, user.id)
+  if (body.type === 'feature' && !tier.canCreateScript) {
+    return tierLimitResponse()
+  }
+
   const projectId = newId()
   const now = new Date().toISOString()
 
@@ -88,6 +96,10 @@ async function createProject(ctx: RouteContext): Promise<Response> {
     )
   }
   await ctx.env.DB.batch(statements)
+
+  if (body.type === 'feature') {
+    await incrementLifetimeScriptCount(ctx.env, user.id)
+  }
 
   const project = await ctx.env.DB.prepare('SELECT id, title, type, created_at, updated_at FROM projects WHERE id = ?')
     .bind(projectId)
@@ -318,6 +330,13 @@ async function createEpisode(ctx: RouteContext): Promise<Response> {
     .first<{ n: number }>()
   const episodeNumber = next?.n ?? 1
 
+  // Free-tier gate: a series episode provisions its script, consuming the
+  // allowance. The one-script cap covers exactly ONE episode, not a season.
+  const tier = await getTierStatus(ctx.env, user.id)
+  if (!tier.canCreateScript) {
+    return tierLimitResponse()
+  }
+
   const episodeId = newId()
   const scriptId = newId()
   const now = new Date().toISOString()
@@ -334,6 +353,8 @@ async function createEpisode(ctx: RouteContext): Promise<Response> {
       now
     ),
   ])
+
+  await incrementLifetimeScriptCount(ctx.env, user.id)
 
   const episode = await ctx.env.DB.prepare(`${EPISODE_SELECT} WHERE e.id = ?`).bind(episodeId).first<EpisodeRow>()
 

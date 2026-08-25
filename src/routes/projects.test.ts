@@ -105,6 +105,14 @@ describe('series structure', () => {
   })
 
   it('creates a series project, season, and episode with auto-provisioned script', async () => {
+    // This fixture tests structure, not the tier cap — grant a subscription
+    // so userA's earlier feature project doesn't trip the free-tier gate.
+    await testEnv.DB.prepare(
+      "INSERT INTO subscriptions (user_id, polar_subscription_id, status, plan) VALUES (?, ?, 'active', 'Fixture Pro')"
+    )
+      .bind(userA.userId, `sub-${crypto.randomUUID()}`)
+      .run()
+
     const seriesResponse = await SELF.fetch('https://api.example/api/projects', {
       method: 'POST',
       headers: authHeaders(userA.token),

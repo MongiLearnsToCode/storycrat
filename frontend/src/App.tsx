@@ -4,6 +4,8 @@ import EpisodeSidebar from './components/Navigation/EpisodeSidebar'
 import ChatPanel from './components/ConversationMode/ChatPanel'
 import QuickNotesPanel from './components/ConversationMode/QuickNotesPanel'
 import ScreenplayEditor from './components/Editor/ScreenplayEditor'
+import SubscriptionPanel from './components/Billing/SubscriptionPanel'
+import TVFreeTierNotice from './components/Billing/TVFreeTierNotice'
 import {
   fetchEpisodes,
   fetchFeatureScript,
@@ -89,6 +91,14 @@ function ProjectList({ onOpenProject }: { onOpenProject: (project: Project, scri
   const [newType, setNewType] = useState<'feature' | 'series'>('feature')
   const [creating, setCreating] = useState(false)
   const [notice, setNotice] = useState<string | null>(null)
+  const [subscribed, setSubscribed] = useState<boolean | null>(null)
+
+  useEffect(() => {
+    void fetch('/api/billing/subscription')
+      .then((r) => (r.ok ? r.json() : null))
+      .then((body: { subscribed?: boolean } | null) => setSubscribed(body?.subscribed ?? false))
+      .catch(() => setSubscribed(false))
+  }, [])
 
   const load = useCallback(async () => {
     try {
@@ -178,19 +188,30 @@ function ProjectList({ onOpenProject }: { onOpenProject: (project: Project, scri
           aria-label="New project title"
           className="flex-1 rounded-md border border-outline-variant bg-container-lowest px-3 py-2 font-ui text-sm text-on-surface outline-none focus:border-creative-spark-blue"
         />
-        <select
-          value={newType}
-          onChange={(e) => setNewType(e.target.value as 'feature' | 'series')}
-          aria-label="Project type"
-          className="rounded-md border border-outline-variant bg-container-lowest px-3 py-2 font-ui text-sm text-on-surface outline-none focus:border-creative-spark-blue"
-        >
-          <option value="feature">Feature</option>
-          <option value="series">Series</option>
-        </select>
+        <div className="sm:w-40">
+          <select
+            value={newType}
+            onChange={(e) => setNewType(e.target.value as 'feature' | 'series')}
+            aria-label="Project type"
+            className="w-full rounded-md border border-outline-variant bg-container-lowest px-3 py-2 font-ui text-sm text-on-surface outline-none focus:border-creative-spark-blue"
+          >
+            <option value="feature">Feature</option>
+            <option value="series">Series</option>
+          </select>
+        </div>
         <button type="submit" disabled={creating || !newTitle.trim()} className="rounded-md border border-creative-spark-blue bg-midnight-charcoal px-4 py-2 font-ui text-sm font-medium text-on-surface disabled:opacity-40">
           Create
         </button>
       </form>
+
+      {/* Task 5.7: disclose the one-episode allowance at series creation time. */}
+      <div className="mt-2">
+        <TVFreeTierNotice visible={newType === 'series'} subscribed={subscribed ?? false} />
+      </div>
+
+      <div className="mt-6">
+        <SubscriptionPanel />
+      </div>
     </main>
   )
 }

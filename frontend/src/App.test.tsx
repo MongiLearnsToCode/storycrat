@@ -45,6 +45,9 @@ describe('App shell', () => {
       if (url.endsWith('/api/projects')) {
         return new Response(JSON.stringify({ projects: [{ id: 'p1', title: 'Pilot', type: 'feature' }] }), { status: 200 })
       }
+      if (url.includes('/api/billing/subscription')) {
+        return new Response(JSON.stringify({ subscribed: true, lifetimeScriptCount: 0, canCreateScript: true, plan: null, subscriptionStatus: null }), { status: 200 })
+      }
       return new Response('{}', { status: 200 })
     }))
 

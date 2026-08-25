@@ -15,6 +15,7 @@ export default defineConfig({
           GROQ_API_KEY: 'test-groq-key',
           GROQ_ZDR_CONFIRMED: 'true',
           RESEND_API_KEY: 'test-resend-key',
+          POLAR_WEBHOOK_SECRET: 'test-webhook-secret',
         },
         // Third-party outbound calls (Resend, Groq, Deepgram) succeed in
         // tests without touching the real network. Tests assert against our

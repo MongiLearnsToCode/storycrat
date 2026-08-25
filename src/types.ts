@@ -53,6 +53,8 @@ export interface Env {
   MAIL_FROM?: string
   /** Dev-only: return magic links in the API response when email delivery is unavailable. NEVER set in production. */
   AUTH_DEV_LINK_RETURN?: string
+  /** Polar product id for the single paid tier (dashboard config, not a secret). */
+  POLAR_PRODUCT_ID?: string
 }
 
 /** Secret names known to the app; keeps requireSecret calls typo-proof. */

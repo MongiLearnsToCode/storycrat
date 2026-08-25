@@ -102,6 +102,13 @@ describe('conversation mode (Tasks 4.2–4.6)', () => {
   })
 
   it('assembled context includes the story bible when a season scope exists', async () => {
+    // Structure fixture (not a tier test): bypass the free-tier cap.
+    await testEnv.DB.prepare(
+      "INSERT INTO subscriptions (user_id, polar_subscription_id, status, plan) VALUES (?, ?, 'active', 'Fixture Pro')"
+    )
+      .bind(userA.userId, `sub-${crypto.randomUUID()}`)
+      .run()
+
     const seriesResponse = await SELF.fetch('https://api.example/api/projects', {
       method: 'POST',
       headers: authHeaders(userA.token),

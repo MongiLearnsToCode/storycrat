@@ -9,6 +9,7 @@ import { registerScriptRoutes } from './routes/scripts'
 import { registerDictationRoutes } from './routes/dictation'
 import { registerConversationRoutes } from './routes/conversation'
 import { registerAuthRoutes } from './routes/auth'
+import { registerBillingRoutes } from './routes/billing'
 
 export type { Env }
 
@@ -152,6 +153,7 @@ export function createRouter(): Router {
   registerDictationRoutes(router)
   registerConversationRoutes(router)
   registerAuthRoutes(router)
+  registerBillingRoutes(router)
 
   return router
 }
