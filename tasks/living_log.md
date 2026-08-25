@@ -82,3 +82,14 @@ Append-only. Newest entries at the bottom. Never delete entries.
 
 
 
+
+## Issue #8 — Production secrets gap: Groq/Deepgram keys missing from the deployed Worker
+**Date:** 2026-08-24
+**Task:** 6.6 QA pass / 1.7 closeout
+**Severity:** High
+
+**Problem:** The deployed Worker had `RESEND_API_KEY` and `PDF_SIGNING_SECRET` but not `GROQ_API_KEY` or `DEEPGRAM_API_KEY` — dictation, element classification, suggestions, and Conversation mode would all have failed in production despite passing every local test (tests use injected bindings and never assert live secrets).
+**Root Cause:** Secrets were added to `.dev.vars` for local development but the production Worker's secret store is a separate surface with no deployment-time sync; nothing compared `/api/health` secret booleans against expectations after deploys.
+**Resolution:** `DEEPGRAM_API_KEY` synced from `.dev.vars` to production via `wrangler secret put` and verified through `/api/health`. `GROQ_API_KEY` remains unset — no key exists yet (user action pending). The health endpoint's per-provider booleans are now the standing post-deploy check.
+**Files Affected:** Cloudflare Worker secret store only.
+**Prevention Note:** After every deploy, assert `/api/health` secret booleans match the features expected to work; a green build says nothing about configured secrets.
