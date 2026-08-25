@@ -119,3 +119,25 @@ Append-only. Newest entries at the bottom. Never delete entries.
 **Resolution:** Added the authenticated, ownership-checked feature-script lookup route; surfaced open/delete failures; added an inline two-step deletion confirmation wired to the existing cascading delete endpoint; and added backend and frontend regression tests for route ownership, delete authorization/cascade, confirmation, and failure feedback.
 **Files Affected:** `src/routes/projects.ts`, `src/routes/projects.test.ts`, `frontend/src/lib/api.ts`, `frontend/src/App.tsx`, `frontend/src/App.test.tsx`
 **Prevention Note:** Every frontend API helper must have an integration test proving that its exact method and path are registered by the Worker router.
+
+## Issue #11 — Project-type control bypassed the configured shadcn UI layer
+**Date:** 2026-08-25
+**Task:** Post-launch UI consistency
+**Severity:** Low
+
+**Problem:** The Feature/Series project-type control was a hand-styled native `<select>`, even though the frontend is configured to use source-owned shadcn components.
+**Root Cause:** The initial shell implemented the control before a shadcn Select source file or its Radix dependency had been added to the project.
+**Resolution:** Added the current shadcn Select through its CLI, adapted its source-owned styling to Storycrat's design tokens, replaced the native control, and added an interaction regression test. Added the missing jsdom browser-API shims required to test Radix primitives.
+**Files Affected:** `frontend/package.json`, `frontend/package-lock.json`, `frontend/src/components/ui/select.tsx`, `frontend/src/App.tsx`, `frontend/src/App.test.tsx`, `frontend/src/test-setup.ts`
+**Prevention Note:** New interactive controls should start from the configured shadcn registry and be adapted in `components/ui`; integration tests should assert both semantics and application state changes.
+
+## Issue #12 — App shell mixed native controls with the configured shadcn layer
+**Date:** 2026-08-25
+**Task:** Post-launch UI consistency
+**Severity:** Medium
+
+**Problem:** Most screens still used hand-styled native controls and one-off containers after shadcn had become the project's component standard, producing inconsistent states, focus treatment, and confirmation patterns.
+**Root Cause:** The UI grew feature-by-feature before a complete source-owned shadcn primitive set and Storycrat-specific theme mapping were established.
+**Resolution:** Added and themed the required shadcn primitives, migrated all interactive controls and common feedback/layout surfaces, replaced the inline delete confirmation with an accessible AlertDialog, and verified desktop/mobile flows through tests, typecheck, build, and the browser preview.
+**Files Affected:** `frontend/src/components/ui/*`, `frontend/src/App.tsx`, `frontend/src/components/*`, `frontend/src/index.css`, `frontend/package.json`, `frontend/package-lock.json`, frontend tests and test setup
+**Prevention Note:** Build new shared UI from the source-owned `components/ui` layer first; reserve custom markup for product-specific experiences such as the screenplay page and recording-state indicators.

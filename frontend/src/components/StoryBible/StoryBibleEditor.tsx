@@ -1,4 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Skeleton } from '@/components/ui/skeleton'
+import { Textarea } from '@/components/ui/textarea'
 
 /**
  * Season-level story bible editor (Task 2.5).
@@ -74,50 +78,47 @@ export default function StoryBibleEditor({ seasonId, load, save, saveDebounceMs 
   }
 
   return (
-    <section
+    <Card
+      role="region"
       aria-label="Story bible"
-      className="mx-auto w-full max-w-[720px] rounded-lg border border-slate-800 bg-container p-6"
+      className="mx-auto w-full max-w-[720px] bg-container"
     >
-      <header className="mb-3 flex items-baseline justify-between">
-        <h2 className="font-ui text-base font-medium text-on-surface">Season Story Bible</h2>
+      <CardHeader className="grid-cols-[1fr_auto] items-baseline">
+        <CardTitle className="font-ui text-base font-medium">Season Story Bible</CardTitle>
         {status === 'ready' && (
           <p aria-live="polite" className="font-ui text-xs text-on-surface-variant">
             {SAVE_LABEL[saveState]}
           </p>
         )}
-      </header>
+      </CardHeader>
 
+      <CardContent>
       {status === 'loading' && (
-        <p role="status" className="font-ui text-sm text-on-surface-variant">
-          Loading story bible…
-        </p>
+        <div role="status" aria-label="Loading story bible" className="space-y-3">
+          <span className="sr-only">Loading story bible…</span>
+          <Skeleton className="h-4 w-36" />
+          <Skeleton className="h-48 w-full" />
+        </div>
       )}
       {status === 'error' && (
-        <p role="alert" className="font-ui text-sm text-error">
-          Couldn’t load this story bible. Check your connection and try again.
-        </p>
+        <Alert variant="destructive">
+          <AlertDescription>Couldn’t load this story bible. Check your connection and try again.</AlertDescription>
+        </Alert>
       )}
 
       {status === 'ready' && (
-        <textarea
+        <Textarea
           aria-label="Story bible content"
           value={content}
           onChange={(e) => handleChange(e.target.value)}
           placeholder="Season arcs, character through-lines, world rules, running gags, promises made to the audience…"
           rows={14}
-          className={cnBibleTextarea()}
+          className="min-h-72 resize-y p-4 text-[15px] leading-relaxed"
         />
       )}
-    </section>
+      </CardContent>
+    </Card>
   )
-}
-
-function cnBibleTextarea(): string {
-  return [
-    'w-full resize-y rounded-md border border-outline-variant bg-container-low',
-    'p-4 font-ui text-[15px] leading-relaxed text-on-surface placeholder:text-on-surface-variant/50',
-    'outline-none focus:border-creative-spark-blue',
-  ].join(' ')
 }
 
 async function defaultLoad(seasonId: string): Promise<{ content: string }> {

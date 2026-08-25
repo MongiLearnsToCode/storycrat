@@ -7,6 +7,10 @@ import { CommandNotRecognized, RecordingBar, StatusBanner, type StatusState } fr
 import { DictationClient } from '@/lib/stt-client'
 import { fetchScript, requestSuggestion, saveScriptElements, type ScriptElement } from '@/lib/api'
 import { cn } from '@/lib/utils'
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Button } from '@/components/ui/button'
+import { Skeleton } from '@/components/ui/skeleton'
+import { Textarea } from '@/components/ui/textarea'
 
 /**
  * The screenplay editor with Writing mode (Tasks 2.3–2.4 + 3.x):
@@ -59,14 +63,14 @@ function AutosizeTextarea({ value, onChange, className, ariaLabel, onKeyDown, da
   }
 
   return (
-    <textarea
+    <Textarea
       ref={setRefs}
       data-key={dataKey}
       rows={1}
       wrap="soft"
       aria-label={ariaLabel}
       className={cn(
-        'w-full resize-none overflow-hidden border-0 bg-transparent p-0 outline-none focus:underline decoration-creative-spark-blue/60',
+        'min-h-0 w-full resize-none overflow-hidden border-0 bg-transparent p-0 shadow-none outline-none focus-visible:border-0 focus-visible:ring-0 focus:underline decoration-creative-spark-blue/60',
         className
       )}
       value={value}
@@ -172,9 +176,9 @@ export default function ScreenplayEditor({ scriptId, loadScript, saveElements, s
           <>
             <DictationControls scriptId={scriptId} client={client ?? ({ state: 'idle' } as unknown as DictationClient)} setClient={(c) => setClient(c)} onStart={startDictation} undoAvailable={undoAvailable} />
             {notRecognized && (
-              <button type="button" onClick={() => setNotRecognized(null)} className="mt-1 block cursor-pointer bg-transparent text-left" title="Dismiss">
+              <Button type="button" variant="ghost" onClick={() => setNotRecognized(null)} className="mt-1 h-auto w-full justify-start p-0 text-left" title="Dismiss">
                 <CommandNotRecognized heard={notRecognized} />
-              </button>
+              </Button>
             )}
           </>
         )}
@@ -183,17 +187,25 @@ export default function ScreenplayEditor({ scriptId, loadScript, saveElements, s
       <div className="relative flex w-full max-w-[850px] justify-center">
         {status === 'loading' && (
           <article aria-label="Screenplay" className="w-full rounded-sm bg-paper-white px-12 py-16 shadow-[0_10px_30px_rgba(0,0,0,0.2)]">
-            <p role="status" className="font-ui text-sm text-neutral-500">Loading screenplay…</p>
+            <div role="status" aria-label="Loading screenplay" className="space-y-4">
+              <Skeleton className="h-4 w-40 bg-neutral-200" />
+              <Skeleton className="h-4 w-full bg-neutral-200" />
+              <Skeleton className="h-4 w-4/5 bg-neutral-200" />
+            </div>
           </article>
         )}
         {status === 'error' && (
           <article aria-label="Screenplay" className="w-full rounded-sm bg-paper-white px-12 py-16 shadow-[0_10px_30px_rgba(0,0,0,0.2)]">
-            <p role="alert" className="font-ui text-sm text-red-700">Couldn’t load this screenplay. Check your connection and try again.</p>
+            <Alert variant="destructive" className="border-red-300 bg-red-50 text-red-800">
+              <AlertDescription className="text-red-700">Couldn’t load this screenplay. Check your connection and try again.</AlertDescription>
+            </Alert>
           </article>
         )}
         {status === 'unauthorized' && (
           <article aria-label="Screenplay" className="w-full rounded-sm bg-paper-white px-12 py-16 shadow-[0_10px_30px_rgba(0,0,0,0.2)]">
-            <p role="alert" className="font-ui text-sm text-red-700">You’re signed out. Sign in to open this screenplay.</p>
+            <Alert variant="destructive" className="border-red-300 bg-red-50 text-red-800">
+              <AlertDescription className="text-red-700">You’re signed out. Sign in to open this screenplay.</AlertDescription>
+            </Alert>
           </article>
         )}
         {status === 'ready' && (
@@ -267,13 +279,15 @@ function EditableSheet({
       {editor.elements.length === 0 ? (
         <div>
           <p className="font-script text-base leading-relaxed text-neutral-400">This page is blank.</p>
-          <button
+          <Button
             type="button"
+            variant="link"
+            size="sm"
             onClick={() => editor.insertAfter(null)}
-            className="mt-2 font-ui text-sm text-creative-spark-blue underline underline-offset-2"
+            className="mt-2 px-0"
           >
             Start the first scene heading
-          </button>
+          </Button>
         </div>
       ) : (
         editor.elements.map((element) => (
@@ -287,19 +301,21 @@ function EditableSheet({
           {/* Re-tag menu (Task 3.10 manual correction path) + inline suggestion (Task 3.11). */}
           <menu className="absolute top-1/2 right-0 hidden -translate-y-1/2 gap-1 group-hover:flex" aria-label={`Change element type (${ELEMENT_TYPE_LABELS[element.type]})`}>
             {(Object.keys(ELEMENT_STYLES) as Array<keyof typeof ELEMENT_STYLES>).map((type) => (
-              <button
+              <Button
                 key={type}
                 type="button"
+                variant="ghost"
+                size="xs"
                 title={ELEMENT_TYPE_LABELS[type]}
                 disabled={type === element.type}
                 onClick={() => editor.retag(element.key, type)}
                 className={cn(
-                  'rounded px-1.5 py-0.5 font-ui text-[11px]',
+                  'h-auto rounded px-1.5 py-0.5 font-ui text-[11px]',
                   type === element.type ? 'text-neutral-300' : 'text-neutral-500 hover:bg-neutral-100 hover:text-creative-spark-blue'
                 )}
               >
                 {ELEMENT_TYPE_LABELS[type]}
-              </button>
+              </Button>
             ))}
           </menu>
           <AutosizeTextarea

@@ -1,5 +1,5 @@
-import { cn } from '@/lib/utils'
 import type { DictationClient } from '@/lib/stt-client'
+import { Button } from '@/components/ui/button'
 
 /**
  * Microphone capture controls (Task 3.2) + undo affordance for destructive
@@ -15,9 +15,6 @@ export interface DictationControlsProps {
   undoAvailable?: boolean
 }
 
-const buttonBase =
-  'rounded px-3 py-1.5 font-ui text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-creative-spark-blue'
-
 export default function DictationControls({ client, onStart, undoAvailable = false, scriptId: _scriptId }: DictationControlsProps & { scriptId?: string }) {
   void _scriptId
   const handleStart = () => {
@@ -27,38 +24,38 @@ export default function DictationControls({ client, onStart, undoAvailable = fal
   return (
     <div className="flex items-center gap-2" data-dictation-state={client.state}>
       {(client.state === 'idle' || client.state === 'stopped') && (
-        <button
+        <Button
           type="button"
+          size="sm"
           data-testid="start-dictation"
           onClick={handleStart}
-          className={cn(buttonBase, 'bg-midnight-charcoal border border-creative-spark-blue text-on-surface')}
         >
           🎙 Start dictation
-        </button>
+        </Button>
       )}
 
       {client.state === 'listening' && (
-        <button type="button" data-testid="pause" onClick={() => client.pause()} className={cn(buttonBase, 'border border-outline-variant text-on-surface hover:border-outline')}>
+        <Button type="button" variant="outline" size="sm" data-testid="pause" onClick={() => client.pause()}>
           ⏸ Pause
-        </button>
+        </Button>
       )}
 
       {client.state === 'paused' && (
-        <button type="button" data-testid="resume" onClick={() => client.resume()} className={cn(buttonBase, 'border border-outline-variant text-on-surface hover:border-outline')}>
+        <Button type="button" variant="outline" size="sm" data-testid="resume" onClick={() => client.resume()}>
           ▶ Resume
-        </button>
+        </Button>
       )}
 
       {(client.state === 'listening' || client.state === 'paused') && (
-        <button type="button" data-testid="stop" onClick={() => client.stop()} className={cn(buttonBase, 'border border-recording-red/60 text-on-surface hover:bg-recording-red/10')}>
+        <Button type="button" variant="outline" size="sm" data-testid="stop" onClick={() => client.stop()} className="border-recording-red/60 hover:bg-recording-red/10">
           ■ Stop
-        </button>
+        </Button>
       )}
 
       {undoAvailable && (
-        <button type="button" onClick={() => client.undo()} data-testid="undo-button" className={cn(buttonBase, 'border border-creative-spark-amber/60 text-on-surface hover:bg-creative-spark-amber/10')}>
+        <Button type="button" variant="outline" size="sm" onClick={() => client.undo()} data-testid="undo-button" className="border-creative-spark-amber/60 hover:bg-creative-spark-amber/10">
           ↩ Undo delete
-        </button>
+        </Button>
       )}
     </div>
   )

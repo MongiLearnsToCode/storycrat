@@ -2,6 +2,14 @@ import { useEffect, useRef, useState } from 'react'
 import { sendChatMessage, type ChatMessageView } from '@/lib/api'
 import ScriptChip from '../ConversationMode/ScriptChip'
 import { cn } from '@/lib/utils'
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { ScrollArea } from '@/components/ui/scroll-area'
+import { Separator } from '@/components/ui/separator'
+import { Skeleton } from '@/components/ui/skeleton'
+import { Switch } from '@/components/ui/switch'
 
 /**
  * Conversation mode chat (Task 4.1 + 4.4 + 4.7): text chat scoped to the
@@ -66,22 +74,25 @@ export default function ChatPanel({ projectId, episodeId, currentEpisodeId = nul
 
   return (
     <section aria-label="Conversation" className="flex h-full flex-col bg-container-low">
-      <header className="flex items-center justify-between border-b border-slate-800 px-4 py-3">
+      <header className="flex items-center justify-between px-4 py-3">
         <h2 className="font-ui text-[13px] font-medium uppercase tracking-wide text-on-surface-variant">Conversation</h2>
-        <button
-          type="button"
-          role="switch"
-          aria-checked={ttsEnabled}
-          data-testid="tts-toggle"
-          onClick={() => setTtsEnabled((v) => !v)}
-          title={ttsEnabled ? 'Mute spoken replies' : 'Speak replies aloud'}
-          className="font-ui text-sm text-on-surface-variant hover:text-on-surface"
-        >
-          {ttsEnabled ? '🔊 Voice on' : '🔇 Text only'}
-        </button>
+        <div className="flex items-center gap-2">
+          <Switch
+            id="spoken-replies"
+            checked={ttsEnabled}
+            onCheckedChange={setTtsEnabled}
+            data-testid="tts-toggle"
+            aria-label="Spoken replies"
+          />
+          <Label htmlFor="spoken-replies" className="text-xs text-on-surface-variant">
+            {ttsEnabled ? 'Voice on' : 'Text only'}
+          </Label>
+        </div>
       </header>
+      <Separator />
 
-      <div className="flex-1 space-y-3 overflow-y-auto px-4 py-4">
+      <ScrollArea className="min-h-0 flex-1">
+      <div className="space-y-3 px-4 py-4">
         {messages.length === 0 && (
           <p className="font-ui text-sm text-on-surface-variant">
             Ask about this material — structure, motivation, dialogue. Your AI partner reads what you wrote and pushes back honestly.
@@ -112,28 +123,39 @@ export default function ChatPanel({ projectId, episodeId, currentEpisodeId = nul
             )}
           </div>
         ))}
-        {sending && <p role="status" className="font-ui text-xs text-creative-spark-blue">Thinking…</p>}
-        {error && <p role="alert" className="font-ui text-xs text-error">The AI is unavailable — try again shortly.</p>}
+        {sending && (
+          <div role="status" aria-label="Thinking" className="space-y-2">
+            <Skeleton className="h-3 w-24 bg-creative-spark-blue/20" />
+            <Skeleton className="h-14 w-4/5 bg-creative-spark-blue/10" />
+          </div>
+        )}
+        {error && (
+          <Alert variant="warning">
+            <AlertDescription>The AI is unavailable — try again shortly.</AlertDescription>
+          </Alert>
+        )}
         <div ref={bottomRef} />
       </div>
+      </ScrollArea>
 
+      <Separator />
       <form
-        className="flex gap-2 border-t border-slate-800 p-3"
+        className="flex gap-2 p-3"
         onSubmit={(e) => {
           e.preventDefault()
           void submit()
         }}
       >
-        <input
+        <Input
           value={input}
           onChange={(e) => setInput(e.target.value)}
           placeholder="Push on a scene, a line, a choice…"
           aria-label="Message"
-          className="flex-1 rounded-md border border-outline-variant bg-container-lowest px-3 py-2 font-ui text-sm text-on-surface outline-none focus:border-creative-spark-blue"
+          className="flex-1"
         />
-        <button type="submit" disabled={sending || !input.trim()} className="rounded-md border border-creative-spark-blue bg-midnight-charcoal px-3 py-2 font-ui text-sm font-medium text-on-surface disabled:opacity-40">
+        <Button type="submit" disabled={sending || !input.trim()}>
           Send
-        </button>
+        </Button>
       </form>
     </section>
   )

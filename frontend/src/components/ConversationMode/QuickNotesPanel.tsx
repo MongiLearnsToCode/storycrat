@@ -2,6 +2,11 @@ import { useState } from 'react'
 import { requestNotes, type Citation } from '@/lib/api'
 import ScriptChip from './ScriptChip'
 import { cn } from '@/lib/utils'
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent } from '@/components/ui/card'
+import { Separator } from '@/components/ui/separator'
+import { Skeleton } from '@/components/ui/skeleton'
 
 /**
  * Get Notes (Task 4.11): a single-shot critique rendered as a written report
@@ -40,32 +45,33 @@ export default function QuickNotesPanel({
   }
 
   return (
-    <section aria-label="Get notes" className="rounded-lg border border-outline-variant bg-container p-4">
+    <Card role="region" aria-label="Get notes" className="gap-0 bg-container py-4">
+      <CardContent className="px-4">
       {state === 'idle' && (
-        <button
+        <Button
           type="button"
           onClick={() => void run()}
-          className="w-full rounded-md border border-creative-spark-blue bg-midnight-charcoal px-3 py-2 font-ui text-sm font-medium text-on-surface"
+          className="w-full"
         >
           ✦ Get Notes
-        </button>
+        </Button>
       )}
 
       {state === 'loading' && (
-        <p role="status" className="animate-pulse font-ui text-sm text-creative-spark-blue">
-          Reading your script and taking notes…
-        </p>
+        <div role="status" aria-label="Reading your script and taking notes" className="space-y-2">
+          <Skeleton className="h-4 w-48 bg-creative-spark-blue/20" />
+          <Skeleton className="h-3 w-full" />
+          <Skeleton className="h-3 w-4/5" />
+        </div>
       )}
 
       {state === 'error' && (
-        <div>
-          <p role="alert" className="font-ui text-sm text-error">
+        <Alert variant="warning">
+          <AlertDescription>
             Notes are unavailable right now — try again shortly.
-          </p>
-          <button type="button" onClick={() => void run()} className="mt-2 font-ui text-xs text-creative-spark-blue underline">
-            Retry
-          </button>
-        </div>
+            <Button type="button" variant="link" size="xs" onClick={() => void run()} className="px-0">Retry</Button>
+          </AlertDescription>
+        </Alert>
       )}
 
       {state === 'ready' && (
@@ -79,17 +85,21 @@ export default function QuickNotesPanel({
               ))}
             </span>
           )}
-          <span className="block border-t border-outline-variant pt-2">
-            <button
+          <Separator />
+          <span className="block pt-2">
+            <Button
               type="button"
               onClick={onContinueInConversation}
-              className="font-ui text-xs text-on-surface-variant underline underline-offset-2 hover:text-on-surface"
+              variant="link"
+              size="xs"
+              className="px-0 text-on-surface-variant hover:text-on-surface"
             >
               Continue in Conversation
-            </button>
+            </Button>
           </span>
         </article>
       )}
-    </section>
+      </CardContent>
+    </Card>
   )
 }

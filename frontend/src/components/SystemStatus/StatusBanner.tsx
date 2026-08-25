@@ -1,5 +1,6 @@
 import { cn } from '@/lib/utils'
 import type { DictationState } from '@/lib/stt-client'
+import { Alert, AlertDescription } from '@/components/ui/alert'
 
 /**
  * System Status states (Task 3.12; DESIGN.md → Components → System Status).
@@ -21,44 +22,46 @@ export function StatusBanner({ status }: { status: StatusState }) {
 
   if (status.kind === 'mic_denied') {
     return (
-      <div
+      <Alert
         role="alert"
+        variant="destructive"
         data-status="mic-denied"
-        className="flex items-center gap-3 rounded border border-recording-red/50 bg-recording-red/10 px-4 py-3 font-ui text-sm text-on-surface"
+        className="grid-cols-[auto_1fr] gap-x-3"
       >
         <span aria-hidden className="h-2 w-2 shrink-0 rounded-full bg-recording-red" />
-        <span>
+        <AlertDescription>
           Microphone access is blocked. Dictation needs mic access — allow it in your browser’s site settings, then start again.
-        </span>
-      </div>
+        </AlertDescription>
+      </Alert>
     )
   }
 
   if (status.kind === 'reconnecting') {
     return (
-      <div
+      <Alert
         role="status"
         data-status="reconnecting"
-        className="flex items-center gap-3 rounded border border-outline-variant bg-container px-4 py-3 font-ui text-sm text-on-surface"
+        className="grid-cols-[auto_1fr] gap-x-3"
       >
         <span aria-hidden className="relative flex h-2.5 w-2.5">
           <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-recording-red opacity-75" />
           <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-recording-red" />
         </span>
-        <span>Connection to transcription lost — reconnecting. Your last words are still buffered.</span>
-      </div>
+        <AlertDescription>Connection to transcription lost — reconnecting. Your last words are still buffered.</AlertDescription>
+      </Alert>
     )
   }
 
   return (
-    <div
+    <Alert
       role="status"
+      variant="warning"
       data-status="rate-limited"
-      className="flex items-center gap-3 rounded border border-creative-spark-amber/50 bg-creative-spark-amber/10 px-4 py-3 font-ui text-sm text-on-surface"
+      className="grid-cols-[auto_1fr] gap-x-3"
     >
       <span aria-hidden className="text-base leading-none">✦</span>
-      <span>The AI is catching its breath (rate limit). Try again in a moment — nothing you dictated was lost.</span>
-    </div>
+      <AlertDescription>The AI is catching its breath (rate limit). Try again in a moment — nothing you dictated was lost.</AlertDescription>
+    </Alert>
   )
 }
 
@@ -110,8 +113,10 @@ export function RecordingBar({ state, interimText }: { state: DictationState; in
  */
 export function CommandNotRecognized({ heard }: { heard: string }) {
   return (
-    <p role="status" data-status="command-not-recognized" className="font-ui text-xs text-creative-spark-amber">
-      Didn’t catch that as a command — repeat after “Partner”, or rephrase. Heard: “{heard}”
-    </p>
+    <Alert role="status" variant="warning" data-status="command-not-recognized" className="px-3 py-2">
+      <AlertDescription className="text-xs text-creative-spark-amber">
+        Didn’t catch that as a command — repeat after “Partner”, or rephrase. Heard: “{heard}”
+      </AlertDescription>
+    </Alert>
   )
 }

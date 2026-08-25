@@ -103,6 +103,28 @@ describe('App shell', () => {
     vi.unstubAllGlobals()
   })
 
+  it('uses the shadcn Select for project type and updates the series disclosure', async () => {
+    mocked.fetchMe.mockResolvedValue({ id: 'u1' })
+    vi.stubGlobal('fetch', vi.fn(async (input: string | URL | Request): Promise<Response> => {
+      const url = String(input)
+      if (url.endsWith('/api/projects')) {
+        return new Response(JSON.stringify({ projects: [] }), { status: 200 })
+      }
+      if (url.includes('/api/billing/subscription')) {
+        return new Response(JSON.stringify({ subscribed: false }), { status: 200 })
+      }
+      return new Response('{}', { status: 200 })
+    }))
+
+    render(<App />)
+    const trigger = await screen.findByRole('combobox', { name: 'Project type' })
+    expect(trigger.tagName).toBe('BUTTON')
+
+    fireEvent.keyDown(trigger, { key: 'ArrowDown' })
+    fireEvent.click(await screen.findByRole('option', { name: 'Series' }))
+    expect(screen.getByTestId('tv-free-tier-notice')).toBeInTheDocument()
+  })
+
   it('requires confirmation before deleting a project and removes it after success', async () => {
     mocked.fetchMe.mockResolvedValue({ id: 'u1' })
     mocked.deleteProject.mockResolvedValue()

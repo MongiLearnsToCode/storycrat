@@ -46,7 +46,7 @@ describe('EpisodeSidebar', () => {
 
     const inactive = screen.getByRole('button', { name: 'E1 — Cold Open' })
     expect(inactive.getAttribute('aria-current')).toBeNull()
-    expect(inactive.className).not.toContain('border-creative-spark-blue')
+    expect(inactive.classList).not.toContain('border-creative-spark-blue')
   })
 
   it('reports the selected episode upward', async () => {

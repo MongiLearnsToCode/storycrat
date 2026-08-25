@@ -1,5 +1,6 @@
 import { cn } from '@/lib/utils'
 import type { Citation } from '@/lib/api'
+import { Button } from '@/components/ui/button'
 
 /**
  * Script Chip (DESIGN.md → AI Conversation): a small monospaced badge linking
@@ -18,15 +19,17 @@ export default function ScriptChip({ citation, currentEpisodeId = null, onClick 
     citation.episodeId !== null && currentEpisodeId !== null && citation.episodeId !== currentEpisodeId
 
   return (
-    <button
+    <Button
       type="button"
+      variant="ghost"
+      size="xs"
       data-testid="script-chip"
       data-episode={citation.episodeId ?? undefined}
       onClick={onClick}
       className={cn(
-        'inline-flex items-center gap-1 rounded px-1.5 py-0.5 font-script text-[11px]',
+        'h-auto inline-flex items-center gap-1 rounded px-1.5 py-0.5 font-script text-[11px]',
         'border border-creative-spark-blue/50 bg-creative-spark-blue/10 text-on-surface',
-        'hover:bg-creative-spark-blue/20 focus:outline-none focus:ring-1 focus:ring-creative-spark-blue',
+        'hover:bg-creative-spark-blue/20 focus-visible:ring-1 focus-visible:ring-creative-spark-blue',
         onClick ? 'cursor-pointer' : 'cursor-default'
       )}
     >
@@ -36,7 +39,7 @@ export default function ScriptChip({ citation, currentEpisodeId = null, onClick 
         </span>
       )}
       <span>{citation.label}</span>
-    </button>
+    </Button>
   )
 }
 

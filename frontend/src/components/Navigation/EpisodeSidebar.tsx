@@ -1,6 +1,9 @@
 import { useEffect, useState } from 'react'
 import { fetchEpisodes, fetchSeasons, type Episode, type Project, type Season } from '@/lib/api'
 import { cn } from '@/lib/utils'
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Button } from '@/components/ui/button'
+import { Skeleton } from '@/components/ui/skeleton'
 
 /**
  * Season/episode navigation for series projects (Task 2.6; DESIGN.md →
@@ -72,14 +75,16 @@ export default function EpisodeSidebar({
       <h2 className="mb-4 truncate text-[13px] font-medium tracking-wide text-on-surface">{project.title}</h2>
 
       {status === 'loading' && (
-        <p role="status" className="text-xs text-on-surface-variant">
-          Loading…
-        </p>
+        <div role="status" aria-label="Loading project tree" className="space-y-2">
+          <Skeleton className="h-3 w-20" />
+          <Skeleton className="h-8 w-full" />
+          <Skeleton className="h-8 w-4/5" />
+        </div>
       )}
       {status === 'error' && (
-        <p role="alert" className="text-xs text-error">
-          Couldn’t load the project tree.
-        </p>
+        <Alert variant="destructive" className="px-3 py-2">
+          <AlertDescription className="text-xs">Couldn’t load the project tree.</AlertDescription>
+        </Alert>
       )}
 
       {status === 'ready' && project.type === 'feature' && (
@@ -100,12 +105,14 @@ export default function EpisodeSidebar({
                   const isActive = episode.id === activeEpisodeId
                   return (
                     <li key={episode.id}>
-                      <button
+                      <Button
                         type="button"
+                        variant="ghost"
+                        size="sm"
                         onClick={() => onOpenEpisode?.(episode)}
                         aria-current={isActive ? 'true' : undefined}
                         className={cn(
-                          'w-full border-l-2 py-1.5 pl-3 text-left text-[13px] transition-colors',
+                          'h-auto w-full justify-start rounded-none border-l-2 py-1.5 pl-3 text-left text-[13px]',
                           isActive
                             ? 'border-creative-spark-blue text-on-surface'
                             : 'border-transparent text-on-surface-variant hover:border-outline-variant hover:text-on-surface'
@@ -113,7 +120,7 @@ export default function EpisodeSidebar({
                       >
                         E{episode.episode_number}
                         {episode.title ? ` — ${episode.title}` : ''}
-                      </button>
+                      </Button>
                     </li>
                   )
                 })}

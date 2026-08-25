@@ -1,4 +1,9 @@
 import { useEffect, useState } from 'react'
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent } from '@/components/ui/card'
+import { Skeleton } from '@/components/ui/skeleton'
 
 /**
  * Subscription panel (Task 5.5): shows tier state and the upgrade path.
@@ -59,10 +64,18 @@ export default function SubscriptionPanel({ fetchStatus, startCheckout, compact 
   if (compact && status?.subscribed) return null
 
   return (
-    <section aria-label="Subscription" className="rounded-lg border border-outline-variant bg-container-low p-4">
-      {error && <p role="alert" className="font-ui text-xs text-error">Couldn’t load billing status.</p>}
+    <Card role="region" aria-label="Subscription" className="gap-0 py-4">
+      <CardContent className="px-4">
+      {error && (
+        <Alert variant="destructive">
+          <AlertDescription>Couldn’t load billing status.</AlertDescription>
+        </Alert>
+      )}
       {!status && !error && (
-        <p role="status" className="font-ui text-xs text-on-surface-variant">Loading billing…</p>
+        <div role="status" aria-label="Loading billing" className="space-y-2">
+          <Skeleton className="h-4 w-24" />
+          <Skeleton className="h-3 w-64 max-w-full" />
+        </div>
       )}
       {status && (
         <>
@@ -70,7 +83,7 @@ export default function SubscriptionPanel({ fetchStatus, startCheckout, compact 
             <div>
               {status.subscribed ? (
                 <>
-                  <p className="font-ui text-sm font-medium text-on-surface">{status.plan || 'Storycrat Pro'}</p>
+                  <Badge>{status.plan || 'Storycrat Pro'}</Badge>
                   <p className="font-ui text-xs text-on-surface-variant">Unlimited scripts — thanks for backing the craft.</p>
                 </>
               ) : (
@@ -83,19 +96,21 @@ export default function SubscriptionPanel({ fetchStatus, startCheckout, compact 
               )}
             </div>
             {!status.subscribed && (
-              <button
+              <Button
                 type="button"
                 onClick={() => void upgrade()}
                 disabled={redirecting}
-                className="shrink-0 rounded-md border border-creative-spark-blue bg-midnight-charcoal px-3 py-2 font-ui text-xs font-medium text-on-surface disabled:opacity-40"
+                size="sm"
+                className="shrink-0"
               >
                 {redirecting ? 'Opening checkout…' : 'Upgrade'}
-              </button>
+              </Button>
             )}
           </div>
         </>
       )}
-    </section>
+      </CardContent>
+    </Card>
   )
 }
 

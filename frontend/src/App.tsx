@@ -7,6 +7,26 @@ import QuickNotesPanel from './components/ConversationMode/QuickNotesPanel'
 import ScreenplayEditor from './components/Editor/ScreenplayEditor'
 import SubscriptionPanel from './components/Billing/SubscriptionPanel'
 import TVFreeTierNotice from './components/Billing/TVFreeTierNotice'
+import { Alert, AlertDescription } from './components/ui/alert'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from './components/ui/alert-dialog'
+import { Badge } from './components/ui/badge'
+import { Button } from './components/ui/button'
+import { Card, CardContent } from './components/ui/card'
+import { Input } from './components/ui/input'
+import { Label } from './components/ui/label'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './components/ui/select'
+import { Separator } from './components/ui/separator'
+import { Skeleton } from './components/ui/skeleton'
 import {
   deleteProject as deleteProjectRequest,
   fetchEpisodes,
@@ -41,7 +61,10 @@ export default function App() {
   if (session === 'loading') {
     return (
       <main className="flex min-h-full items-center justify-center">
-        <p role="status" className="font-ui text-sm text-on-surface-variant">Loading…</p>
+        <div role="status" aria-label="Loading Storycrat" className="w-48 space-y-3">
+          <Skeleton className="mx-auto h-5 w-24" />
+          <Skeleton className="h-3 w-full" />
+        </div>
       </main>
     )
   }
@@ -58,22 +81,27 @@ function Workspace({ onSignOut }: { onSignOut: () => void }) {
 
   return (
     <div className="flex min-h-full flex-col">
-      <header className="flex items-center justify-between border-b border-slate-800 px-4 py-3">
-        <button
+      <header className="flex items-center justify-between px-4 py-3">
+        <Button
           type="button"
+          variant="ghost"
+          size="sm"
           onClick={() => setView({ name: 'projects' })}
-          className="font-ui text-sm font-semibold tracking-tight text-on-surface"
+          className="font-ui font-semibold tracking-tight text-on-surface"
         >
           Storycrat
-        </button>
-        <button
+        </Button>
+        <Button
           type="button"
+          variant="ghost"
+          size="sm"
           onClick={() => void onSignOut()}
-          className="font-ui text-xs text-on-surface-variant hover:text-on-surface"
+          className="text-xs"
         >
           Sign out
-        </button>
+        </Button>
       </header>
+      <Separator />
 
       <div className="flex-1">
         {view.name === 'projects' ? (
@@ -95,7 +123,6 @@ function ProjectList({ onOpenProject }: { onOpenProject: (project: Project, scri
   const [createError, setCreateError] = useState<string | null>(null)
   const [projectActionError, setProjectActionError] = useState<string | null>(null)
   const [openingProjectId, setOpeningProjectId] = useState<string | null>(null)
-  const [deleteConfirmationId, setDeleteConfirmationId] = useState<string | null>(null)
   const [deletingProjectId, setDeletingProjectId] = useState<string | null>(null)
   const [subscribed, setSubscribed] = useState<boolean | null>(null)
 
@@ -188,7 +215,6 @@ function ProjectList({ onOpenProject }: { onOpenProject: (project: Project, scri
     try {
       await deleteProjectRequest(project.id)
       setProjects((current) => current?.filter((item) => item.id !== project.id) ?? null)
-      setDeleteConfirmationId(null)
     } catch {
       setProjectActionError(`Could not delete “${project.title}”. Nothing was removed. Try again.`)
     } finally {
@@ -199,59 +225,61 @@ function ProjectList({ onOpenProject }: { onOpenProject: (project: Project, scri
   return (
     <main className="mx-auto w-full max-w-2xl px-6 py-10">
       <h1 className="font-ui text-lg font-semibold text-on-surface">Your projects</h1>
-      {createError && <p role="alert" className="mt-3 font-ui text-sm text-error">{createError}</p>}
+      {createError && <Alert variant="destructive" className="mt-3"><AlertDescription>{createError}</AlertDescription></Alert>}
 
-      {error && <p role="alert" className="mt-3 font-ui text-sm text-error">Couldn&rsquo;t load projects.</p>}
-      {projectActionError && <p role="alert" className="mt-3 font-ui text-sm text-error">{projectActionError}</p>}
+      {error && <Alert variant="destructive" className="mt-3"><AlertDescription>Couldn&rsquo;t load projects.</AlertDescription></Alert>}
+      {projectActionError && <Alert variant="destructive" className="mt-3"><AlertDescription>{projectActionError}</AlertDescription></Alert>}
 
       <ul className="mt-4 space-y-2">
         {(projects ?? []).map((project) => (
-          <li key={project.id} className="rounded-lg border border-outline-variant bg-container-low">
-            <div className="flex items-stretch">
-              <button
+          <li key={project.id}>
+            <Card className="gap-0 overflow-hidden py-0">
+            <CardContent className="flex items-stretch p-0">
+              <Button
                 type="button"
+                variant="ghost"
                 onClick={() => void open(project)}
                 disabled={openingProjectId !== null || deletingProjectId !== null}
-                className="min-w-0 flex-1 rounded-l-lg px-4 py-3 text-left font-ui text-sm text-on-surface hover:bg-container disabled:opacity-50"
+                className="h-auto min-w-0 flex-1 justify-start rounded-none px-4 py-3 text-left"
               >
                 {openingProjectId === project.id ? 'Opening…' : project.title}
-                <span className="ml-2 text-xs uppercase tracking-wide text-on-surface-variant">{project.type}</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => { setProjectActionError(null); setDeleteConfirmationId(project.id) }}
-                disabled={openingProjectId !== null || deletingProjectId !== null}
-                aria-label={`Delete ${project.title}`}
-                className="rounded-r-lg border-l border-outline-variant px-3 font-ui text-xs text-on-surface-variant hover:bg-container hover:text-error disabled:opacity-50"
-              >
-                Delete
-              </button>
-            </div>
-            {deleteConfirmationId === project.id && (
-              <div role="group" aria-label={`Confirm deletion of ${project.title}`} className="border-t border-outline-variant px-4 py-3">
-                <p className="font-ui text-xs leading-relaxed text-on-surface-variant">
-                  Delete this project and all of its screenplay data? This cannot be undone.
-                </p>
-                <div className="mt-3 flex gap-2">
-                  <button
+                <Badge variant="outline" className="ml-2 uppercase tracking-wide">{project.type}</Badge>
+              </Button>
+              <Separator orientation="vertical" className="h-auto" />
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button
                     type="button"
-                    onClick={() => setDeleteConfirmationId(null)}
-                    disabled={deletingProjectId !== null}
-                    className="rounded-md border border-outline-variant px-3 py-1.5 font-ui text-xs text-on-surface hover:bg-container disabled:opacity-50"
+                    variant="ghost"
+                    disabled={openingProjectId !== null || deletingProjectId !== null}
+                    aria-label={`Delete ${project.title}`}
+                    className="h-auto rounded-none px-3 text-xs hover:text-error"
+                    onClick={() => setProjectActionError(null)}
                   >
-                    Cancel
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => void remove(project)}
-                    disabled={deletingProjectId !== null}
-                    className="rounded-md border border-error/60 bg-error-container px-3 py-1.5 font-ui text-xs font-medium text-on-error-container disabled:opacity-50"
-                  >
-                    {deletingProjectId === project.id ? 'Deleting…' : 'Delete project'}
-                  </button>
-                </div>
-              </div>
-            )}
+                    Delete
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Delete “{project.title}”?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Delete this project and all of its screenplay data? This cannot be undone.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel disabled={deletingProjectId !== null}>Cancel</AlertDialogCancel>
+                    <AlertDialogAction
+                      variant="destructive"
+                      disabled={deletingProjectId !== null}
+                      onClick={() => void remove(project)}
+                    >
+                      {deletingProjectId === project.id ? 'Deleting…' : 'Delete project'}
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </CardContent>
+            </Card>
           </li>
         ))}
         {projects !== null && projects.length === 0 && (
@@ -259,29 +287,34 @@ function ProjectList({ onOpenProject }: { onOpenProject: (project: Project, scri
         )}
       </ul>
 
-      <form onSubmit={create} className="mt-8 flex flex-col gap-3 rounded-lg border border-outline-variant bg-container-low p-4 sm:flex-row">
-        <input
+      <Card className="mt-8 gap-0 py-4">
+      <CardContent className="px-4">
+      <form onSubmit={create} className="flex flex-col gap-3 sm:flex-row">
+        <Label htmlFor="new-project-title" className="sr-only">New project title</Label>
+        <Input
+          id="new-project-title"
           value={newTitle}
           onChange={(e) => setNewTitle(e.target.value)}
           placeholder="New project title"
-          aria-label="New project title"
-          className="flex-1 rounded-md border border-outline-variant bg-container-lowest px-3 py-2 font-ui text-sm text-on-surface outline-none focus:border-creative-spark-blue"
+          className="flex-1"
         />
         <div className="sm:w-40">
-          <select
-            value={newType}
-            onChange={(e) => setNewType(e.target.value as 'feature' | 'series')}
-            aria-label="Project type"
-            className="w-full rounded-md border border-outline-variant bg-container-lowest px-3 py-2 font-ui text-sm text-on-surface outline-none focus:border-creative-spark-blue"
-          >
-            <option value="feature">Feature</option>
-            <option value="series">Series</option>
-          </select>
+          <Select value={newType} onValueChange={(value) => setNewType(value as 'feature' | 'series')}>
+            <SelectTrigger aria-label="Project type" className="w-full">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent position="popper" align="start">
+              <SelectItem value="feature">Feature</SelectItem>
+              <SelectItem value="series">Series</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
-        <button type="submit" disabled={creating || !newTitle.trim()} className="rounded-md border border-creative-spark-blue bg-midnight-charcoal px-4 py-2 font-ui text-sm font-medium text-on-surface disabled:opacity-40">
+        <Button type="submit" disabled={creating || !newTitle.trim()}>
           Create
-        </button>
+        </Button>
       </form>
+      </CardContent>
+      </Card>
 
       {/* Task 5.7: disclose the one-episode allowance at series creation time. */}
       <div className="mt-2">
@@ -354,18 +387,19 @@ function EditorWorkspace({
 
       <div className="flex flex-1 flex-col">
         <div className="flex items-center justify-between px-4 pt-4">
-          <button type="button" onClick={onBack} className="font-ui text-xs text-on-surface-variant hover:text-on-surface">
+          <Button type="button" variant="ghost" size="sm" onClick={onBack} className="text-xs">
             ← Projects
-          </button>
+          </Button>
           {/* Desktop persistent toggle (Task 6.1). Mobile uses the bottom bar. */}
-          <button
+          <Button
             type="button"
             onClick={toggleConversation}
             aria-pressed={chatOpen}
-            className="hidden rounded-md border border-creative-spark-blue bg-midnight-charcoal px-3 py-1.5 font-ui text-xs font-medium text-on-surface md:block"
+            size="sm"
+            className="hidden text-xs md:inline-flex"
           >
             {chatOpen ? 'Hide conversation' : '✦ Conversation'}
-          </button>
+          </Button>
         </div>
 
         <div className="flex flex-1 items-start">
@@ -374,23 +408,22 @@ function EditorWorkspace({
               <ScreenplayEditor scriptId={view.scriptId} />
             ) : (
               <main className="mx-auto flex w-full max-w-2xl flex-col items-center justify-center px-6 py-24 text-center">
-                <h1 className="font-ui text-lg font-semibold text-on-surface">{view.project.title}</h1>
-                <p className="mt-2 max-w-md font-ui text-sm leading-relaxed text-on-surface-variant">
-                  This series doesn&rsquo;t have an episode yet. Create Episode 1 to open the page — it uses your one-script allowance.
-                </p>
-                <button
-                  type="button"
-                  onClick={() => void createFirstEpisode()}
-                  disabled={creatingEpisode}
-                  className="mt-6 rounded-md border border-creative-spark-blue bg-midnight-charcoal px-4 py-2 font-ui text-sm font-medium text-on-surface disabled:opacity-40"
-                >
-                  {creatingEpisode ? 'Creating…' : 'Create Episode 1'}
-                </button>
-                {episodeError && (
-                  <p role="alert" className="mt-3 font-ui text-sm text-error">
-                    Couldn&rsquo;t create the episode — it may exceed your free allowance.
-                  </p>
-                )}
+                <Card className="w-full max-w-lg">
+                  <CardContent className="flex flex-col items-center px-6 text-center">
+                    <h1 className="font-ui text-lg font-semibold text-on-surface">{view.project.title}</h1>
+                    <p className="mt-2 max-w-md font-ui text-sm leading-relaxed text-on-surface-variant">
+                      This series doesn&rsquo;t have an episode yet. Create Episode 1 to open the page — it uses your one-script allowance.
+                    </p>
+                    <Button type="button" onClick={() => void createFirstEpisode()} disabled={creatingEpisode} className="mt-6">
+                      {creatingEpisode ? 'Creating…' : 'Create Episode 1'}
+                    </Button>
+                    {episodeError && (
+                      <Alert variant="destructive" className="mt-3 text-left">
+                        <AlertDescription>Couldn&rsquo;t create the episode — it may exceed your free allowance.</AlertDescription>
+                      </Alert>
+                    )}
+                  </CardContent>
+                </Card>
               </main>
             )}
           </div>
@@ -403,13 +436,15 @@ function EditorWorkspace({
                 'fixed inset-0 z-20 bg-midnight-slate md:sticky md:top-0 md:inset-auto md:z-auto md:h-screen md:w-full md:max-w-md md:shrink-0 md:bg-transparent'
               )}
             >
-              <button
+              <Button
                 type="button"
+                variant="ghost"
+                size="sm"
                 onClick={toggleConversation}
-                className="px-4 pt-3 font-ui text-xs text-on-surface-variant md:hidden"
+                className="m-2 text-xs md:hidden"
               >
                 ← Back to script
-              </button>
+              </Button>
               <ChatPanel projectId={view.project.id} episodeId={view.episodeId ?? undefined} currentEpisodeId={view.episodeId} />
               <div className="hidden p-4 md:block">
                 <QuickNotesPanel projectId={view.project.id} episodeId={view.episodeId ?? undefined} currentEpisodeId={view.episodeId} />
@@ -426,22 +461,24 @@ function EditorWorkspace({
             chatOpen && 'hidden'
           )}
         >
-          <button
+          <Button
             type="button"
+            variant="ghost"
             onClick={() => setChatOpen(false)}
             aria-pressed={!chatOpen}
-            className={cn('flex-1 py-3 font-ui text-xs font-medium', !chatOpen ? 'border-t-2 border-creative-spark-blue text-on-surface' : 'text-on-surface-variant')}
+            className={cn('h-auto flex-1 rounded-none py-3 text-xs', !chatOpen ? 'border-t-2 border-creative-spark-blue text-on-surface' : 'text-on-surface-variant')}
           >
             ✍ Editor
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
+            variant="ghost"
             onClick={toggleConversation}
             aria-pressed={chatOpen}
-            className={cn('flex-1 py-3 font-ui text-xs font-medium', chatOpen ? 'border-t-2 border-creative-spark-blue text-on-surface' : 'text-on-surface-variant')}
+            className={cn('h-auto flex-1 rounded-none py-3 text-xs', chatOpen ? 'border-t-2 border-creative-spark-blue text-on-surface' : 'text-on-surface-variant')}
           >
             ✦ Conversation
-          </button>
+          </Button>
         </nav>
       </div>
     </div>
@@ -479,11 +516,15 @@ function SeriesSidebar({
       {project ? (
         <EpisodeSidebar project={project} activeEpisodeId={activeEpisodeId} onOpenEpisode={handleOpen} />
       ) : (
-        <div className="w-[280px] px-4 py-6 font-ui text-xs text-on-surface-variant">Loading…</div>
+        <div role="status" aria-label="Loading project navigation" className="w-[280px] space-y-3 px-4 py-6">
+          <Skeleton className="h-4 w-32" />
+          <Skeleton className="h-8 w-full" />
+          <Skeleton className="h-8 w-4/5" />
+        </div>
       )}
-      <button type="button" onClick={onBack} className="px-4 pb-4 font-ui text-xs text-on-surface-variant hover:text-on-surface">
+      <Button type="button" variant="ghost" size="sm" onClick={onBack} className="mx-2 mb-2 text-xs">
         ← All projects
-      </button>
+      </Button>
     </div>
   )
 }

@@ -1,5 +1,10 @@
 import { useState } from 'react'
 import { requestMagicLink } from '@/lib/api'
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 
 /**
  * Sign-in screen (Task 5.1 UI): email -> magic link. Calm and minimal
@@ -33,56 +38,57 @@ export default function SignInScreen({ onSignedIn, requestLinkFn }: SignInScreen
 
   return (
     <main className="flex min-h-full flex-col items-center justify-center px-6">
-      <div className="w-full max-w-sm rounded-lg border border-outline-variant bg-container-low p-8">
-        <h1 className="text-center font-ui text-xl font-semibold text-on-surface">Sign in to Storycrat</h1>
-        <p className="mt-2 text-center font-ui text-[13px] leading-relaxed text-on-surface-variant">
-          We&rsquo;ll email you a one-time link. No password to remember.
-        </p>
+      <Card className="w-full max-w-sm gap-0 py-8">
+        <CardHeader className="text-center">
+          <CardTitle className="font-ui text-xl">Sign in to Storycrat</CardTitle>
+          <CardDescription className="font-ui text-[13px] leading-relaxed">
+            We&rsquo;ll email you a one-time link. No password to remember.
+          </CardDescription>
+        </CardHeader>
 
-        {state !== 'sent' ? (
-          <form onSubmit={submit} className="mt-6 space-y-4">
-            <input
-              type="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="you@studio.com"
-              aria-label="Email address"
-              className="w-full rounded-md border border-outline-variant bg-container-lowest px-3 py-2 font-ui text-sm text-on-surface outline-none placeholder:text-on-surface-variant/50 focus:border-creative-spark-blue"
-            />
-            <button
-              type="submit"
-              disabled={state === 'sending'}
-              className="w-full rounded-md border border-creative-spark-blue bg-midnight-charcoal px-3 py-2 font-ui text-sm font-medium text-on-surface disabled:opacity-40"
-            >
-              {state === 'sending' ? 'Sending…' : 'Email me a sign-in link'}
-            </button>
-            {error && (
-              <p role="alert" className="font-ui text-xs text-error">
-                Couldn&rsquo;t send the link right now — try again in a moment.
+        <CardContent>
+          {state !== 'sent' ? (
+            <form onSubmit={submit} className="mt-6 space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="sign-in-email">Email address</Label>
+                <Input
+                  id="sign-in-email"
+                  type="email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="you@studio.com"
+                />
+              </div>
+              <Button type="submit" disabled={state === 'sending'} className="w-full">
+                {state === 'sending' ? 'Sending…' : 'Email me a sign-in link'}
+              </Button>
+              {error && (
+                <Alert variant="destructive">
+                  <AlertDescription>Couldn&rsquo;t send the link right now — try again in a moment.</AlertDescription>
+                </Alert>
+              )}
+            </form>
+          ) : (
+            <div className="mt-6 space-y-3 text-center">
+              <p role="status" className="font-ui text-sm text-on-surface">
+                Check your inbox — the link works once and expires in 15 minutes.
               </p>
-            )}
-          </form>
-        ) : (
-          <div className="mt-6 space-y-3 text-center">
-            <p role="status" className="font-ui text-sm text-on-surface">
-              Check your inbox — the link works once and expires in 15 minutes.
-            </p>
-            {devLink && (
-              <p className="font-ui text-xs text-on-surface-variant">
-                Dev mode: <a data-testid="dev-link" href={devLink} className="text-creative-spark-blue underline">open your link</a>
-              </p>
-            )}
-            <button
-              type="button"
-              onClick={onSignedIn}
-              className="font-ui text-xs text-creative-spark-blue underline underline-offset-2"
-            >
-              I&rsquo;ve signed in — continue
-            </button>
-          </div>
-        )}
-      </div>
+              {devLink && (
+                <div className="flex items-center justify-center gap-1 font-ui text-xs text-on-surface-variant">
+                  <span>Dev mode:</span>
+                  <Button asChild variant="link" size="xs" className="px-0">
+                    <a data-testid="dev-link" href={devLink}>open your link</a>
+                  </Button>
+                </div>
+              )}
+              <Button type="button" variant="link" size="sm" onClick={onSignedIn}>
+                I&rsquo;ve signed in — continue
+              </Button>
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </main>
   )
 }
