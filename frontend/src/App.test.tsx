@@ -1,5 +1,5 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import App from './App'
 import * as api from './lib/api'
 
@@ -12,6 +12,7 @@ vi.mock('./lib/api', () => ({
   fetchEpisodes: vi.fn(async () => ({ episodes: [] })),
   fetchProject: vi.fn(),
   fetchFeatureScript: vi.fn(),
+  deleteProject: vi.fn(),
   fetchScript: vi.fn(),
   saveScriptElements: vi.fn(),
   requestSuggestion: vi.fn(),
@@ -21,6 +22,10 @@ const mocked = vi.mocked(api)
 
 beforeEach(() => {
   vi.clearAllMocks()
+})
+
+afterEach(() => {
+  vi.unstubAllGlobals()
 })
 
 describe('App shell', () => {
@@ -96,5 +101,50 @@ describe('App shell', () => {
     expect(await screen.findByText(/Pilot/)).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /sign out/i })).toBeInTheDocument()
     vi.unstubAllGlobals()
+  })
+
+  it('requires confirmation before deleting a project and removes it after success', async () => {
+    mocked.fetchMe.mockResolvedValue({ id: 'u1' })
+    mocked.deleteProject.mockResolvedValue()
+    vi.stubGlobal('fetch', vi.fn(async (input: string | URL | Request): Promise<Response> => {
+      const url = String(input)
+      if (url.endsWith('/api/projects')) {
+        return new Response(JSON.stringify({ projects: [{ id: 'p1', title: 'Stuck Project', type: 'feature' }] }), { status: 200 })
+      }
+      if (url.includes('/api/billing/subscription')) {
+        return new Response(JSON.stringify({ subscribed: false }), { status: 200 })
+      }
+      return new Response('{}', { status: 200 })
+    }))
+
+    render(<App />)
+    expect(await screen.findByText('Stuck Project')).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Delete Stuck Project' }))
+    expect(screen.getByText(/cannot be undone/i)).toBeInTheDocument()
+    expect(mocked.deleteProject).not.toHaveBeenCalled()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Delete project' }))
+    await waitFor(() => expect(mocked.deleteProject).toHaveBeenCalledWith('p1'))
+    await waitFor(() => expect(screen.queryByText('Stuck Project')).not.toBeInTheDocument())
+  })
+
+  it('surfaces a feature-project open failure instead of leaving a dead button', async () => {
+    mocked.fetchMe.mockResolvedValue({ id: 'u1' })
+    mocked.fetchFeatureScript.mockRejectedValue(new Error('404'))
+    vi.stubGlobal('fetch', vi.fn(async (input: string | URL | Request): Promise<Response> => {
+      const url = String(input)
+      if (url.endsWith('/api/projects')) {
+        return new Response(JSON.stringify({ projects: [{ id: 'p1', title: 'Stuck Project', type: 'feature' }] }), { status: 200 })
+      }
+      if (url.includes('/api/billing/subscription')) {
+        return new Response(JSON.stringify({ subscribed: false }), { status: 200 })
+      }
+      return new Response('{}', { status: 200 })
+    }))
+
+    render(<App />)
+    fireEvent.click(await screen.findByRole('button', { name: /Stuck Project feature/i }))
+    expect(await screen.findByRole('alert')).toHaveTextContent(/could not open/i)
   })
 })

@@ -55,6 +55,25 @@ describe('project CRUD', () => {
     expect(scripts.results?.length).toBe(1)
   })
 
+  it('resolves an owned feature project to its screenplay', async () => {
+    const response = await SELF.fetch(`https://api.example/api/projects/${featureId}/feature-script`, {
+      headers: authHeaders(userA.token),
+    })
+    expect(response.status).toBe(200)
+    const body = (await response.json()) as { scriptId: string }
+    const script = await testEnv.DB.prepare('SELECT project_id FROM scripts WHERE id = ?')
+      .bind(body.scriptId)
+      .first<{ project_id: string }>()
+    expect(script?.project_id).toBe(featureId)
+  })
+
+  it("does not expose another user's feature screenplay", async () => {
+    const response = await SELF.fetch(`https://api.example/api/projects/${featureId}/feature-script`, {
+      headers: authHeaders(userB.token),
+    })
+    expect(response.status).toBe(404)
+  })
+
   it('rejects invalid project payloads', async () => {
     for (const body of [{ title: '', type: 'feature' }, { title: 'X', type: 'trilogy' }, { type: 'feature' }]) {
       const response = await SELF.fetch('https://api.example/api/projects', {
@@ -91,6 +110,33 @@ describe('project CRUD', () => {
     expect(response.status).toBe(200)
     const check = await testEnv.DB.prepare('SELECT title FROM projects WHERE id = ?').bind(featureId).first<{ title: string }>()
     expect(check?.title).toBe('The Long Night: Draft 2')
+  })
+
+  it('deletes only an owned project and cascades its screenplay data', async () => {
+    const createResponse = await SELF.fetch('https://api.example/api/projects', {
+      method: 'POST',
+      headers: authHeaders(userB.token),
+      body: JSON.stringify({ title: 'Disposable Draft', type: 'feature' }),
+    })
+    const projectId = ((await createResponse.json()) as { project: { id: string } }).project.id
+    const script = await testEnv.DB.prepare('SELECT id FROM scripts WHERE project_id = ?')
+      .bind(projectId)
+      .first<{ id: string }>()
+    expect(script?.id).toBeTruthy()
+
+    const denied = await SELF.fetch(`https://api.example/api/projects/${projectId}`, {
+      method: 'DELETE',
+      headers: authHeaders(userA.token),
+    })
+    expect(denied.status).toBe(404)
+
+    const deleted = await SELF.fetch(`https://api.example/api/projects/${projectId}`, {
+      method: 'DELETE',
+      headers: authHeaders(userB.token),
+    })
+    expect(deleted.status).toBe(200)
+    expect(await testEnv.DB.prepare('SELECT id FROM projects WHERE id = ?').bind(projectId).first()).toBeNull()
+    expect(await testEnv.DB.prepare('SELECT id FROM scripts WHERE project_id = ?').bind(projectId).first()).toBeNull()
   })
 })
 
@@ -229,4 +275,3 @@ describe('story bible', () => {
     expect(response.status).toBe(404)
   })
 })
-

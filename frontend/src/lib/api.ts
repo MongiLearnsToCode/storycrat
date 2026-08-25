@@ -95,6 +95,14 @@ export async function fetchProject(projectId: string, init?: RequestInit): Promi
   return (await parseOrThrow(response)) as { project: Project }
 }
 
+export async function deleteProject(projectId: string, init?: RequestInit): Promise<void> {
+  const response = await fetch(`/api/projects/${encodeURIComponent(projectId)}`, {
+    method: 'DELETE',
+    ...init,
+  })
+  await parseOrThrow(response)
+}
+
 /** One-line improvement proposal — inserted ONLY on explicit user acceptance (Task 3.11). */
 export async function requestSuggestion(scriptId: string, elementId: string, init?: RequestInit): Promise<{ suggestion: string }> {
   const response = await fetch(`/api/scripts/${encodeURIComponent(scriptId)}/suggest`, {

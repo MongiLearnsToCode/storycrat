@@ -127,6 +127,31 @@ async function getProject(ctx: RouteContext): Promise<Response> {
   return jsonResponse({ project, featureScriptId: featureScript?.id ?? null })
 }
 
+async function getFeatureScript(ctx: RouteContext): Promise<Response> {
+  const user = await requireUser(ctx.request, ctx.env)
+  if (!user) return errorResponse('Unauthorized', 401)
+
+  const projectId = p(ctx, 'projectId')
+  const owned = await findProject(ctx.env, projectId)
+  if (!isOwned(owned, user.id)) return notFound()
+
+  const project = await ctx.env.DB.prepare('SELECT type FROM projects WHERE id = ?')
+    .bind(projectId)
+    .first<{ type: 'feature' | 'series' }>()
+  if (project?.type !== 'feature') {
+    return errorResponse('Feature script is only available for feature projects', 400)
+  }
+
+  const script = await ctx.env.DB.prepare('SELECT id FROM scripts WHERE project_id = ? AND episode_id IS NULL')
+    .bind(projectId)
+    .first<{ id: string }>()
+  if (!script) {
+    return errorResponse('Feature project has no screenplay attached', 409)
+  }
+
+  return jsonResponse({ scriptId: script.id })
+}
+
 async function updateProject(ctx: RouteContext): Promise<Response> {
   const user = await requireUser(ctx.request, ctx.env)
   if (!user) return errorResponse('Unauthorized', 401)
@@ -483,6 +508,7 @@ export function registerProjectRoutes(router: Router): void {
   router.get('/api/projects', listProjects)
   router.post('/api/projects', createProject)
   router.get('/api/projects/:projectId', getProject)
+  router.get('/api/projects/:projectId/feature-script', getFeatureScript)
   router.patch('/api/projects/:projectId', updateProject)
   router.delete('/api/projects/:projectId', deleteProject)
 

@@ -8,6 +8,7 @@ import ScreenplayEditor from './components/Editor/ScreenplayEditor'
 import SubscriptionPanel from './components/Billing/SubscriptionPanel'
 import TVFreeTierNotice from './components/Billing/TVFreeTierNotice'
 import {
+  deleteProject as deleteProjectRequest,
   fetchEpisodes,
   fetchFeatureScript,
   fetchMe,
@@ -92,6 +93,10 @@ function ProjectList({ onOpenProject }: { onOpenProject: (project: Project, scri
   const [newType, setNewType] = useState<'feature' | 'series'>('feature')
   const [creating, setCreating] = useState(false)
   const [createError, setCreateError] = useState<string | null>(null)
+  const [projectActionError, setProjectActionError] = useState<string | null>(null)
+  const [openingProjectId, setOpeningProjectId] = useState<string | null>(null)
+  const [deleteConfirmationId, setDeleteConfirmationId] = useState<string | null>(null)
+  const [deletingProjectId, setDeletingProjectId] = useState<string | null>(null)
   const [subscribed, setSubscribed] = useState<boolean | null>(null)
 
   useEffect(() => {
@@ -146,24 +151,49 @@ function ProjectList({ onOpenProject }: { onOpenProject: (project: Project, scri
   }
 
   const open = async (project: Project) => {
-    if (project.type === 'feature') {
-      const result = await fetchFeatureScript(project.id)
-      if (result.scriptId) onOpenProject(project, result.scriptId)
-      return
-    }
-    // Series: open the first episode's script; with none yet, open the
-    // workspace so the writer can create Episode 1 from inside it.
-    const seasons = await fetchSeasons(project.id)
-    const firstSeason = seasons.seasons[0]
-    if (firstSeason) {
-      const episodes = await fetchEpisodes(project.id, firstSeason.id)
-      const firstEpisode = episodes.episodes[0]
-      if (firstEpisode?.script_id) {
-        onOpenProject(project, firstEpisode.script_id)
+    if (openingProjectId || deletingProjectId) return
+    setProjectActionError(null)
+    setOpeningProjectId(project.id)
+    try {
+      if (project.type === 'feature') {
+        const result = await fetchFeatureScript(project.id)
+        if (!result.scriptId) throw new Error('missing feature script')
+        onOpenProject(project, result.scriptId)
         return
       }
+      // Series: open the first episode's script; with none yet, open the
+      // workspace so the writer can create Episode 1 from inside it.
+      const seasons = await fetchSeasons(project.id)
+      const firstSeason = seasons.seasons[0]
+      if (firstSeason) {
+        const episodes = await fetchEpisodes(project.id, firstSeason.id)
+        const firstEpisode = episodes.episodes[0]
+        if (firstEpisode?.script_id) {
+          onOpenProject(project, firstEpisode.script_id)
+          return
+        }
+      }
+      onOpenProject(project, null)
+    } catch {
+      setProjectActionError(`Could not open “${project.title}”. Try again, or delete it if you no longer need it.`)
+    } finally {
+      setOpeningProjectId(null)
     }
-    onOpenProject(project, null)
+  }
+
+  const remove = async (project: Project) => {
+    if (deletingProjectId || openingProjectId) return
+    setProjectActionError(null)
+    setDeletingProjectId(project.id)
+    try {
+      await deleteProjectRequest(project.id)
+      setProjects((current) => current?.filter((item) => item.id !== project.id) ?? null)
+      setDeleteConfirmationId(null)
+    } catch {
+      setProjectActionError(`Could not delete “${project.title}”. Nothing was removed. Try again.`)
+    } finally {
+      setDeletingProjectId(null)
+    }
   }
 
   return (
@@ -172,18 +202,56 @@ function ProjectList({ onOpenProject }: { onOpenProject: (project: Project, scri
       {createError && <p role="alert" className="mt-3 font-ui text-sm text-error">{createError}</p>}
 
       {error && <p role="alert" className="mt-3 font-ui text-sm text-error">Couldn&rsquo;t load projects.</p>}
+      {projectActionError && <p role="alert" className="mt-3 font-ui text-sm text-error">{projectActionError}</p>}
 
       <ul className="mt-4 space-y-2">
         {(projects ?? []).map((project) => (
-          <li key={project.id}>
-            <button
-              type="button"
-              onClick={() => void open(project)}
-              className="w-full rounded-lg border border-outline-variant bg-container-low px-4 py-3 text-left font-ui text-sm text-on-surface hover:border-creative-spark-blue"
-            >
-              {project.title}
-              <span className="ml-2 text-xs uppercase tracking-wide text-on-surface-variant">{project.type}</span>
-            </button>
+          <li key={project.id} className="rounded-lg border border-outline-variant bg-container-low">
+            <div className="flex items-stretch">
+              <button
+                type="button"
+                onClick={() => void open(project)}
+                disabled={openingProjectId !== null || deletingProjectId !== null}
+                className="min-w-0 flex-1 rounded-l-lg px-4 py-3 text-left font-ui text-sm text-on-surface hover:bg-container disabled:opacity-50"
+              >
+                {openingProjectId === project.id ? 'Opening…' : project.title}
+                <span className="ml-2 text-xs uppercase tracking-wide text-on-surface-variant">{project.type}</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => { setProjectActionError(null); setDeleteConfirmationId(project.id) }}
+                disabled={openingProjectId !== null || deletingProjectId !== null}
+                aria-label={`Delete ${project.title}`}
+                className="rounded-r-lg border-l border-outline-variant px-3 font-ui text-xs text-on-surface-variant hover:bg-container hover:text-error disabled:opacity-50"
+              >
+                Delete
+              </button>
+            </div>
+            {deleteConfirmationId === project.id && (
+              <div role="group" aria-label={`Confirm deletion of ${project.title}`} className="border-t border-outline-variant px-4 py-3">
+                <p className="font-ui text-xs leading-relaxed text-on-surface-variant">
+                  Delete this project and all of its screenplay data? This cannot be undone.
+                </p>
+                <div className="mt-3 flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setDeleteConfirmationId(null)}
+                    disabled={deletingProjectId !== null}
+                    className="rounded-md border border-outline-variant px-3 py-1.5 font-ui text-xs text-on-surface hover:bg-container disabled:opacity-50"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => void remove(project)}
+                    disabled={deletingProjectId !== null}
+                    className="rounded-md border border-error/60 bg-error-container px-3 py-1.5 font-ui text-xs font-medium text-on-error-container disabled:opacity-50"
+                  >
+                    {deletingProjectId === project.id ? 'Deleting…' : 'Delete project'}
+                  </button>
+                </div>
+              </div>
+            )}
           </li>
         ))}
         {projects !== null && projects.length === 0 && (

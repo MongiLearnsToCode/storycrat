@@ -108,3 +108,14 @@ Append-only. Newest entries at the bottom. Never delete entries.
 **Resolution:** Replaced the invalid nested `await`, derived the mocked HTTP method from `Request`/`RequestInit`, and supplied typed `fetchFeatureScript` and `fetchScript` mock results. Targeted tests, all 58 frontend tests, frontend typecheck, and the production PWA build now pass.
 **Files Affected:** `frontend/src/App.test.tsx`, `tasks/tasks-0001-prd-voice-screenwriting-companion.md`
 **Prevention Note:** Integration fetch mocks must model real method defaults and explicitly satisfy every module-mocked API boundary before the task ledger is marked complete.
+
+## Issue #10 — Feature projects could neither open nor be deleted from the UI
+**Date:** 2026-08-25
+**Task:** Post-launch project management regression
+**Severity:** High
+
+**Problem:** Clicking any Feature project appeared to do nothing, and the project list exposed no way to delete a stuck project.
+**Root Cause:** The frontend called `GET /api/projects/:projectId/feature-script`, but the Worker never registered that route. The open action swallowed the resulting rejection, while project deletion existed only as an unreachable backend endpoint. The App integration test mocked the missing route instead of exercising the Worker contract.
+**Resolution:** Added the authenticated, ownership-checked feature-script lookup route; surfaced open/delete failures; added an inline two-step deletion confirmation wired to the existing cascading delete endpoint; and added backend and frontend regression tests for route ownership, delete authorization/cascade, confirmation, and failure feedback.
+**Files Affected:** `src/routes/projects.ts`, `src/routes/projects.test.ts`, `frontend/src/lib/api.ts`, `frontend/src/App.tsx`, `frontend/src/App.test.tsx`
+**Prevention Note:** Every frontend API helper must have an integration test proving that its exact method and path are registered by the Worker router.
